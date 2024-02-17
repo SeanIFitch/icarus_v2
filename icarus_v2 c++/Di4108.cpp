@@ -2,40 +2,9 @@
 #include <libusb-1.0/libusb.h>
 #include <vector>
 #include <cstring>
+#include "Di4108.h"
 
-class Di4108 {
-public:
-    Di4108();
-    ~Di4108();
-
-    void acquire();
-
-private:
-    bool findDevice();
-    void setupDevice();
-    void sendCommand(const std::string& command, bool checkEcho = true);
-    void setDIO(uint8_t value = 0b1111111);
-    std::vector<uint8_t> read(size_t size);
-    void ADCtoPressure(const std::vector<int16_t>& analogData, std::vector<double>& pressures);
-    void closeDevice();
-    void stop();
-
-    bool acquiring;
-    unsigned int sampleRate;
-    size_t usbBuffer;
-    libusb_device_handle* device;
-    libusb_endpoint_descriptor endpointIn;
-    libusb_endpoint_descriptor endpointOut;
-    size_t pointsToRead;
-    size_t channelsToRead;
-    size_t bytesToRead;
-    std::vector<double> pressureSensorOffset;
-
-    static const uint16_t DI_4108_VENDOR_ID = 0x0683;
-    static const uint16_t DI_4108_PRODUCT_ID = 0x4108;
-};
-
-Di4108::Di4108() : acquiring(true), sampleRate(0), usbBuffer(0), device(nullptr), pointsToRead(0), channelsToRead(0), bytesToRead(0) {
+Di4108::Di4108() {
     if (!findDevice()) {
         std::cerr << "USB device not found. Please ensure the device is connected." << std::endl;
         exit(1);

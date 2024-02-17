@@ -26,7 +26,7 @@
 #include <vector>
 #include <iomanip>
 #include <chrono> // for timer control
-#include <dataq_usb.h> // for DATAQ_USB Class
+#include "dataq_usb.h" // for DATAQ_USB Class
 //#include <mutex> // for interlock multiple devices when open
 #include <QSystemSemaphore> // for interlock between process, the instance Number in the attributes determine which is responsible to create it or not
 
