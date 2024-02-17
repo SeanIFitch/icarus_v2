@@ -1,0 +1,6 @@
+Add text file for keeping settings
+    pressure offset
+    device info
+
+Add method for setting pressure offset at 1 atm
+

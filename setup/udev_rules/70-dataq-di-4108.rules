@@ -1,0 +1,1 @@
+SUBSYSTEM=="usb", ATTR{idVendor}=="0683", ATTR{idProduct}=="4108", GROUP="dataq-di4108-users", MODE="0660"
