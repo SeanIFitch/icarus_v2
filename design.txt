@@ -29,3 +29,6 @@ predict leaks, give warnings
 	data sets comparison between days
 	eventually have reference curves
 		kalman filter?
+
+
+High pressure: 50kPsI = 5V
