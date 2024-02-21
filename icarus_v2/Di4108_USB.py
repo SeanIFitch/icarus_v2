@@ -9,7 +9,7 @@ DI_4108_VENDOR_ID = 0x0683
 DI_4108_PRODUCT_ID = 0x4108
 
 
-class Di4108():
+class Di4108_USB():
     def __init__(self) -> None:
         """
         Initializes a di_4108 object and sets up device for reading.
@@ -112,8 +112,8 @@ class Di4108():
         # Set slist which is order of channels to sample. See device protocol for more info.
         # Prior documentation said this was:
         #   A0 at +-5V, A1 at +-5V, A2 at +-.2V, A3 at +-.2V, A4 at +-.2V, A5 at +-.2V, A6 at +-5V, A7 at +-5V, digital input
-        # This is actually A0-A7 at +-10V, Digital
-        slist = ["0 0","1 1","2 2","3 3","4 4","5 5","6 6","7 7","8 8"]
+        # This is actually A0-A6 at +-10V, Digital
+        slist = ["0 0","1 1","2 2","3 3","4 4","5 5","6 6","7 8"]
         for i in slist:
             self._send_cmd("slist " + i)
 
@@ -134,7 +134,7 @@ class Di4108():
         self.bytes_to_read = self.channels_to_read * 2 * self.points_to_read
 
         #readings for pressure sensors at atmospheric pressure
-        self.pressure_sensor_offset = np.asarray([69.5595, 65.562, 68.881375, 84.2195, 86.96075, 17.248, 17.322, 0])
+        self.pressure_sensor_offset = np.asarray([69.5595, 65.562, 68.881375, 84.2195, 86.96075, 17.248, 17.322])
 
 
     def _send_cmd(self, command, encoding='utf-8', check_echo = True):
@@ -172,14 +172,14 @@ class Di4108():
         if size == None:
             size = self.usb_buff
         try:
-            data = self.device.read(self.endpoint_in, size, timeout=5000)
+            data = self.device.read(self.endpoint_in, size, timeout=2000)
             return data
         except:
             traceback.print_exc() 
             return None
 
 
-    def acquire(self, queue):
+    def acquire(self, analog_queue, digital_queue):
         # Start reading
         self.set_DIO()
         self.acquiring = True
@@ -191,10 +191,10 @@ class Di4108():
 
             analog = np.reshape(np.frombuffer(data, dtype=np.int16), (self.points_to_read, self.channels_to_read))[:, :-1]
             pressures = self._ADC_to_pressure(analog)
-            print(type(pressures))
+            analog_queue.enqueue(pressures)
             # Digital is last channel read, and only the 2nd byte is necessary
             digital = np.reshape(np.asarray(data), (self.points_to_read, self.channels_to_read*2))[:,-1]
-            print(type(digital))
+            digital_queue.enqueue(digital)
 
 
     def _ADC_to_pressure(self, analog_data):
@@ -230,7 +230,7 @@ class Di4108():
 
 # Testing
 def main():
-    with Di4108() as device_instance:
+    with Di4108_USB() as device_instance:
         device_instance.acquire(None)
 
 
