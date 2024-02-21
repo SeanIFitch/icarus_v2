@@ -1,6 +1,13 @@
 Add text file for keeping settings
     pressure offset
     device info
+    buffer size
 
 Add method for setting pressure offset at 1 atm
 
+Possibly: split Di4108USB into 2 classes, one for configuration which can be loaded from a file
+    Allows easier change of device/easier edit of read settings
+
+Documentation
+    README
+    Comments
