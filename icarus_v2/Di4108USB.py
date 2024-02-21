@@ -9,7 +9,7 @@ DI_4108_VENDOR_ID = 0x0683
 DI_4108_PRODUCT_ID = 0x4108
 
 
-class Di4108_USB():
+class Di4108USB():
     def __init__(self) -> None:
         """
         Initializes a di_4108 object and sets up device for reading.
@@ -186,8 +186,10 @@ class Di4108_USB():
         self._send_cmd('start')
         while self.acquiring:
             data = self._read(self.bytes_to_read)
-            if data is None:
-                break
+
+            # Check for buffer overflow
+            if b'stop 01' in data[-7:]:
+                raise RuntimeError("Error: Buffer overflow on physical device. Scanning Stopped.")
 
             analog = np.reshape(np.frombuffer(data, dtype=np.int16), (self.points_to_read, self.channels_to_read))[:, :-1]
             pressures = self._ADC_to_pressure(analog)
@@ -230,7 +232,7 @@ class Di4108_USB():
 
 # Testing
 def main():
-    with Di4108_USB() as device_instance:
+    with Di4108USB() as device_instance:
         device_instance.acquire(None)
 
 
