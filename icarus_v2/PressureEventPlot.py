@@ -3,8 +3,10 @@ import pyqtgraph as pg
 import numpy as np
 
 class PressureEventPlot(pg.PlotWidget):
-    def __init__(self, title, parent=None, background='default', plotItem=None, **kargs):
+    def __init__(self, title, display_range, parent=None, background='default', plotItem=None, **kargs):
         super().__init__(parent, background, plotItem, **kargs)
+
+        self.display_range = display_range
 
         window_color = self.palette().color(QPalette.Window)
         text_color = self.palette().color(QPalette.WindowText)
@@ -28,11 +30,11 @@ class PressureEventPlot(pg.PlotWidget):
 
 
     def update_data(self, data):
-        # TEST
-        print(len(data))
+        start, end = self.display_range
+        step_size = (end - start) / len(data)
+        times = np.arange(start, end, step_size) # in ms
 
-        #times = float(len(data) * 1000) / self.sample_rate # in ms
-        self.line1_ref.setData(range(len(data)), data)
+        self.line1_ref.setData(times, data)
 
 
     def plot_line(self, x, y, plotname, color):

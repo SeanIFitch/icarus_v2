@@ -156,13 +156,13 @@ class Di4108USB():
                 print(f"Error sending command: Response \"{expected_response.strip()}\" expected but \"{response.strip()}\" received.")
 
 
-    def set_DIO(self, value = 0b1111111):
+    def set_DIO(self, value = 0b1111111, check_echo = True):
         """
         Sets digital input/output state.
 
         :param value: States to set.
         """
-        self._send_cmd("dout " + str(int(value)))
+        self._send_cmd("dout " + str(int(value)), check_echo=check_echo)
 
 
     def _read(self, size = None, timeout = 2000):
@@ -226,7 +226,7 @@ class Di4108USB():
         with self.stop_lock:
             self._send_cmd("stop", check_echo=False)
         # Turn all valves off
-        self.set_DIO(0b1111111)
+        self.set_DIO(0b1111111, check_echo = False)
 
 
 # Testing

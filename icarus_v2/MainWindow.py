@@ -11,6 +11,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
 
         # Initialize variables
+        self.pressure_event_display_range = (-10,140)
         self.loader = None
         self.sample_rate = None
         self.pressurize_handler = None
@@ -20,7 +21,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(QSize(400, 300))
 
         # Pressurize plot
-        self.pressurize_plot = PressureEventPlot(title="Pressurize")
+        self.pressurize_plot = PressureEventPlot(title="Pressurize", display_range=self.pressure_event_display_range)
         self.setCentralWidget(self.pressurize_plot)
 
         self.start_acquisition()
@@ -33,7 +34,7 @@ class MainWindow(QMainWindow):
         # Set up pressurize handler and connect to pressurize plot
         self.pressurize_plot.set_sample_rate(self.sample_rate)
         dig1 = self.loader.new_digital_reader()
-        self.pressurize_handler = DataHandler(dig1, self.sample_rate, (10,140))
+        self.pressurize_handler = DataHandler(dig1, self.sample_rate, self.pressure_event_display_range)
         self.pressurize_handler.event_occurred.connect(self.pressurize_plot.update_data)
 
         # Start threads
