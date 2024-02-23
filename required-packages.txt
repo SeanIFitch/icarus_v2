@@ -1,2 +1,5 @@
 pyusb
 numpy
+PySide6
+pyqtgraph
+libxcb-cursor0

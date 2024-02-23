@@ -1,7 +1,7 @@
-import sys
 import usb.core
 import numpy as np
-import traceback
+from array import array
+from threading import Lock
 
 
 #device information
@@ -25,9 +25,9 @@ class Di4108USB():
         self.bytes_to_read = 0
         self.pressure_sensor_offset = None
 
-        if not self._find_device():
-            sys.exit(1)
+        self.stop_lock = Lock() # Used to make sure you do not stop the device while reading
 
+        self._find_device()
         self._setup_device()
 
 
@@ -56,8 +56,7 @@ class Di4108USB():
             # Find the USB device
             self.device = usb.core.find(idVendor=DI_4108_VENDOR_ID, idProduct=DI_4108_PRODUCT_ID)
             if self.device is None:
-                print("USB device not found. Please ensure the device is connected.")
-                return False
+                raise RuntimeError("USB device not found. Please ensure the device is connected.")
             else:
                 # Attempt to read from the device as a simple permission test
                 cfg = self.device.get_active_configuration()
@@ -71,12 +70,10 @@ class Di4108USB():
                 return True
         except usb.core.USBError as e:
             if e.errno == 13:
-                print("Insufficient permissions to access the USB device.")
-                print("Please set up udev rules by runnning ../setup/install_udev_rules.sh.")
-                return False
+                raise  RuntimeError("""Insufficient permissions to access the USB device.
+                                    Please set up udev rules by runnning ../setup/install_udev_rules.sh.""")
             else:
-                traceback.print_exc() 
-                return False
+                raise RuntimeError
 
 
     def _setup_device(self):
@@ -146,7 +143,7 @@ class Di4108USB():
         try:
             self.device.write(self.endpoint_out, (command+'\r').encode(encoding))
         except:
-            traceback.print_exc()
+            raise RuntimeError("Device write failed.")
         
         # Expect a response unless the device is currently reading
         # Not reading a response can leave the response in the buffer which can cause data processing issues or overflow
@@ -168,35 +165,39 @@ class Di4108USB():
         self._send_cmd("dout " + str(int(value)))
 
 
-    def _read(self, size = None):
+    def _read(self, size = None, timeout = 2000):
         if size == None:
             size = self.usb_buff
-        try:
-            data = self.device.read(self.endpoint_in, size, timeout=2000)
-            return data
-        except:
-            traceback.print_exc() 
-            return None
+        data = self.device.read(self.endpoint_in, size, timeout=timeout)
+        return data
 
 
     def acquire(self, analog_queue, digital_queue):
-        # Start reading
-        self.set_DIO()
-        self.acquiring = True
-        self._send_cmd('start')
-        while self.acquiring:
-            data = self._read(self.bytes_to_read)
+        # Prevent stopping device while reading
+        with self.stop_lock:
+            # Start reading
+            self.set_DIO()
+            self.acquiring = True
+            self._send_cmd('start')
 
-            # Check for buffer overflow
-            if b'stop 01' in data[-7:]:
-                raise RuntimeError("Error: Buffer overflow on physical device. Scanning Stopped.")
+            # For checking for device errors
+            stop_01_list = array('B', [115, 116, 111, 112, 32, 48, 49, 13, 0])
 
-            analog = np.reshape(np.frombuffer(data, dtype=np.int16), (self.points_to_read, self.channels_to_read))[:, :-1]
-            pressures = self._ADC_to_pressure(analog)
-            analog_queue.enqueue(pressures)
-            # Digital is last channel read, and only the 2nd byte is necessary
-            digital = np.reshape(np.asarray(data), (self.points_to_read, self.channels_to_read*2))[:,-1]
-            digital_queue.enqueue(digital)
+            while self.acquiring:
+                data = self._read(self.bytes_to_read)
+                if data is None or not self.acquiring:
+                    return None
+
+                # Check for buffer overflow
+                if stop_01_list == data[-9:]:
+                    raise RuntimeError("Error: Buffer overflow on physical device. Scanning Stopped.")
+
+                analog = np.reshape(np.frombuffer(data, dtype=np.int16), (self.points_to_read, self.channels_to_read))[:, :-1]
+                pressures = self._ADC_to_pressure(analog)
+                analog_queue.enqueue(pressures)
+                # Digital is last channel read, and only the 2nd byte is necessary
+                digital = np.reshape(np.asarray(data), (self.points_to_read, self.channels_to_read*2))[:,-1]
+                digital_queue.enqueue(digital)
 
 
     def _ADC_to_pressure(self, analog_data):
@@ -218,14 +219,12 @@ class Di4108USB():
 
     def stop(self):
         """
-        Orderly stop of the device code.
         - stops data acquisiion
-        - erases all data from USB buffers
         - set digital IO to all high
-        - closes usb port connection
         """
         self.acquiring = False
-        self._send_cmd("stop", check_echo=False)
+        with self.stop_lock:
+            self._send_cmd("stop", check_echo=False)
         # Turn all valves off
         self.set_DIO(0b1111111)
 
@@ -233,7 +232,7 @@ class Di4108USB():
 # Testing
 def main():
     with Di4108USB() as device_instance:
-        device_instance.acquire(None)
+        device_instance.acquire(None, None)
 
 
 if __name__ == "__main__":

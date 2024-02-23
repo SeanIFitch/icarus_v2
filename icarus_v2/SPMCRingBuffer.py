@@ -8,7 +8,7 @@ class SPMCRingBuffer:
         self.capacity = capacity
         self.buffer = [None for _ in range(capacity)]
         self.write_index = 0
-        self.event = Event() # Notifies waiting threads when new data has been enqueued
+        self.new_data = Event() # Notifies waiting threads when new data has been enqueued
 
 
     # Data is copied by reference. Be careful about changing data.
@@ -18,9 +18,10 @@ class SPMCRingBuffer:
         self.write_index += 1
 
         # Notify readers that new data is available
-        self.event.set()
+        self.new_data.set()
 
 
+# All readers should be terminated before the writer
 class SPMCRingBufferReader:
     def __init__(self, buffer):
         self.buffer = buffer
@@ -32,10 +33,13 @@ class SPMCRingBufferReader:
         return self.read_index < self.buffer.write_index
 
 
-    def read(self):
+    def read(self, timeout=None):
         # Block until data is available
         while not self.has_data():
-            self.buffer.event.wait()
+            if self.buffer.new_data.wait(timeout):
+                self.buffer.new_data.clear()
+            else:
+                raise TimeoutError
 
         # Raise error if the reader was lapped, meaning it did not look at some data
         if self.buffer.write_index > self.read_index + self.buffer.capacity:
@@ -44,7 +48,24 @@ class SPMCRingBufferReader:
         data = self.buffer.buffer[self.read_index % self.buffer.capacity]
         self.read_index += 1
 
-        # Reset event so next reader can be notified
-        self.buffer.event.clear()
+        return data, self.read_index - 1
 
-        return data
+
+    # Returns range of data without advancing read_index
+    def retrieve_range(self, start, end, timeout=None):
+        c = self.buffer.capacity
+        if end - start > c:
+            raise RuntimeError("Retrieving more data than buffer can store")
+
+        # Wait for data to be available up till end
+        while end >= self.buffer.write_index:
+            if self.buffer.new_data.wait(timeout):
+                self.buffer.new_data.clear()
+            else:
+                raise TimeoutError
+
+        # Case where range goes through end of buffer
+        if end % c < start % c:
+            return self.buffer.buffer[start % c:] + self.buffer.buffer[:end % c]
+        else:
+            return self.buffer.buffer[start % c:end % c]
