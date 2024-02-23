@@ -1,7 +1,7 @@
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PressureEventPlot import PressureEventPlot
-from DataHandler import DataHandler
+from EventHandler import EventHandler
 from BufferLoader import BufferLoader
 
 
@@ -33,8 +33,8 @@ class MainWindow(QMainWindow):
 
         # Set up pressurize handler and connect to pressurize plot
         self.pressurize_plot.set_sample_rate(self.sample_rate)
-        dig1 = self.loader.new_digital_reader()
-        self.pressurize_handler = DataHandler(dig1, self.sample_rate, self.pressure_event_display_range)
+        ana1 = self.loader.new_analog_reader()
+        self.pressurize_handler = EventHandler(ana1, self.sample_rate, self.pressure_event_display_range)
         self.pressurize_handler.event_occurred.connect(self.pressurize_plot.update_data)
 
         # Start threads

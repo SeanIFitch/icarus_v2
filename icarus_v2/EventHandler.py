@@ -2,7 +2,7 @@ from PySide6.QtCore import QThread, Signal
 import random
 import numpy as np
 
-class DataHandler(QThread):
+class EventHandler(QThread):
     event_occurred = Signal(np.ndarray)
 
     def __init__(self, buffer_reader, sample_rate, event_report_range) -> None:
@@ -11,6 +11,7 @@ class DataHandler(QThread):
         self.sample_rate = sample_rate
         self.running = False
         self.event_report_range = event_report_range # tuple of number of ms before and after an event to report
+
 
     # Placeholder. Returns whether 
     def detect_event(self, data):
