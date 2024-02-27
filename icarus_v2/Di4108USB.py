@@ -23,7 +23,6 @@ class Di4108USB():
         self.points_to_read = 0
         self.channels_to_read = 0
         self.bytes_to_read = 0
-        self.pressure_sensor_offset = None
 
         self.stop_lock = Lock() # Used to make sure you do not stop the device while reading
 
@@ -130,9 +129,6 @@ class Di4108USB():
         # 2 bytes per channel
         self.bytes_to_read = self.channels_to_read * 2 * self.points_to_read
 
-        #readings for pressure sensors at atmospheric pressure
-        self.pressure_sensor_offset = np.asarray([69.5595, 65.562, 68.881375, 84.2195, 86.96075, 17.248, 17.322])
-
 
     def _send_cmd(self, command, encoding='utf-8', check_echo = True):
         """
@@ -172,41 +168,35 @@ class Di4108USB():
         return data
 
 
-    def acquire(self, analog_queue, digital_queue):
+    def start_scan(self):
         # Prevent stopping device while reading
-        with self.stop_lock:
-            # Start reading
-            self.set_DIO()
-            self.acquiring = True
-            self._send_cmd('start')
+        self.stop_lock.acquire()
+        # Start reading
+        self.acquiring = True
 
-            # For checking for device errors
-            stop_01_list = array('B', [115, 116, 111, 112, 32, 48, 49, 13, 0])
-
-            while self.acquiring:
-                data = self._read(self.bytes_to_read)
-                if data is None or not self.acquiring:
-                    return None
-
-                # Check for buffer overflow
-                if stop_01_list == data[-9:]:
-                    raise RuntimeError("Error: Buffer overflow on physical device. Scanning Stopped.")
-
-                analog = np.reshape(np.frombuffer(data, dtype=np.int16), (self.points_to_read, self.channels_to_read))[:, :-1]
-                pressures = self._ADC_to_pressure(analog)
-                analog_queue.enqueue(pressures)
-                # Digital is last channel read, and only the 2nd byte is necessary
-                digital = np.reshape(np.asarray(data), (self.points_to_read, self.channels_to_read*2))[:,-1]
-                digital_queue.enqueue(digital)
+        self._send_cmd('start')
 
 
-    def _ADC_to_pressure(self, analog_data):
-        # Convert analog data to voltage
-        range = 20
-        volts = range * analog_data.astype(np.float64) / 32768
+    def end_scan(self):
+        self.stop_lock.release()
 
-        pressure = volts - self.pressure_sensor_offset
-        return pressure
+
+    def read_data(self):
+        data = self._read(self.bytes_to_read)
+        if data is None:
+            return None
+
+        # Check for buffer overflow
+        # Represents a received value of "stop 01".
+        stop_01_list = array('B', [115, 116, 111, 112, 32, 48, 49, 13, 0])
+        if stop_01_list == data[-9:]:
+            raise RuntimeError("Error: Buffer overflow on physical device. Scanning Stopped.")
+
+        return data
+
+
+    def get_data_shape(self):
+        return (self.points_to_read, self.channels_to_read)
 
 
     def close_device(self):
@@ -222,7 +212,7 @@ class Di4108USB():
         - stops data acquisiion
         - set digital IO to all high
         """
-        self.acquiring = False
+        self.acquiring = False # Signals to stop acquiring
         with self.stop_lock:
             self._send_cmd("stop", check_echo=False)
         # Turn all valves off
@@ -232,7 +222,7 @@ class Di4108USB():
 # Testing
 def main():
     with Di4108USB() as device_instance:
-        device_instance.acquire(None, None)
+        device_instance.acquire(None)
 
 
 if __name__ == "__main__":

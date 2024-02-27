@@ -1,7 +1,7 @@
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PressureEventPlot import PressureEventPlot
-from EventHandler import EventHandler
+from PressureHandler import PressureHandler
 from BufferLoader import BufferLoader
 
 
@@ -13,7 +13,6 @@ class MainWindow(QMainWindow):
         # Initialize variables
         self.pressure_event_display_range = (-10,140)
         self.loader = None
-        self.sample_rate = None
         self.pressurize_handler = None
 
         # Window settings
@@ -29,17 +28,23 @@ class MainWindow(QMainWindow):
 
     def start_acquisition(self):
         self.loader = BufferLoader()
-        self.sample_rate = self.loader.get_sample_rate()
+        sample_rate = self.loader.get_sample_rate()
 
-        # Set up pressurize handler and connect to pressurize plot
-        self.pressurize_plot.set_sample_rate(self.sample_rate)
-        ana1 = self.loader.new_analog_reader()
-        self.pressurize_handler = EventHandler(ana1, self.sample_rate, self.pressure_event_display_range)
-        self.pressurize_handler.event_occurred.connect(self.pressurize_plot.update_data)
+        # Connect widgets to backend
+        self.setup_pressurize_plot(sample_rate)
 
         # Start threads
         self.loader.start()
         self.pressurize_handler.start()
+
+
+    # Initialize pressurize event handler and connect it to the plot
+    def setup_pressurize_plot(self, sample_rate):
+        self.pressurize_plot.set_sample_rate(sample_rate)
+        dig_reader = self.loader.new_digital_reader()
+        ana_viewer = self.loader.new_analog_viewer()
+        self.pressurize_handler = PressureHandler(dig_reader, ana_viewer, sample_rate, self.pressure_event_display_range)
+        self.pressurize_handler.event_occurred.connect(self.pressurize_plot.update_data)
 
 
     def closeEvent(self, event):

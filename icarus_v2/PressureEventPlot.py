@@ -3,6 +3,10 @@ import pyqtgraph as pg
 import numpy as np
 
 class PressureEventPlot(pg.PlotWidget):
+    # Which channels to plot
+    PLOT_PRESSURES = [0, 1, 2, 3, 4, 5, 6]
+    PLOT_DIGITAL = [0, 1, 2, 3, 4, 5, 6]
+
     def __init__(self, title, display_range, parent=None, background='default', plotItem=None, **kargs):
         super().__init__(parent, background, plotItem, **kargs)
 

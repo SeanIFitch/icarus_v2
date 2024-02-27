@@ -1,6 +1,8 @@
 from PySide6.QtCore import QThread
 from Di4108USB import Di4108USB
-from SPMCRingBuffer import SPMCRingBuffer, SPMCRingBufferReader
+from DataConverter import ADC_to_pressure, digital_to_array
+from SPMCRingBuffer import SPMCRingBuffer, SPMCRingBufferViewer, SPMCRingBufferReader
+import numpy as np
 
 
 class BufferLoader(QThread):
@@ -27,7 +29,31 @@ class BufferLoader(QThread):
 
 
     def run(self):
-        self.device.acquire(self.analog_buffer, self.digital_buffer)
+        self.device.start_scan()
+        data_shape = self.device.get_data_shape()
+
+        while self.device.acquiring:
+            data = self.device.read_data()
+
+            analog = np.reshape(np.frombuffer(data, dtype=np.int16), data_shape)[:, :-1]
+            pressures = ADC_to_pressure(analog)
+
+            # Digital is last channel read, and only the 2nd byte is necessary
+            digital = np.reshape(np.asarray(data), (self.points_to_read, self.channels_to_read*2))[:,-1]
+            digital_array = digital_to_array(digital)
+
+
+            self.analog_queue.enqueue(pressures)
+            self.digital_queue.enqueue(digital_array)
+        self.device.end_scan()
+
+
+    def new_digital_viewer(self):
+        return SPMCRingBufferViewer(self.digital_buffer)
+
+
+    def new_analog_viewer(self):
+        return SPMCRingBufferViewer(self.analog_buffer)
 
 
     def new_digital_reader(self):

@@ -11,3 +11,5 @@ Possibly: split Di4108USB into 2 classes, one for configuration which can be loa
 Documentation
     README
     Comments
+
+Change to 1 buffer for all data which uses a large array rather than a list of arrays
