@@ -41,6 +41,7 @@ class Di4108USB():
         """
         Exits the context. Closes the USB device.
         """
+        self.end_scan()
         self.stop()
         self.close_device()
 
@@ -188,15 +189,11 @@ class Di4108USB():
 
         # Check for buffer overflow
         # Represents a received value of "stop 01".
-        stop_01_list = array('B', [115, 116, 111, 112, 32, 48, 49, 13, 0])
-        if stop_01_list == data[-9:]:
+        stop_01_array = array('B', [115, 116, 111, 112, 32, 48, 49, 13, 0])
+        if stop_01_array == data[-9:]:
             raise RuntimeError("Error: Buffer overflow on physical device. Scanning Stopped.")
 
         return data
-
-
-    def get_data_shape(self):
-        return (self.points_to_read, self.channels_to_read)
 
 
     def close_device(self):

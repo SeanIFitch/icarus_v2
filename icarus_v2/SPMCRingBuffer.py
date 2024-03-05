@@ -1,7 +1,7 @@
 from threading import Event
 
-# One producer, N consumers. 
-# Set size buffer composed of a python list.
+# One producer, N consumers.
+# Set size buffer composed of an np array.
 # Indexes are stored absolutely, so use head % capacity to get a list index
 class SPMCRingBuffer:
     def __init__(self, capacity):

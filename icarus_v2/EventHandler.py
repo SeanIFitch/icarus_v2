@@ -2,7 +2,7 @@ from PySide6.QtCore import QThread, Signal
 import numpy as np
 
 class EventHandler(QThread):
-    event_occurred = Signal(np.ndarray)
+    event_occurred = Signal(object)
 
     def __init__(self, buffer_reader, sample_rate) -> None:
         super().__init__()
@@ -15,13 +15,13 @@ class EventHandler(QThread):
     def run(self):
         self.running = True
         while(self.running):
-            data, buffer_index = self.buffer_reader.read(timeout=2)
+            data, buffer_index = self.buffer_reader.read(size=64, timeout=2)
             event, chunk_index = self.detect_event(data)
+            event_index = buffer_index + chunk_index
 
             # If an event occurs, transmit data to plot
             if event:
-                chunk_size = len(data)
-                event_data = self.handle_event((buffer_index, chunk_index), chunk_size)
+                event_data = self.handle_event(event_index)
                 self.event_occurred.emit(event_data)
 
 
@@ -34,9 +34,24 @@ class EventHandler(QThread):
 
     # Placeholder.
     # Event coordinate is a tuple of the index in the buffer and in the chunk where the event occured
-    # chunk_size is the size of a chunk in the buffer
-    def handle_event(self, event_coordinate, chunk_size):
+    def handle_event(self, event_index):
         return None
+
+
+    # Return a range of data around the event
+    # Event coordinate is a tuple of the index in the buffer and in the chunk where the event occured
+    def event_data(self, event_index, reader):
+        before, after = self.event_report_range # Amount of data in ms to report around the event
+
+        # Calculate number of chunks to get around event
+        sample_rate_kHz = float(self.sample_rate) / 1000
+        start = event_index + int(before * sample_rate_kHz)
+        end = event_index + int(after * sample_rate_kHz)
+
+        # Get data
+        data = reader.retrieve_range(start, end, timeout=2)
+
+        return data
 
 
     def quit(self):

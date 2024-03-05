@@ -1,23 +1,20 @@
 from PySide6.QtCore import QThread
 from Di4108USB import Di4108USB
-from DataConverter import ADC_to_pressure, digital_to_array
-from SPMCRingBuffer import SPMCRingBuffer, SPMCRingBufferViewer, SPMCRingBufferReader
+from DataConverter import convert_to_pressure, digital_to_array
+from SPMCArrayRingBuffer import SPMCRingBuffer, SPMCRingBufferReader
 import numpy as np
 
 
 class BufferLoader(QThread):
-    def __init__(self, minutes_of_data=2) -> None:
+    def __init__(self, buffer_seconds=120) -> None:
         super().__init__()
-        self.minutes_of_data = minutes_of_data
         self.device = Di4108USB()
 
-        # Calculate size of buffers
-        seconds_per_chunk = float(self.device.points_to_read) / float(self.device.sample_rate)
-        chunks_per_minute = 60 / seconds_per_chunk
-        buffer_size = self.minutes_of_data * int(chunks_per_minute)
-
-        self.analog_buffer = SPMCRingBuffer(buffer_size)
-        self.digital_buffer = SPMCRingBuffer(buffer_size)
+        buffer_capacity = int(buffer_seconds * self.device.sample_rate)
+        analog_shape = (buffer_capacity, self.device.channels_to_read - 1) # Subtract 1 for digital
+        digital_shape = (buffer_capacity, 7) # Always 7 digital channels
+        self.analog_buffer = SPMCRingBuffer(analog_shape, float)
+        self.digital_buffer = SPMCRingBuffer(digital_shape, np.uint8)
 
 
     def __enter__(self):
@@ -30,38 +27,30 @@ class BufferLoader(QThread):
 
     def run(self):
         self.device.start_scan()
-        data_shape = self.device.get_data_shape()
+        analog_shape = (self.device.points_to_read, self.device.channels_to_read)
+        digital_shape = (self.device.points_to_read, self.device.channels_to_read * 2)
 
         while self.device.acquiring:
             data = self.device.read_data()
 
-            analog = np.reshape(np.frombuffer(data, dtype=np.int16), data_shape)[:, :-1]
-            pressures = ADC_to_pressure(analog)
+            analog = np.reshape(np.frombuffer(data, dtype=np.int16), analog_shape)[:, :-1]
+            pre = convert_to_pressure(analog)
+            self.analog_buffer.enqueue(pre)
 
             # Digital is last channel read, and only the 2nd byte is necessary
-            digital = np.reshape(np.asarray(data), (self.points_to_read, self.channels_to_read*2))[:,-1]
-            digital_array = digital_to_array(digital)
+            digital = np.reshape(np.asarray(data), digital_shape)[:,-1]
+            dig = digital_to_array(digital)
+            self.digital_buffer.enqueue(dig)
 
-
-            self.analog_queue.enqueue(pressures)
-            self.digital_queue.enqueue(digital_array)
         self.device.end_scan()
-
-
-    def new_digital_viewer(self):
-        return SPMCRingBufferViewer(self.digital_buffer)
-
-
-    def new_analog_viewer(self):
-        return SPMCRingBufferViewer(self.analog_buffer)
-
-
-    def new_digital_reader(self):
-        return SPMCRingBufferReader(self.digital_buffer)
 
 
     def new_analog_reader(self):
         return SPMCRingBufferReader(self.analog_buffer)
+
+
+    def new_digital_reader(self):
+        return SPMCRingBufferReader(self.digital_buffer)
 
 
     def get_sample_rate(self):

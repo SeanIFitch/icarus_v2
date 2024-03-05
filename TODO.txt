@@ -13,3 +13,5 @@ Documentation
     Comments
 
 Change to 1 buffer for all data which uses a large array rather than a list of arrays
+
+Check if pressure math is right. Seems the same type of sensor should report the same voltage for the same pressure, but this has different offsets.
