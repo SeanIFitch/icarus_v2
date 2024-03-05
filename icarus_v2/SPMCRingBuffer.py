@@ -1,12 +1,14 @@
 from threading import Event
+import numpy as np
 
 # One producer, N consumers.
 # Set size buffer composed of an np array.
-# Indexes are stored absolutely, so use head % capacity to get a list index
+# Assumes data is only loaded along dimension 0.
+# Indexes are stored absolutely, so use head % capacity to get a list index.
 class SPMCRingBuffer:
-    def __init__(self, capacity):
-        self.capacity = capacity
-        self.buffer = [None for _ in range(capacity)]
+    def __init__(self, shape, dtype=int):
+        self.capacity = shape[0]
+        self.buffer = np.zeros(shape, dtype=dtype)
         self.write_index = 0
         self.new_data = Event() # Notifies waiting threads when new data has been enqueued
 
@@ -14,63 +16,56 @@ class SPMCRingBuffer:
     # Data is copied by reference. Be careful about changing data.
     # Overwrites oldest data
     def enqueue(self, data):
-        self.buffer[self.write_index % self.capacity] = data
-        self.write_index += 1
+        start = self.write_index % self.capacity
+        end = start + len(data)
+        self.buffer[start:end] = data
+        self.write_index += len(data)
 
         # Notify readers that new data is available
         self.new_data.set()
 
 
-# All viewers should be terminated before the writer
-class SPMCRingBufferViewer:
+# All readers should be terminated before the writer
+class SPMCRingBufferReader:
     def __init__(self, buffer):
         self.buffer = buffer
+        # Start with nothing to read
+        self.read_index = buffer.write_index # Next index of the buffer for this reader to read
 
 
-    def has_data(self):
-        return self.read_index < self.buffer.write_index
-
-
-    # Returns range of data without advancing read_index
+    # Returns view of range of data without advancing read_index
     def retrieve_range(self, start, end, timeout=None):
-        c = self.buffer.capacity
-        if end - start > c:
+        cap = self.buffer.capacity
+
+        if end - start > cap:
             raise RuntimeError("Retrieving more data than buffer can store")
 
+        # Raise error if the reader was lapped, meaning some data was overwritten
+        if self.buffer.write_index >= start + self.buffer.capacity:
+            raise RuntimeError(f"Reader was lapped. Reading at {self.read_index} when head is at {self.buffer.write_index}.")
+
         # Wait for data to be available up till end
-        while end >= self.buffer.write_index:
+        while end > self.buffer.write_index:
             if self.buffer.new_data.wait(timeout):
                 self.buffer.new_data.clear()
             else:
                 raise TimeoutError
 
         # Case where range goes through end of buffer
-        if end % c < start % c:
-            return self.buffer.buffer[start % c:] + self.buffer.buffer[:end % c]
+        if end % cap < start % cap:
+            a1 = self.buffer.buffer[start % cap:]
+            a2 = self.buffer.buffer[:end % cap]
+            return np.concatenate((a1,a2))
         else:
-            return self.buffer.buffer[start % c:end % c]
+            return self.buffer.buffer[start % cap:end % cap]
 
 
-class SPMCRingBufferReader(SPMCRingBufferViewer):
-    def __init__(self, buffer):
-        super().__init__(buffer)
-        # Start with nothing to read
-        self.read_index = buffer.write_index # Next index of the buffer for this reader to read
+    # Read block of size size starting at the last index read by this reader
+    # Returns a view of that data and the starting index of it
+    def read(self, size, timeout=None):
+        end = self.read_index + size
+        data = self.retrieve_range(self.read_index, end, timeout=timeout)
 
+        self.read_index += size
 
-    def read(self, timeout=None):
-        # Block until data is available
-        while not self.has_data():
-            if self.buffer.new_data.wait(timeout):
-                self.buffer.new_data.clear()
-            else:
-                raise TimeoutError
-
-        # Raise error if the reader was lapped, meaning it did not look at some data
-        if self.buffer.write_index > self.read_index + self.buffer.capacity:
-            raise RuntimeError(f"Reader was lapped. Reading at {self.read_index} when head is at {self.buffer.write_index}.")
-
-        data = self.buffer.buffer[self.read_index % self.buffer.capacity]
-        self.read_index += 1
-
-        return data, self.read_index - 1
+        return data, self.read_index - size

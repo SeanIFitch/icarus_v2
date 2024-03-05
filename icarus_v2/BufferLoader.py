@@ -1,7 +1,7 @@
 from PySide6.QtCore import QThread
 from Di4108USB import Di4108USB
 from DataConverter import convert_to_pressure, digital_to_array
-from SPMCArrayRingBuffer import SPMCRingBuffer, SPMCRingBufferReader
+from SPMCRingBuffer import SPMCRingBuffer, SPMCRingBufferReader
 import numpy as np
 
 
