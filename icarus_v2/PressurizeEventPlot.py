@@ -4,10 +4,6 @@ import pyqtgraph as pg
 import numpy as np
 
 class PressurizeEventPlot(pg.PlotWidget):
-    # Which channels to plot
-    PLOT_PRESSURES = [0, 3, 4, 5] # target pressure, pressurization lower, pressurization upper, high pressure transducer
-    PLOT_DIGITAL = [1, 2] # depressurize, pressurize
-
     def __init__(self, display_range, parent=None, background='default', plotItem=None, **kargs):
         super().__init__(parent, background, plotItem, **kargs)
 
@@ -19,9 +15,8 @@ class PressurizeEventPlot(pg.PlotWidget):
 
         self.setTitle("Pressurize", color=text_color, size="20pt")
         self.showGrid(x=True, y=True)
-        #self.setYRange(0, 4, padding=0)
-        #self.setXRange(-10, 140, padding=0)
-        #self.addLegend()
+        self.setYRange(-6, 12, padding=0)
+        self.setXRange(-15, 145, padding=0)
 
         # Axis Labels
         styles = {'color':text_color}
@@ -30,12 +25,12 @@ class PressurizeEventPlot(pg.PlotWidget):
 
         dummy_x = [-10,140]
         dummy_y = [0,0]
-        self.ana_0 = self.plot_line(dummy_x, dummy_y, "Target Pressure", 'black', style = Qt.DashLine)
-        self.ana_3 = self.plot_line(dummy_x, dummy_y, "Pressurization Lower", 'darkcyan')
-        self.ana_4 = self.plot_line(dummy_x, dummy_y, "Pressurization Upper", 'darkmagenta')
-        self.ana_5 = self.plot_line(dummy_x, dummy_y, "Sample", 'red')
-        self.dig_1 = self.plot_line(dummy_x, dummy_y, "Depressurization Valve", 'lightgreen', style = Qt.DashLine)
-        self.dig_2 = self.plot_line(dummy_x, dummy_y, "Pressurization Valve", 'blue')
+        self.target = self.plot_line(dummy_x, dummy_y, 'black', style = Qt.DashLine)
+        self.pre_low = self.plot_line(dummy_x, dummy_y, 'darkcyan')
+        self.pre_up = self.plot_line(dummy_x, dummy_y, 'darkmagenta')
+        self.hi_pre_sample = self.plot_line(dummy_x, dummy_y, 'red')
+        self.depre_valve = self.plot_line(dummy_x, dummy_y, 'lightgreen', style = Qt.DashLine)
+        self.pre_valve = self.plot_line(dummy_x, dummy_y, 'blue')
 
 
     def set_sample_rate(self, sample_rate):
@@ -43,20 +38,18 @@ class PressurizeEventPlot(pg.PlotWidget):
 
 
     def update_data(self, data):
-        analog, digital = data
-
         start, end = self.display_range
-        step_size = (end - start) / len(analog)
+        step_size = (end - start) / len(data)
         times = np.arange(start, end, step_size) # in ms
 
-        self.ana_0.setData(times, analog[:,0])
-        self.ana_3.setData(times, analog[:,3])
-        self.ana_4.setData(times, analog[:,4])
-        self.ana_5.setData(times, analog[:,5])
-        self.dig_1.setData(times, digital[:,1])
-        self.dig_2.setData(times, digital[:,2])
+        self.target.setData(times, data['target'])
+        self.pre_low.setData(times, data['pre_low'])
+        self.pre_up.setData(times, data['pre_up'])
+        self.hi_pre_sample.setData(times, data['hi_pre_sample'])
+        self.depre_valve.setData(times, data['depre_valve'] * 10.01)
+        self.pre_valve.setData(times, data['pre_valve'] * 10)
 
 
-    def plot_line(self, x, y, plotname, color, style = Qt.SolidLine):
+    def plot_line(self, x, y, color, style = Qt.SolidLine):
         pen = pg.mkPen(color=color, style=style)
-        return self.plot(x, y, name=plotname, pen=pen)
+        return self.plot(x, y, pen=pen)

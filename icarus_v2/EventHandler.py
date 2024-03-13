@@ -4,9 +4,9 @@ import numpy as np
 class EventHandler(QThread):
     event_occurred = Signal(object)
 
-    def __init__(self, buffer_reader, sample_rate) -> None:
+    def __init__(self, reader, sample_rate) -> None:
         super().__init__()
-        self.buffer_reader = buffer_reader
+        self.reader = reader
         self.sample_rate = sample_rate
         self.running = False
 
@@ -15,7 +15,7 @@ class EventHandler(QThread):
     def run(self):
         self.running = True
         while(self.running):
-            data, buffer_index = self.buffer_reader.read(size=64, timeout=2)
+            data, buffer_index = self.reader.read(size=64, timeout=2)
             event, chunk_index = self.detect_event(data)
             event_index = buffer_index + chunk_index
 
@@ -40,7 +40,7 @@ class EventHandler(QThread):
 
     # Return a range of data around the event
     # Event coordinate is a tuple of the index in the buffer and in the chunk where the event occured
-    def event_data(self, event_index, reader):
+    def event_data(self, event_index):
         before, after = self.event_report_range # Amount of data in ms to report around the event
 
         # Calculate number of chunks to get around event
@@ -49,7 +49,7 @@ class EventHandler(QThread):
         end = event_index + int(after * sample_rate_kHz)
 
         # Get data
-        data = reader.retrieve_range(start, end, timeout=2)
+        data = self.reader.retrieve_range(start, end, timeout=2)
 
         return data
 

@@ -14,8 +14,8 @@ import numpy as np
 # CH0: high pressure pump
 # CH1: depressurize valve
 # CH2: pressurize valve
-# CH3: ? valve
-# CH4: ? log
+# CH3: spare
+# CH4: log
 # CH5: spare
 # CH6: spare
 
@@ -23,7 +23,6 @@ import numpy as np
 TARGET_COEFF = (1/1.33)*(1/150)*79600.0*200*2.0**-15 #target pressure
 LOW_PRESSURE_COEFF = (1/50)*200*2.0**-15 #depressurization valve lower sensor
 HIGH_PRESSURE_COEFF = 2*50000*2.0**-15 #high pressure transducer at the origin
-DIO_COEFF = 42860.0
 
 ANALOG_COEFFS = np.asarray([TARGET_COEFF, LOW_PRESSURE_COEFF, LOW_PRESSURE_COEFF, 
                             LOW_PRESSURE_COEFF, LOW_PRESSURE_COEFF, HIGH_PRESSURE_COEFF, 

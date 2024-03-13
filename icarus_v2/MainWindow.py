@@ -1,11 +1,13 @@
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
+import sys
+
 from PressurizeEventPlot import PressurizeEventPlot
 from DepressurizeEventPlot import DepressurizeEventPlot
 from PressureHandler import PressureHandler
 from BufferLoader import BufferLoader
 from ErrorDialog import ErrorDialog
-import sys
+
 
 class MainWindow(QMainWindow):
 
@@ -13,12 +15,14 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
 
         # Initialize variables
-        self.loader = None
         self.pressure_event_display_range = (-10,140) # How much data to view around pressurize events
-        self.pressurize_handler = None
+
         self.pressurize_plot = None
-        self.depressurize_handler = None
         self.depressurize_plot = None
+
+        self.loader = None
+        self.pressurize_handler = None
+        self.depressurize_handler = None
 
         # Window settings
         self.setWindowTitle("Icarus NMR")
@@ -63,9 +67,8 @@ class MainWindow(QMainWindow):
     def setup_pressurize_plot(self):
         sample_rate = self.loader.get_sample_rate()
         self.pressurize_plot.set_sample_rate(sample_rate)
-        dig_reader = self.loader.new_digital_reader()
-        ana_reader = self.loader.new_analog_reader()
-        self.pressurize_handler = PressureHandler(dig_reader, ana_reader, sample_rate, self.pressure_event_display_range)
+        reader = self.loader.new_reader()
+        self.pressurize_handler = PressureHandler(reader, sample_rate, self.pressure_event_display_range)
         self.pressurize_handler.event_occurred.connect(self.pressurize_plot.update_data)
 
 
@@ -73,9 +76,8 @@ class MainWindow(QMainWindow):
     def setup_depressurize_plot(self):
         sample_rate = self.loader.get_sample_rate()
         self.depressurize_plot.set_sample_rate(sample_rate)
-        dig_reader = self.loader.new_digital_reader()
-        ana_reader = self.loader.new_analog_reader()
-        self.depressurize_handler = PressureHandler(dig_reader, ana_reader, sample_rate, self.pressure_event_display_range)
+        reader = self.loader.new_reader()
+        self.depressurize_handler = PressureHandler(reader, sample_rate, self.pressure_event_display_range)
         self.depressurize_handler.event_occurred.connect(self.depressurize_plot.update_data)
 
 

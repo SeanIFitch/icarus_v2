@@ -7,8 +7,10 @@ import numpy as np
 # Indexes are stored absolutely, so use head % capacity to get a list index.
 class SPMCRingBuffer:
     def __init__(self, shape, dtype=int):
+        if isinstance(shape, int):
+            shape = (shape,)
         self.capacity = shape[0]
-        self.buffer = np.zeros(shape, dtype=dtype)
+        self.buffer = np.empty(shape, dtype=dtype)
         self.write_index = 0
         self.new_data = Event() # Notifies waiting threads when new data has been enqueued
 
@@ -41,7 +43,7 @@ class SPMCRingBufferReader:
             raise RuntimeError("Retrieving more data than buffer can store")
 
         # Raise error if the reader was lapped, meaning some data was overwritten
-        if self.buffer.write_index >= start + self.buffer.capacity:
+        if self.buffer.write_index >= end + cap:
             raise RuntimeError(f"Reader was lapped. Reading at {self.read_index} when head is at {self.buffer.write_index}.")
 
         # Wait for data to be available up till end
