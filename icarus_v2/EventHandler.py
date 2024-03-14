@@ -1,5 +1,5 @@
 from PySide6.QtCore import QThread, Signal
-import numpy as np
+import traceback
 
 class EventHandler(QThread):
     event_occurred = Signal(object)
@@ -16,7 +16,11 @@ class EventHandler(QThread):
         self.running = True
         while(self.running):
             data, buffer_index = self.reader.read(size=64, timeout=2)
-            event, chunk_index = self.detect_event(data)
+            try:
+                event, chunk_index = self.detect_event(data)
+            except RuntimeWarning:
+                traceback.print_exc()
+                event, chunk_index = False, -1
             event_index = buffer_index + chunk_index
 
             # If an event occurs, transmit data to plot

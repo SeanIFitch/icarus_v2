@@ -24,23 +24,16 @@ device_readings = np.dtype([
 # This class is responsible for creating a buffer, reading from the device, processing the data, and putting it into the buffer.
 class BufferLoader(QThread):
     # Constants for pressure conversion
+    # TODO: get actual values for these. there should be a method for setting and storing offsets.
     PRESSURE_COEFFS = np.asarray([1.0]*7)
     PRESSURE_SENSOR_OFFSET = np.asarray([0.0]*7)
 
-    def __init__(self, buffer_seconds=120) -> None:
+    def __init__(self, device, buffer_seconds=120) -> None:
         super().__init__()
-        self.device = Di4108USB()
+        self.device = device
 
         buffer_capacity = int(buffer_seconds * self.device.sample_rate)
         self.buffer = SPMCRingBuffer(buffer_capacity, device_readings)
-
-
-    def __enter__(self):
-        return self
-
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.device.__exit__(exc_type, exc_value, traceback)
 
 
     def run(self):

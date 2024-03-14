@@ -4,6 +4,7 @@ Add text file for keeping settings
     buffer size
 
 Add method for setting pressure offset at 1 atm
+Update pressure conversions in general
 
 Possibly: split Di4108USB into 2 classes, one for configuration which can be loaded from a file
     Allows easier change of device/easier edit of read settings
@@ -11,7 +12,4 @@ Possibly: split Di4108USB into 2 classes, one for configuration which can be loa
 Documentation
     README
     Comments
-
-Change to 1 buffer for all data which uses a large array rather than a list of arrays
-
-Check if pressure math is right. Seems the same type of sensor should report the same voltage for the same pressure, but this has different offsets.
+    Diagram of program

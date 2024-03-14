@@ -23,6 +23,7 @@ class Di4108USB():
         self.points_to_read = 0
         self.channels_to_read = 0
         self.bytes_to_read = 0
+        self.current_dio = None
 
         self.stop_lock = Lock() # Used to make sure you do not stop the device while reading
 
@@ -159,6 +160,7 @@ class Di4108USB():
 
         :param value: States to set.
         """
+        self.current_dio = int(value)
         self._send_cmd("dout " + str(int(value)), check_echo=check_echo)
 
 
@@ -214,6 +216,10 @@ class Di4108USB():
             self._send_cmd("stop", check_echo=False)
         # Turn all valves off
         self.set_DIO(0b1111111, check_echo = False)
+
+
+    def get_current_dio(self):
+        return self.current_dio
 
 
 # Testing

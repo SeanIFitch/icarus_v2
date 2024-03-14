@@ -1,0 +1,4 @@
+1. What does a pulse look like? 
+    What should its duration be? 
+    How precise is necessary? currently getting -.25ms to +.75ms (may be less if increase device Hz)
+2. If the controls for the app and the main console differ, which takes precedence?
