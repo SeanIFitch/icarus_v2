@@ -13,8 +13,6 @@ logger - include data from press/depress events, history
 
 sentry - all rules for shutdown
 
-update maybe 1/250ms (3-4Hz) for events
-
 modes - detect experiment (is presurization from buttons or console) - then disable buttons
 
 test valves by presurizing and seeing whether it changes - history charts need improvement

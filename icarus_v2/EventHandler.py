@@ -26,7 +26,8 @@ class EventHandler(QThread):
             # If an event occurs, transmit data to plot
             if event:
                 event_data = self.handle_event(event_index)
-                self.event_occurred.emit(event_data)
+                if event_data is not None:
+                    self.event_occurred.emit(event_data)
 
 
     # Placeholder. 
@@ -42,12 +43,12 @@ class EventHandler(QThread):
         return None
 
 
-    # Return a range of data around the event
+    # Return a range of data around the event occuring at event_index
     # Event coordinate is a tuple of the index in the buffer and in the chunk where the event occured
     def event_data(self, event_index):
         before, after = self.event_report_range # Amount of data in ms to report around the event
 
-        # Calculate number of chunks to get around event
+        # Calculate start and end of data to get
         sample_rate_kHz = float(self.sample_rate) / 1000
         start = event_index + int(before * sample_rate_kHz)
         end = event_index + int(after * sample_rate_kHz)

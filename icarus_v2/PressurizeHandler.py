@@ -42,6 +42,5 @@ class PressurizeHandler(EventHandler):
     # Returns data to graph
     def handle_event(self, event_index):
         data = self.event_data(event_index)
-        print(len(np.where(~data['pre_valve'])[0])/4)
         return data
 
