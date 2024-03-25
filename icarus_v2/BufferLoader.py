@@ -1,5 +1,4 @@
 from PySide6.QtCore import QThread
-from Di4108USB import Di4108USB
 from SPMCRingBuffer import SPMCRingBuffer, SPMCRingBufferReader
 import numpy as np
 
@@ -51,8 +50,10 @@ class BufferLoader(QThread):
         analog_shape = (self.device.points_to_read, self.device.channels_to_read)
         digital_shape = (self.device.points_to_read, self.device.channels_to_read * 2)
 
-        analog = np.reshape(np.frombuffer(data, dtype=np.int16), analog_shape)[:, :-1]
-        digital = np.reshape(np.asarray(data), digital_shape)[:,-1].astype(np.uint8)
+        analog = np.frombuffer(data, dtype=np.int16)
+        analog = np.reshape(analog, analog_shape)[:, :-1]
+        digital = np.asarray(data).astype(np.uint8)
+        digital = np.reshape(digital, digital_shape)[:,-1]
 
         pressures = (analog * self.PRESSURE_COEFFS) - self.PRESSURE_SENSOR_OFFSET
         binary_array = np.unpackbits(digital, axis=-1).reshape(digital.shape + (8,))

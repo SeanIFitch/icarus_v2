@@ -21,13 +21,13 @@ class EventPlot(pg.PlotWidget):
 
     # Dictionary of coefficient to apply when plotting each channel
     CHANNEL_COEFFICIENTS = {
-        'target': 1,
-        'depre_low': 1,
-        'depre_up': 1,
-        'pre_low': 1,
-        'pre_up': 1,
-        'hi_pre_orig': 1,
-        'hi_pre_sample': 1,
+        'target': 0.2,
+        'depre_low': 0.1,
+        'depre_up': 0.1,
+        'pre_low': 0.1,
+        'pre_up': 0.1,
+        'hi_pre_orig': 0.2,
+        'hi_pre_sample': 0.2,
         'pump': 10,
         'depre_valve': 10.1,
         'pre_valve': 10.2,

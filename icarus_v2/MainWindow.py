@@ -4,6 +4,7 @@ from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QPushButton
 from EventPlot import EventPlot
 from ErrorDialog import ErrorDialog
+from ToggleButton import ToggleButton
 # Data collection & Device imports
 from Di4108USB import Di4108USB
 from BufferLoader import BufferLoader
@@ -50,6 +51,7 @@ class MainWindow(QMainWindow):
         self.pump_button = QPushButton(text="Pump")
         self.pressurize_button = QPushButton(text="Pressurize")
         self.depressurize_button = QPushButton(text="Depressurize")
+        self.pulse_button = ToggleButton("Start pulsing", "Stop pulsing")
 
         # Set all layouts
 
@@ -65,6 +67,7 @@ class MainWindow(QMainWindow):
         control_layout.addWidget(self.pump_button)
         control_layout.addWidget(self.pressurize_button)
         control_layout.addWidget(self.depressurize_button)
+        control_layout.addWidget(self.pulse_button)
 
         # Set main layout
         main_layout = QHBoxLayout()
@@ -92,7 +95,7 @@ class MainWindow(QMainWindow):
         self.loader = BufferLoader(device)
 
         # Controls device DIO
-        self.pulse_generator = PulseGenerator(device)
+        self.pulse_generator = PulseGenerator(device, delay=1.5)
 
         # Connect widgets to handlers
         self.setup_pressurize_plot()
@@ -134,6 +137,7 @@ class MainWindow(QMainWindow):
         self.period_handler.event_occurred.connect(self.period_plot.update_data)
 
 
+    # Connects controls to appropriate functions
     def setup_controls(self):
         def dummy():
             pass
@@ -141,6 +145,8 @@ class MainWindow(QMainWindow):
         self.pump_button.clicked.connect(dummy)
         self.pressurize_button.clicked.connect(self.pulse_generator.pressurize)
         self.depressurize_button.clicked.connect(self.pulse_generator.depressurize)
+        self.pulse_button.set_check_function(self.pulse_generator.start)
+        self.pulse_button.set_uncheck_function(self.pulse_generator.quit)
 
 
     # Opens error dialog
@@ -162,6 +168,10 @@ class MainWindow(QMainWindow):
         if self.period_handler is not None:
             self.period_handler.quit()
             self.period_handler.wait()
+
+        if self.pulse_generator is not None:
+            self.pulse_generator.quit()
+            self.pulse_generator.wait()
 
         if self.loader is not None:
             self.loader.quit()
