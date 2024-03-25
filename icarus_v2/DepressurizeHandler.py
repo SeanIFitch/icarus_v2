@@ -41,6 +41,6 @@ class DepressurizeHandler(EventHandler):
 
     # Returns data to graph
     def handle_event(self, event_index):
-        data = self.event_data(event_index)
+        data = self.get_event_data(event_index)
         return data
 

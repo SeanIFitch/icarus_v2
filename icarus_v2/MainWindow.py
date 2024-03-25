@@ -78,6 +78,22 @@ class MainWindow(QMainWindow):
         self.period_edit.setValidator(QDoubleValidator())
         self.delay_edit.setValidator(QDoubleValidator())
 
+        # Counters
+        self.pump_count = 0
+        self.pressurize_count = 0
+        self.depressurize_count = 0
+        pump_count_label = QLabel("Pump Count:")
+        pressurize_count_label = QLabel("Pressurize Count")
+        depressurize_count_label = QLabel("Depressurize Count")
+        stroke_display_label = QLabel("Pump Strokes/hr")
+        self.pump_counter = QLabel("0")
+        self.pressurize_counter = QLabel("0")
+        self.depressurize_counter = QLabel("0")
+        self.stroke_display = QLabel("0")
+
+
+        # Set all layouts
+
         # Set layout for device control panel
         control_layout = QVBoxLayout()
         control_layout.addWidget(self.shutdown_button)
@@ -97,6 +113,17 @@ class MainWindow(QMainWindow):
         timing_layout.addWidget(self.period_edit, 2, 1)
         timing_layout.addWidget(self.delay_edit, 3, 1)
 
+        # Set layout for counter panel
+        counter_layout = QGridLayout()
+        counter_layout.addWidget(pump_count_label, 0, 0)
+        counter_layout.addWidget(pressurize_count_label, 1, 0)
+        counter_layout.addWidget(depressurize_count_label, 2, 0)
+        counter_layout.addWidget(stroke_display_label, 3, 0)
+        counter_layout.addWidget(self.pump_counter, 0, 1)
+        counter_layout.addWidget(self.pressurize_counter, 1, 1)
+        counter_layout.addWidget(self.depressurize_counter, 2, 1)
+        counter_layout.addWidget(self.stroke_display, 3, 1)
+
         # Set main layout
         main_layout = QGridLayout()
         main_layout.addWidget(self.pressurize_plot, 0, 0)
@@ -104,6 +131,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.period_plot, 2, 0)
         main_layout.addLayout(timing_layout, 3, 0)
         main_layout.addLayout(control_layout, 1, 1)
+        main_layout.addLayout(counter_layout, 3, 1)
 
         # Add layout to dummy widget and apply to main window
         widget = QWidget()
@@ -147,7 +175,8 @@ class MainWindow(QMainWindow):
         self.pressurize_plot.set_sample_rate(sample_rate)
         reader = self.loader.new_reader()
         self.pressurize_handler = PressurizeHandler(reader, sample_rate, self.pressure_event_display_range)
-        self.pressurize_handler.event_occurred.connect(self.pressurize_plot.update_data)
+        self.pressurize_handler.event_data.connect(self.pressurize_plot.update_data)
+        self.pressurize_handler.event_count.connect(self.increment_pressurize_count)
 
 
     # Initialize depressurize event handler and connect it to the plot
@@ -156,7 +185,8 @@ class MainWindow(QMainWindow):
         self.depressurize_plot.set_sample_rate(sample_rate)
         reader = self.loader.new_reader()
         self.depressurize_handler = DepressurizeHandler(reader, sample_rate, self.pressure_event_display_range)
-        self.depressurize_handler.event_occurred.connect(self.depressurize_plot.update_data)
+        self.depressurize_handler.event_data.connect(self.depressurize_plot.update_data)
+        self.depressurize_handler.event_count.connect(self.increment_depressurize_count)
 
 
     # Initialize period event handler and connect it to the plot
@@ -165,7 +195,7 @@ class MainWindow(QMainWindow):
         self.period_plot.set_sample_rate(sample_rate)
         reader = self.loader.new_reader()
         self.period_handler = PeriodHandler(reader, sample_rate, self.pressure_event_display_range)
-        self.period_handler.event_occurred.connect(self.period_plot.update_data)
+        self.period_handler.event_data.connect(self.period_plot.update_data)
 
 
     # Connects controls to appropriate functions
@@ -191,12 +221,28 @@ class MainWindow(QMainWindow):
         self.delay_edit.textChanged.connect(self.pulse_generator.set_delay_width)
 
 
+    def increment_pump_count(self):
+        self.pump_count += 1
+        self.pump_counter.setText(str(self.pump_count))
+
+
+    def increment_pressurize_count(self):
+        self.pressurize_count += 1
+        self.pressurize_counter.setText(str(self.pressurize_count))
+
+
+    def increment_depressurize_count(self):
+        self.depressurize_count += 1
+        self.depressurize_counter.setText(str(self.depressurize_count))
+
+
     # Opens error dialog
     def show_error_dialog(self, error_message):
         dialog = ErrorDialog(error_message, parent=self)
         return dialog.exec()
 
 
+    # Runs on quitting the application
     def closeEvent(self, event):
         super().closeEvent(event)
 

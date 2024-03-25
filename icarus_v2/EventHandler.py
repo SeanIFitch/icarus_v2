@@ -2,7 +2,8 @@ from PySide6.QtCore import QThread, Signal
 import traceback
 
 class EventHandler(QThread):
-    event_occurred = Signal(object)
+    event_data = Signal(object)
+    event_count = Signal(bool)
 
     def __init__(self, reader, sample_rate) -> None:
         super().__init__()
@@ -27,7 +28,8 @@ class EventHandler(QThread):
             if event:
                 event_data = self.handle_event(event_index)
                 if event_data is not None:
-                    self.event_occurred.emit(event_data)
+                    self.event_data.emit(event_data)
+                    self.event_count.emit(True)
 
 
     # Placeholder. 
@@ -45,7 +47,7 @@ class EventHandler(QThread):
 
     # Return a range of data around the event occuring at event_index
     # Event coordinate is a tuple of the index in the buffer and in the chunk where the event occured
-    def event_data(self, event_index):
+    def get_event_data(self, event_index):
         before, after = self.event_report_range # Amount of data in ms to report around the event
 
         # Calculate start and end of data to get
