@@ -12,7 +12,7 @@ from time import sleep, time
 # CH6: spare
 
 class PulseGenerator(QThread):
-    def __init__(self, device, pressurize_width = 5., depressurize_width = 5., period = 5., delay = 2.) -> None:
+    def __init__(self, device, pressurize_width = 5., depressurize_width = 5., period_width = 5., delay_width = 2.) -> None:
         super().__init__()
 
         self.device = device
@@ -22,8 +22,8 @@ class PulseGenerator(QThread):
         self.depressurize_width = depressurize_width
 
         # period timings in s
-        self.period = period    # Time between depressurize pulses
-        self.delay = delay      # Time between depressurize and pressurize
+        self.period_width = period_width    # Time between depressurize pulses
+        self.delay_width = delay_width      # Time between depressurize and pressurize
 
         # Whether or not the device should be currently generating pulses
         self.pulsing = False
@@ -48,15 +48,47 @@ class PulseGenerator(QThread):
 
             # Sleep for remaining time out of delay
             time_elapsed = time() - current_time
-            remaining_time = self.delay - time_elapsed
+            remaining_time = self.delay_width - time_elapsed
             sleep(remaining_time)
 
             self.pressurize()
 
             # Sleep for remaining time
             time_elapsed = time() - current_time
-            remaining_time = self.period - time_elapsed
+            remaining_time = self.period_width - time_elapsed
             sleep(remaining_time)
+
+
+    def set_pressurize_width(self, pressurize_width):
+        try:
+            pressurize_width = float(pressurize_width)
+        except:
+            return
+        self.pressurize_width = pressurize_width
+
+
+    def set_depressurize_width(self, depressurize_width):
+        try:
+            depressurize_width = float(depressurize_width)
+        except:
+            return
+        self.depressurize_width = depressurize_width
+
+
+    def set_period_width(self, period_width):
+        try:
+            period_width = float(period_width)
+        except:
+            return
+        self.period_width = period_width
+
+
+    def set_delay_width(self, delay_width):
+        try:
+            delay_width = float(delay_width)
+        except:
+            return
+        self.delay_width = delay_width
 
 
     # Sets channel low for duration milliseconds

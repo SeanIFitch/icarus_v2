@@ -5,3 +5,4 @@
 3. What happens when you click shutdown?
     Guess: Close all valves
 4. Should pulsed mode depressurize or pressurize first?
+5. What does the pump button do?
