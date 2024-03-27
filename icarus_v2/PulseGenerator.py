@@ -12,6 +12,12 @@ from time import sleep, time
 # CH6: spare
 
 class PulseGenerator(QThread):
+    PUMP = 0
+    DEPRESSURIZE = 1
+    PRESSURIZE = 2
+    LOG = 4
+
+
     def __init__(self, device, pressurize_width = 5., depressurize_width = 5., period_width = 5., delay_width = 2.) -> None:
         super().__init__()
 
@@ -29,14 +35,6 @@ class PulseGenerator(QThread):
         self.pulsing = False
 
 
-    def pressurize(self):
-        self._pulse_low(2, self.pressurize_width)
-
-
-    def depressurize(self):
-        self._pulse_low(1, self.depressurize_width)
-
-
     # Pressurizes and depressurizes at regular intervals
     def run(self):
         self.pulsing = True
@@ -44,19 +42,43 @@ class PulseGenerator(QThread):
             # Get time before setting DIO for more precise timing
             current_time = time()
 
-            self.depressurize()
+            self._pulse_low(self.DEPRESSURIZE, self.depressurize_width)
 
             # Sleep for remaining time out of delay
             time_elapsed = time() - current_time
             remaining_time = self.delay_width - time_elapsed
             sleep(remaining_time)
 
-            self.pressurize()
+            self._pulse_low(self.PRESSURIZE, self.pressurize_width)
 
             # Sleep for remaining time
             time_elapsed = time() - current_time
             remaining_time = self.period_width - time_elapsed
             sleep(remaining_time)
+
+
+    def set_pressurize_low(self):
+        self._set_low(self.PRESSURIZE)
+
+
+    def set_pressurize_high(self):
+        self._set_high(self.PRESSURIZE)
+
+
+    def set_depressurize_low(self):
+        self._set_low(self.DEPRESSURIZE)
+
+
+    def set_depressurize_high(self):
+        self._set_high(self.DEPRESSURIZE)
+
+
+    def set_pump_low(self):
+        self._set_low(self.PUMP)
+
+
+    def set_pump_high(self):
+        self._set_high(self.PUMP)
 
 
     def set_pressurize_width(self, pressurize_width):

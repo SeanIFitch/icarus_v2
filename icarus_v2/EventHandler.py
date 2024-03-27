@@ -55,6 +55,11 @@ class EventHandler(QThread):
         start = event_index + int(before * sample_rate_kHz)
         end = event_index + int(after * sample_rate_kHz)
 
+        # Case where more data was requested than is stored in the buffer
+        # Safety factor of 0.9 to avoid race conditions
+        if end - start > 0.9 * self.reader.buffer.capacity:
+            start = int(end - 0.9 * self.reader.buffer.capacity)
+
         # Get data
         data = self.reader.retrieve_range(start, end, timeout=2)
 

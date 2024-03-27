@@ -49,9 +49,9 @@ class MainWindow(QMainWindow):
 
         # Device controls
         self.shutdown_button = QPushButton(text="Shutdown")
-        self.pump_button = QPushButton(text="Pump")
-        self.pressurize_button = QPushButton(text="Pressurize")
-        self.depressurize_button = QPushButton(text="Depressurize")
+        self.pump_button = ToggleButton("Pump on", "Pump off")
+        self.pressurize_button = ToggleButton("Pressurize open", "Pressurize close")
+        self.depressurize_button = ToggleButton("Depressurize open", "Depressurize close")
         self.pulse_button = ToggleButton("Start pulsing", "Stop pulsing")
 
         # Timing controls
@@ -201,12 +201,13 @@ class MainWindow(QMainWindow):
     # Connects controls to appropriate functions
     def setup_controls(self):
         # Device controls
-        def dummy():
-            pass
-        self.shutdown_button.clicked.connect(dummy)
-        self.pump_button.clicked.connect(dummy)
-        self.pressurize_button.clicked.connect(self.pulse_generator.pressurize)
-        self.depressurize_button.clicked.connect(self.pulse_generator.depressurize)
+        self.shutdown_button.clicked.connect(lambda x: x)
+        self.pump_button.set_check_function(self.pulse_generator.set_pump_low)
+        self.pump_button.set_uncheck_function(self.pulse_generator.set_pump_high)
+        self.pressurize_button.set_check_function(self.pulse_generator.set_pressurize_low)
+        self.pressurize_button.set_uncheck_function(self.pulse_generator.set_pressurize_high)
+        self.depressurize_button.set_check_function(self.pulse_generator.set_depressurize_low)
+        self.depressurize_button.set_uncheck_function(self.pulse_generator.set_depressurize_high)
         self.pulse_button.set_check_function(self.pulse_generator.start)
         self.pulse_button.set_uncheck_function(self.pulse_generator.quit)
 

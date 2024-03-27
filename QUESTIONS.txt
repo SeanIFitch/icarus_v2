@@ -1,8 +1,15 @@
 1. Pulses:
-    What should its duration be? 
-    How precise is necessary? currently getting -.25ms to +.75ms (may be less if increase device Hz)
+    What should its duration be?
+    10ms
 2. If the controls for the app and the main console differ, which takes precedence?
+    Console does not control pump.
+    Software overrides valves
 3. What happens when you click shutdown?
-    Guess: Close all valves
+    Shut down pump (High)
+        solenoid stops for air pressure on high
+    Open valves (Low)
 4. Should pulsed mode depressurize or pressurize first?
+    depressurize
 5. What does the pump button do?
+    Toggle
+    Default on startup is off
