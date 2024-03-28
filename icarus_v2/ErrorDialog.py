@@ -1,22 +1,35 @@
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel
+from PySide6.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QVBoxLayout,
+    QLabel
+)
+
+
+def open_error_dialog(error, buttons, parent=None):
+    dialog = ErrorDialog(str(error), buttons, parent=parent)
+    return dialog.exec()
 
 
 class ErrorDialog(QDialog):
     Retry = QDialogButtonBox.Retry
     Cancel = QDialogButtonBox.Cancel
 
-    def __init__(self, message, parent=None):
+    def __init__(self, message, buttons, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Error")
-
-        buttons = QDialogButtonBox.Retry | QDialogButtonBox.Cancel
 
         self.buttonBox = QDialogButtonBox(buttons)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
-        self.buttonBox.button(QDialogButtonBox.Retry).setDefault(True)
+        # Set default button
+        if self.buttonBox.button(QDialogButtonBox.Retry) is not None:
+            self.buttonBox.button(QDialogButtonBox.Retry).setDefault(True)
+        elif self.buttonBox.button(QDialogButtonBox.Ok) is not None:
+            self.buttonBox.button(QDialogButtonBox.Ok).setDefault(True)
+
         self.layout = QVBoxLayout()
         display_text = QLabel(message)
         self.layout.addWidget(display_text)

@@ -1,5 +1,4 @@
 import usb.core
-import numpy as np
 from array import array
 from threading import Lock
 

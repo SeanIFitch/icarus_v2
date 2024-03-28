@@ -18,7 +18,7 @@ class PulseGenerator(QThread):
     LOG = 4
 
 
-    def __init__(self, device, pressurize_width = 5., depressurize_width = 5., period_width = 5., delay_width = 2.) -> None:
+    def __init__(self, device, pressurize_width = 0.5, depressurize_width = 0.5, period_width = 1., delay_width = 0.5) -> None:
         super().__init__()
 
         self.device = device
@@ -39,21 +39,27 @@ class PulseGenerator(QThread):
     def run(self):
         self.pulsing = True
         while self.pulsing:
+            # Make sure widths are not edited in the middle of a period. Otherwise this could cause sleeping for negative times.
+            pressurize_width = self.pressurize_width
+            depressurize_width = self.depressurize_width
+            period_width = self.period_width
+            delay_width = self.delay_width
+
             # Get time before setting DIO for more precise timing
             current_time = time()
 
-            self._pulse_low(self.DEPRESSURIZE, self.depressurize_width)
+            self._pulse_low(self.DEPRESSURIZE, depressurize_width)
 
             # Sleep for remaining time out of delay
             time_elapsed = time() - current_time
-            remaining_time = self.delay_width - time_elapsed
+            remaining_time = max(0, delay_width - time_elapsed)
             sleep(remaining_time)
 
-            self._pulse_low(self.PRESSURIZE, self.pressurize_width)
+            self._pulse_low(self.PRESSURIZE, pressurize_width)
 
             # Sleep for remaining time
             time_elapsed = time() - current_time
-            remaining_time = self.period_width - time_elapsed
+            remaining_time = max(0, period_width - time_elapsed)
             sleep(remaining_time)
 
 
@@ -134,7 +140,7 @@ class PulseGenerator(QThread):
         # Sleep for remaining time
         duration_sec = float(duration) / 1000
         time_elapsed = time() - current_time
-        remaining_time = duration_sec - time_elapsed
+        remaining_time = max(0, duration_sec - time_elapsed)
         sleep(remaining_time)
 
         # Reset to original DIO
