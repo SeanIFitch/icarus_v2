@@ -1,9 +1,15 @@
 from EventHandler import EventHandler
+from PySide6.QtCore import Signal
 import numpy as np
 
 
 # Detects a pressurize event and transmits data to plot
 class PressurizeHandler(EventHandler):
+    event_data = Signal(object)
+    event_count = Signal(bool)
+    event_width = Signal(float)
+
+
     def __init__(self, reader, sample_rate, event_report_range) -> None:
         super().__init__(reader, sample_rate)
         self.event_report_range = event_report_range # tuple of range of ms around an event to report e.g. (-10,140)
@@ -44,3 +50,19 @@ class PressurizeHandler(EventHandler):
         data = self.get_event_data(event_index)
         return data
 
+
+    # Responsible for emitting to all pertinent signals.
+    def emit_data(self, event_data):
+        self.event_data.emit(event_data)
+        self.event_count.emit(True)
+
+        # find duration of event
+        ms_before, ms_after = self.event_report_range
+
+        sample_rate_kHz = float(self.sample_rate) / 1000
+        event_index =  - int(ms_before * sample_rate_kHz)
+
+        event_duration = np.argmax(event_data['pre_valve'][event_index:])
+        duration_ms = float(event_duration) / sample_rate_kHz
+
+        self.event_width.emit(duration_ms)

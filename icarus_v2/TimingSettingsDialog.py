@@ -13,7 +13,7 @@ from ErrorDialog import open_error_dialog
 # Dialog for changing pulsed mode timings.
 # When the LineEdits are used, member variables of this class are changed. 
 # Changes are not applied to the real PulseGenerator until Apply is clicked.
-class TimingDialog(QDialog):
+class TimingSettingsDialog(QDialog):
     def __init__(self, pulse_generator, parent=None):
         super().__init__(parent)
 

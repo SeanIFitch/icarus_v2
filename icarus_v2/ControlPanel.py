@@ -5,26 +5,29 @@ from PySide6.QtWidgets import (
     QPushButton,
     QRadioButton,
     QVBoxLayout,
-    QLabel
+    QLabel,
+    QDialogButtonBox
 )
 from ToggleButton import ToggleButton
-from TimingDialog import TimingDialog
+from TimingSettingsDialog import TimingSettingsDialog
+from ErrorDialog import open_error_dialog
 
 
 # Control panel for pulsed, manual, and console operation
 class ControlPanel(QGroupBox):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
 
-        self.mode = "console"  # Default mode is console
+        self.mode = "Console"  # Default mode is console
+        self.pulse_generator = None
 
         # Initialize modes
         mode_layout = QHBoxLayout()
         self.mode_buttons = {}
-        modes = ["Manual", "Pulsed", "Console"]
+        modes = ["Console", "Manual", "Pulsed"]
         for mode in modes:
             mode_button = QRadioButton(mode)
-            mode_button.setChecked(mode.lower() == self.mode)
+            mode_button.setChecked(mode == self.mode)
             mode_button.toggled.connect(self.mode_changed)
             self.mode_buttons[mode] = mode_button
             mode_layout.addWidget(mode_button)
@@ -53,8 +56,35 @@ class ControlPanel(QGroupBox):
     def mode_changed(self):
         sender = self.sender()
         if sender.isChecked():
-            self.mode = sender.text().lower()
-            self.update_buttons()
+            # Check for states in which mode should not be changed
+            error = None
+
+            # Do not switch if pulse generator is running
+            if self.pulse_button.isChecked():
+                error = "Disable pulsing to change mode."
+            # Do not switch if valves are open
+            elif self.pressurize_button.isChecked():
+                error = "Close pressurize valve to change mode."
+            elif self.depressurize_button.isChecked():
+                error = "Close depressurize valve to change mode."
+
+            if error is not None:
+                open_error_dialog(error, QDialogButtonBox.Ok, self)
+
+                # Revert changes without calling this function again
+                # Disconnect the toggled signal temporarily
+                for mode, button in self.mode_buttons.items():
+                    button.toggled.disconnect(self.mode_changed)
+                self.mode_buttons[self.mode].setChecked(True)
+                self.mode_buttons[sender.text()].setChecked(False)
+                # Reconnect
+                for mode, button in self.mode_buttons.items():
+                    button.toggled.connect(self.mode_changed)
+
+            # Otherwise change mode and buttons
+            else:
+                self.mode = sender.text()
+                self.update_buttons()
 
 
     def update_buttons(self):
@@ -64,17 +94,17 @@ class ControlPanel(QGroupBox):
             if widget is not None:
                 widget.setParent(None)
 
-        if self.mode == "manual":
+        if self.mode == "Manual":
             self.button_layout.addWidget(self.shutdown_button)
             self.button_layout.addWidget(self.pump_button)
             self.button_layout.addWidget(self.pressurize_button)
             self.button_layout.addWidget(self.depressurize_button)
-        elif self.mode == "pulsed":
+        elif self.mode == "Pulsed":
             self.button_layout.addWidget(self.shutdown_button)
             self.button_layout.addWidget(self.pump_button)
             self.button_layout.addWidget(self.pulse_button)
             self.button_layout.addWidget(self.timing_settings_button)
-        elif self.mode == "console":
+        elif self.mode == "Console":
             self.button_layout.addWidget(self.shutdown_button)
             self.button_layout.addWidget(self.pump_button)
 
@@ -101,5 +131,5 @@ class ControlPanel(QGroupBox):
 
 
     def open_timing_dialog(self):
-        dialog = TimingDialog(self.pulse_generator, parent=self)
+        dialog = TimingSettingsDialog(self.pulse_generator, parent=self)
         return dialog.exec()

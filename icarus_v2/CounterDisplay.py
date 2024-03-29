@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
 
 
 # Panel for counts of valves and such
-class CounterPanel(QGroupBox):
+class CounterDisplay(QGroupBox):
     def __init__(self):
         super().__init__()
 

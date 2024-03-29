@@ -16,7 +16,7 @@ class ErrorDialog(QDialog):
     Cancel = QDialogButtonBox.Cancel
 
     def __init__(self, message, buttons, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
         self.setWindowTitle("Error")
 

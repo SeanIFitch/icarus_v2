@@ -9,9 +9,10 @@ from PySide6.QtWidgets import (
     QDialogButtonBox
 )
 from EventPlot import EventPlot
-from ErrorDialog import open_error_dialog
 from ControlPanel import ControlPanel
-from CounterPanel import CounterPanel
+from CounterDisplay import CounterDisplay
+from TimingDisplay import TimingDisplay
+from ErrorDialog import open_error_dialog
 # Data collection & Device imports
 from Di4108USB import Di4108USB
 from BufferLoader import BufferLoader
@@ -54,16 +55,20 @@ class MainWindow(QMainWindow):
         self.period_plot = EventPlot(period_channels, display_offset, "Period", x_unit="s")
 
         # Device control panel
-        self.control_panel = ControlPanel()
+        self.control_panel = ControlPanel(parent=self)
 
-        # Counter panel
-        self.counter_panel = CounterPanel()
+        # Counter display
+        self.counter_panel = CounterDisplay()
+
+        # Timing display
+        self.timing_display = TimingDisplay()
 
         # Set main layout
         main_layout = QGridLayout()
         main_layout.addWidget(self.pressurize_plot, 0, 0)
         main_layout.addWidget(self.depressurize_plot, 1, 0)
         main_layout.addWidget(self.period_plot, 2, 0)
+        main_layout.addWidget(self.timing_display, 3, 0)
         main_layout.addWidget(self.control_panel, 1, 1)
         main_layout.addWidget(self.counter_panel, 3, 1)
 
@@ -113,6 +118,7 @@ class MainWindow(QMainWindow):
         self.pressurize_handler = PressurizeHandler(reader, sample_rate, self.pressure_event_display_range)
         self.pressurize_handler.event_data.connect(self.pressurize_plot.update_data)
         self.pressurize_handler.event_count.connect(self.counter_panel.increment_pressurize_count)
+        self.pressurize_handler.event_width.connect(self.timing_display.update_pressurize_width)
 
 
     # Initialize depressurize event handler and connect it to the plot and counter
@@ -123,6 +129,7 @@ class MainWindow(QMainWindow):
         self.depressurize_handler = DepressurizeHandler(reader, sample_rate, self.pressure_event_display_range)
         self.depressurize_handler.event_data.connect(self.depressurize_plot.update_data)
         self.depressurize_handler.event_count.connect(self.counter_panel.increment_depressurize_count)
+        self.depressurize_handler.event_width.connect(self.timing_display.update_depressurize_width)
 
 
     # Initialize period event handler and connect it to the plot
@@ -132,6 +139,9 @@ class MainWindow(QMainWindow):
         reader = self.loader.new_reader()
         self.period_handler = PeriodHandler(reader, sample_rate, self.pressure_event_display_range)
         self.period_handler.event_data.connect(self.period_plot.update_data)
+        self.period_handler.event_width.connect(self.timing_display.update_period_width)
+        self.period_handler.delay_width.connect(self.timing_display.update_delay_width)
+
 
     # Runs on quitting the application
     def closeEvent(self, event):
@@ -159,7 +169,7 @@ class MainWindow(QMainWindow):
             self.loader.wait()
 
 
-# Testing purposes
+# Run application
 if __name__ == "__main__":
     app = QApplication([])
     window = MainWindow()

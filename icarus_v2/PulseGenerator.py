@@ -18,7 +18,7 @@ class PulseGenerator(QThread):
     LOG = 4
 
 
-    def __init__(self, device, pressurize_width = 0.5, depressurize_width = 0.5, period_width = 1., delay_width = 0.5) -> None:
+    def __init__(self, device, pressurize_width = 10., depressurize_width = 10., period_width = 5., delay_width = 2.) -> None:
         super().__init__()
 
         self.device = device
