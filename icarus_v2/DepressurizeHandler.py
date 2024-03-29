@@ -58,11 +58,11 @@ class DepressurizeHandler(EventHandler):
 
         # find duration of event
         ms_before, ms_after = self.event_report_range
-
         sample_rate_kHz = float(self.sample_rate) / 1000
         event_index =  - int(ms_before * sample_rate_kHz)
-
         event_duration = np.argmax(event_data['depre_valve'][event_index:])
         duration_ms = float(event_duration) / sample_rate_kHz
-
+        # Case where the end of the event is not in the reported data
+        if event_data['depre_valve'][event_index + event_duration] == False:
+            duration_ms = ms_after
         self.event_width.emit(duration_ms)
