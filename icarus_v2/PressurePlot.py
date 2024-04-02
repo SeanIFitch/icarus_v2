@@ -60,16 +60,16 @@ class PressurePlot(pg.PlotWidget):
 
 
     def setup_lines(self):
-        display_channels = ['hi_pre_orig', 'hi_pre_sample']
+        self.display_channels = ['hi_pre_orig', 'hi_pre_sample']
         dummy_x = [0, 10]
         dummy_y = [0, 0]
         self.x = []
-        self.y = {channel: [] for channel in display_channels}
+        self.y = {channel: [] for channel in self.display_channels}
         self.initial_time = None
         self.line_references = {}
 
         # Create a dictionary of lines for each channel listed in display_channels
-        for channel in display_channels:
+        for channel in self.display_channels:
             color = self.CHANNEL_COLORS[channel]
             self.line_references[channel] = self.plot_line(dummy_x, dummy_y, color)
 
@@ -97,3 +97,15 @@ class PressurePlot(pg.PlotWidget):
     def plot_line(self, x, y, color, style=Qt.SolidLine):
         pen = pg.mkPen(color=color, style=style)
         return self.plot(x, y, pen=pen)
+
+
+    def reset_lines(self):
+        dummy_x = [0, 10]
+        dummy_y = [0, 0]
+        self.x = []
+        self.y = {channel: [] for channel in self.display_channels}
+        self.initial_time = None
+
+        for channel in self.display_channels:
+            self.line_references[channel].setData(dummy_x, dummy_y)
+

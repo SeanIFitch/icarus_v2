@@ -6,7 +6,8 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QGridLayout,
     QWidget,
-    QDialogButtonBox
+    QDialogButtonBox,
+    QPushButton
 )
 from EventPlot import EventPlot
 from PressurePlot import PressurePlot
@@ -61,6 +62,7 @@ class MainWindow(QMainWindow):
         self.pressure_plot = PressurePlot()
         self.slope_plot = SlopePlot()
         self.switch_time_plot = SwitchTimePlot()
+        self.history_reset = QPushButton("Reset History")
 
         # Device control panel
         self.control_panel = ControlPanel()
@@ -78,6 +80,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.pressure_plot, 0, 1)
         main_layout.addWidget(self.slope_plot, 1, 1)
         main_layout.addWidget(self.switch_time_plot, 2, 1)
+        main_layout.addWidget(self.history_reset, 3, 1)
         main_layout.addWidget(self.control_panel, 1, 2)
         main_layout.addWidget(self.counter_panel, 3, 2)
 
@@ -127,6 +130,10 @@ class MainWindow(QMainWindow):
         self.period_plot.set_sample_rate(sample_rate)
         self.switch_time_plot.set_sample_rate(sample_rate)
         self.slope_plot.set_sample_rate(sample_rate)
+
+        self.history_reset.clicked.connect(self.pressure_plot.reset_lines)
+        self.history_reset.clicked.connect(self.slope_plot.reset_lines)
+        self.history_reset.clicked.connect(self.switch_time_plot.reset_lines)
 
         # Control panel
         self.control_panel.set_pulse_generator(self.pulse_generator)

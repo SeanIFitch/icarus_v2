@@ -45,19 +45,19 @@ class SwitchTimePlot(pg.PlotWidget):
 
 
     def setup_lines(self):
-        display_channels = ['hi_pre_orig', 'hi_pre_sample']
+        self.display_channels = ['hi_pre_orig', 'hi_pre_sample']
         dummy_x = [0, 10]
         dummy_y = [0, 0]
         self.pressurize_x = []
         self.depressurize_x = []
-        self.pressurize_y = {channel: [] for channel in display_channels}
-        self.depressurize_y = {channel: [] for channel in display_channels}
+        self.pressurize_y = {channel: [] for channel in self.display_channels}
+        self.depressurize_y = {channel: [] for channel in self.display_channels}
         self.initial_time = None
         self.pressurize_line_references = {}
         self.depressurize_line_references = {}
 
         # Create a dictionary of lines for each channel listed in display_channels
-        for channel in display_channels:
+        for channel in self.display_channels:
             color = self.CHANNEL_COLORS[channel]
             self.pressurize_line_references[channel] = self.plot_line(dummy_x, dummy_y, color)
             self.depressurize_line_references[channel] = self.plot_line(dummy_x, dummy_y, color)
@@ -126,3 +126,18 @@ class SwitchTimePlot(pg.PlotWidget):
     def plot_line(self, x, y, color, style=Qt.SolidLine):
         pen = pg.mkPen(color=color, style=style)
         return self.plot(x, y, pen=pen)
+
+
+    def reset_lines(self):
+        dummy_x = [0, 10]
+        dummy_y = [0, 0]
+        self.pressurize_x = []
+        self.depressurize_x = []
+        self.pressurize_y = {channel: [] for channel in self.display_channels}
+        self.depressurize_y = {channel: [] for channel in self.display_channels}
+        self.initial_time = None
+
+        for channel in self.display_channels:
+            color = self.CHANNEL_COLORS[channel]
+            self.pressurize_line_references[channel].setData(dummy_x, dummy_y, color)
+            self.depressurize_line_references[channel].setData(dummy_x, dummy_y, color)
