@@ -81,12 +81,3 @@ class BufferLoader(QThread):
         self.device.stop()
         self.device.close_device()
 
-
-# Testing purposes
-def main():
-    with BufferLoader() as loader:
-        loader.run()
-
-
-if __name__ == "__main__":
-    main()

@@ -180,7 +180,8 @@ class Di4108USB():
 
 
     def end_scan(self):
-        self.stop_lock.release()
+        if self.stop_lock.locked():
+            self.stop_lock.release()
 
 
     def read_data(self):
@@ -219,13 +220,3 @@ class Di4108USB():
 
     def get_current_dio(self):
         return self.current_dio
-
-
-# Testing
-def main():
-    with Di4108USB() as device_instance:
-        device_instance.acquire(None)
-
-
-if __name__ == "__main__":
-    main()

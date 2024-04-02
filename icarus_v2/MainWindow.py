@@ -9,6 +9,9 @@ from PySide6.QtWidgets import (
     QDialogButtonBox
 )
 from EventPlot import EventPlot
+from PressurePlot import PressurePlot
+from SlopePlot import SlopePlot
+from SwitchTimePlot import SwitchTimePlot
 from ControlPanel import ControlPanel
 from CounterDisplay import CounterDisplay
 from TimingDisplay import TimingDisplay
@@ -40,7 +43,7 @@ class MainWindow(QMainWindow):
     def initUI(self):
         # Window settings
         self.setWindowTitle("Icarus NMR")
-        self.setMinimumSize(QSize(400, 300))
+        self.setMinimumSize(QSize(800, 500))
 
         # Initialize all widgets
 
@@ -54,13 +57,16 @@ class MainWindow(QMainWindow):
         self.depressurize_plot = EventPlot(depressurize_channels, display_offset, "Depressurize")
         self.period_plot = EventPlot(period_channels, display_offset, "Period", x_unit="s")
 
+        # History plots
+        self.pressure_plot = PressurePlot()
+        self.slope_plot = SlopePlot()
+        self.switch_time_plot = SwitchTimePlot()
+
         # Device control panel
-        self.control_panel = ControlPanel(parent=self)
+        self.control_panel = ControlPanel()
 
-        # Counter display
+        # Info displays
         self.counter_panel = CounterDisplay()
-
-        # Timing display
         self.timing_display = TimingDisplay()
 
         # Set main layout
@@ -69,8 +75,11 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.depressurize_plot, 1, 0)
         main_layout.addWidget(self.period_plot, 2, 0)
         main_layout.addWidget(self.timing_display, 3, 0)
-        main_layout.addWidget(self.control_panel, 1, 1)
-        main_layout.addWidget(self.counter_panel, 3, 1)
+        main_layout.addWidget(self.pressure_plot, 0, 1)
+        main_layout.addWidget(self.slope_plot, 1, 1)
+        main_layout.addWidget(self.switch_time_plot, 2, 1)
+        main_layout.addWidget(self.control_panel, 1, 2)
+        main_layout.addWidget(self.counter_panel, 3, 2)
 
         # Add layout to dummy widget and apply to main window
         widget = QWidget()
@@ -98,10 +107,8 @@ class MainWindow(QMainWindow):
         self.pulse_generator = PulseGenerator(device)
 
         # Connect widgets to backend
-        self.setup_pressurize_plot()
-        self.setup_depressurize_plot()
-        self.setup_period_plot()
-        self.control_panel.set_pulse_generator(self.pulse_generator)
+        self.setup_widgets()
+        self.init_event_handlers()
 
         # Start threads
         self.loader.start()
@@ -110,32 +117,45 @@ class MainWindow(QMainWindow):
         self.period_handler.start()
 
 
-    # Initialize pressurize event handler and connect it to the plot and counter
-    def setup_pressurize_plot(self):
+    # Widget setup after backend is initialized
+    def setup_widgets(self):
         sample_rate = self.loader.get_sample_rate()
+
+        # plots
         self.pressurize_plot.set_sample_rate(sample_rate)
+        self.depressurize_plot.set_sample_rate(sample_rate)
+        self.period_plot.set_sample_rate(sample_rate)
+        self.switch_time_plot.set_sample_rate(sample_rate)
+        self.slope_plot.set_sample_rate(sample_rate)
+
+        # Control panel
+        self.control_panel.set_pulse_generator(self.pulse_generator)
+
+
+    # Initialize event handlers and connect to widgets
+    def init_event_handlers(self):
+        sample_rate = self.loader.get_sample_rate()
+
+        # Pressurize handler
         reader = self.loader.new_reader()
         self.pressurize_handler = PressurizeHandler(reader, sample_rate, self.pressure_event_display_range)
         self.pressurize_handler.event_data.connect(self.pressurize_plot.update_data)
+        self.pressurize_handler.event_data.connect(self.pressure_plot.update_data)
+        self.pressurize_handler.event_data.connect(self.switch_time_plot.update_pressurize_data)
+        self.pressurize_handler.event_data.connect(self.slope_plot.update_pressurize_data)
         self.pressurize_handler.event_count.connect(self.counter_panel.increment_pressurize_count)
         self.pressurize_handler.event_width.connect(self.timing_display.update_pressurize_width)
 
-
-    # Initialize depressurize event handler and connect it to the plot and counter
-    def setup_depressurize_plot(self):
-        sample_rate = self.loader.get_sample_rate()
-        self.depressurize_plot.set_sample_rate(sample_rate)
+        # Depressurize handler
         reader = self.loader.new_reader()
         self.depressurize_handler = DepressurizeHandler(reader, sample_rate, self.pressure_event_display_range)
         self.depressurize_handler.event_data.connect(self.depressurize_plot.update_data)
+        self.depressurize_handler.event_data.connect(self.switch_time_plot.update_depressurize_data)
+        self.depressurize_handler.event_data.connect(self.slope_plot.update_depressurize_data)
         self.depressurize_handler.event_count.connect(self.counter_panel.increment_depressurize_count)
         self.depressurize_handler.event_width.connect(self.timing_display.update_depressurize_width)
 
-
-    # Initialize period event handler and connect it to the plot
-    def setup_period_plot(self):
-        sample_rate = self.loader.get_sample_rate()
-        self.period_plot.set_sample_rate(sample_rate)
+        # Period handler
         reader = self.loader.new_reader()
         self.period_handler = PeriodHandler(reader, sample_rate, self.pressure_event_display_range)
         self.period_handler.event_data.connect(self.period_plot.update_data)

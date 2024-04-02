@@ -33,7 +33,7 @@ class ControlPanel(QGroupBox):
             mode_layout.addWidget(mode_button)
 
         # Initialize buttons
-        self.shutdown_button = QPushButton(text="Shutdown")
+        self.shutdown_button = ToggleButton("Shutdown", "Restart")
         self.pump_button = ToggleButton("Pump on", "Pump off")
         self.pressurize_button = ToggleButton("Pressurize open", "Pressurize close")
         self.depressurize_button = ToggleButton("Depressurize open", "Depressurize close")
@@ -75,8 +75,9 @@ class ControlPanel(QGroupBox):
                 # Disconnect the toggled signal temporarily
                 for mode, button in self.mode_buttons.items():
                     button.toggled.disconnect(self.mode_changed)
-                self.mode_buttons[self.mode].setChecked(True)
-                self.mode_buttons[sender.text()].setChecked(False)
+                # set proper button to checked
+                for mode, button in self.mode_buttons.items():
+                    button.setChecked(mode == self.mode)
                 # Reconnect
                 for mode, button in self.mode_buttons.items():
                     button.toggled.connect(self.mode_changed)
@@ -112,13 +113,9 @@ class ControlPanel(QGroupBox):
     # Connect buttons to the pulse generator
     def set_pulse_generator(self, pulse_generator):
         self.pulse_generator = pulse_generator
-        # Device controls
-        def dummy():
-                #Shut down pump (High)
-                #    solenoid stops for air pressure on high
-                #Open valves (Low)
-            pass
-        self.shutdown_button.clicked.connect(dummy)
+
+        self.shutdown_button.set_check_function(self.on_shutdown)
+        self.shutdown_button.set_uncheck_function(self.on_restart)
         self.pump_button.set_check_function(self.pulse_generator.set_pump_low)
         self.pump_button.set_uncheck_function(self.pulse_generator.set_pump_high)
         self.pressurize_button.set_check_function(self.pulse_generator.set_pressurize_low)
@@ -126,8 +123,53 @@ class ControlPanel(QGroupBox):
         self.depressurize_button.set_check_function(self.pulse_generator.set_depressurize_low)
         self.depressurize_button.set_uncheck_function(self.pulse_generator.set_depressurize_high)
         self.pulse_button.set_check_function(self.pulse_generator.start)
-        self.pulse_button.set_uncheck_function(self.pulse_generator.quit)
+        self.pulse_button.set_uncheck_function(self.on_quit_pulsing)
         self.timing_settings_button.clicked.connect(self.open_timing_dialog)
+
+
+    def on_shutdown(self):
+        # Prevent other buttons from doing anything while shutdown
+        self.pump_button.setEnabled(False)
+        self.pressurize_button.setEnabled(False)
+        self.depressurize_button.setEnabled(False)
+        self.pulse_button.setEnabled(False)
+
+        # Turn pump off
+        self.pump_button.setChecked(False)
+        # Shutdown device
+        # Stop pulsing
+        self.pulse_generator.quit()
+        self.pulse_generator.wait()
+        # Open valves
+        self.pressurize_button.setChecked(True)
+        self.depressurize_button.setChecked(True)
+
+
+    # Enable buttons
+    def on_restart(self):
+        self.pump_button.setEnabled(True)
+        self.pressurize_button.setEnabled(True)
+        self.depressurize_button.setEnabled(True)
+        self.pulse_button.setEnabled(True)
+
+        # Revert to manual mode so that valves may be closed
+        self.mode = "Manual"
+        # disconnect so that mode may be changed while valves are closed
+        for mode, button in self.mode_buttons.items():
+            button.toggled.disconnect(self.mode_changed)
+        # set proper button to checked
+        for mode, button in self.mode_buttons.items():
+            button.setChecked(mode == self.mode)
+        # Reconnect
+        for mode, button in self.mode_buttons.items():
+            button.toggled.connect(self.mode_changed)
+        self.update_buttons()
+
+
+    # Make sure no buttons are clicked until pulsing is fully done
+    def on_quit_pulsing(self):
+        self.pulse_generator.quit()
+        self.pulse_generator.wait()
 
 
     def open_timing_dialog(self):
