@@ -202,8 +202,8 @@ class MainWindow(QMainWindow):
             self.period_handler.wait()
 
         if self.pressure_handler is not None:
-            self.loader.quit()
-            self.loader.wait()
+            self.pressure_handler.quit()
+            self.pressure_handler.wait()
 
         if self.pulse_generator is not None:
             self.pulse_generator.quit()

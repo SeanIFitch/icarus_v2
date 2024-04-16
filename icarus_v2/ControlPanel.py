@@ -13,7 +13,7 @@ from TimingSettingsDialog import TimingSettingsDialog
 from ErrorDialog import open_error_dialog
 
 
-# Control panel for pulsed, manual, and console operation
+# Control panel for manual and console operation
 class ControlPanel(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent=parent)

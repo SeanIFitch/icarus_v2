@@ -92,8 +92,8 @@ class TimingSettingsDialog(QDialog):
             error = "Depressurize width should be less than Period width."
         elif self.delay_width >= self.period_width:
             error = "Delay width should be less than Period width."
-        elif self.period_width <= 0.02:
-            error = "Period width should be greater than 0.02s."
+        elif self.period_width < 0.05:
+            error = "Period width should be greater than 0.05s."
 
         if error is not None:
             open_error_dialog(error, QDialogButtonBox.Ok, self)

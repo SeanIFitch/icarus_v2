@@ -13,19 +13,6 @@ class PressureHandler(EventHandler):
         super().__init__(reader, sample_rate, update_rate)
 
 
-    # Data: one chunk from the reader
-    # Returns whether an event occurs and the index of the event
-    def detect_event(self, data):
-        self.event_report_range = (0, len(data['target']))
-        return True, 0
-
-
-    # Returns data to graph
-    def handle_event(self, event_index):
-        data = self.get_event_data(event_index)
-        return data
-
-
     # Responsible for emitting to all pertinent signals.
     def emit_data(self, event_data):
         target_pressure = np.average(event_data['target'])
@@ -33,3 +20,15 @@ class PressureHandler(EventHandler):
 
         self.target_pressure.emit(target_pressure)
         self.sample_pressure.emit(sample_pressure)
+
+
+    # Loops to transmit data if an event occurs
+    # Overridden because events always occur for this handler and all data is used
+    def run(self):
+        self.running = True
+        while(self.running):
+            data_to_get = int(self.sample_rate / self.update_rate)
+            data, buffer_index = self.reader.read(size=data_to_get, timeout=2)
+
+            # Transmit data to plot
+            self.emit_data(data)
