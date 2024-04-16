@@ -16,6 +16,7 @@ from SwitchTimePlot import SwitchTimePlot
 from ControlPanel import ControlPanel
 from CounterDisplay import CounterDisplay
 from TimingDisplay import TimingDisplay
+from PressureDisplay import PressureDisplay
 from ErrorDialog import open_error_dialog
 # Data collection & Device imports
 from Di4108USB import Di4108USB
@@ -25,6 +26,7 @@ from PulseGenerator import PulseGenerator
 from PressurizeHandler import PressurizeHandler
 from DepressurizeHandler import DepressurizeHandler
 from PeriodHandler import PeriodHandler
+from PressureHandler import PressureHandler
 
 
 class MainWindow(QMainWindow):
@@ -38,6 +40,7 @@ class MainWindow(QMainWindow):
         self.pressurize_handler = None
         self.depressurize_handler = None
         self.period_handler = None
+        self.pressure_handler = None
 
 
     # Initializes all widgets and sets layout
@@ -70,6 +73,7 @@ class MainWindow(QMainWindow):
         # Info displays
         self.counter_panel = CounterDisplay()
         self.timing_display = TimingDisplay()
+        self.pressure_display = PressureDisplay()
 
         # Set main layout
         main_layout = QGridLayout()
@@ -81,6 +85,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.slope_plot, 1, 1)
         main_layout.addWidget(self.switch_time_plot, 2, 1)
         main_layout.addWidget(self.history_reset, 3, 1)
+        main_layout.addWidget(self.pressure_display, 0, 2)
         main_layout.addWidget(self.control_panel, 1, 2)
         main_layout.addWidget(self.counter_panel, 3, 2)
 
@@ -118,6 +123,7 @@ class MainWindow(QMainWindow):
         self.pressurize_handler.start()
         self.depressurize_handler.start()
         self.period_handler.start()
+        self.pressure_handler.start()
 
 
     # Widget setup after backend is initialized
@@ -142,32 +148,40 @@ class MainWindow(QMainWindow):
     # Initialize event handlers and connect to widgets
     def init_event_handlers(self):
         sample_rate = self.loader.get_sample_rate()
+        event_update_rate = 30
 
         # Pressurize handler
         reader = self.loader.new_reader()
-        self.pressurize_handler = PressurizeHandler(reader, sample_rate, self.pressure_event_display_range)
+        self.pressurize_handler = PressurizeHandler(reader, sample_rate, event_update_rate, self.pressure_event_display_range)
         self.pressurize_handler.event_data.connect(self.pressurize_plot.update_data)
         self.pressurize_handler.event_data.connect(self.pressure_plot.update_data)
         self.pressurize_handler.event_data.connect(self.switch_time_plot.update_pressurize_data)
         self.pressurize_handler.event_data.connect(self.slope_plot.update_pressurize_data)
-        self.pressurize_handler.event_count.connect(self.counter_panel.increment_pressurize_count)
+        self.pressurize_handler.event_count_increment.connect(self.counter_panel.increment_pressurize_count)
         self.pressurize_handler.event_width.connect(self.timing_display.update_pressurize_width)
 
         # Depressurize handler
         reader = self.loader.new_reader()
-        self.depressurize_handler = DepressurizeHandler(reader, sample_rate, self.pressure_event_display_range)
+        self.depressurize_handler = DepressurizeHandler(reader, sample_rate, event_update_rate, self.pressure_event_display_range)
         self.depressurize_handler.event_data.connect(self.depressurize_plot.update_data)
         self.depressurize_handler.event_data.connect(self.switch_time_plot.update_depressurize_data)
         self.depressurize_handler.event_data.connect(self.slope_plot.update_depressurize_data)
-        self.depressurize_handler.event_count.connect(self.counter_panel.increment_depressurize_count)
+        self.depressurize_handler.event_count_increment.connect(self.counter_panel.increment_depressurize_count)
         self.depressurize_handler.event_width.connect(self.timing_display.update_depressurize_width)
 
         # Period handler
         reader = self.loader.new_reader()
-        self.period_handler = PeriodHandler(reader, sample_rate, self.pressure_event_display_range)
+        self.period_handler = PeriodHandler(reader, sample_rate, event_update_rate, self.pressure_event_display_range)
         self.period_handler.event_data.connect(self.period_plot.update_data)
         self.period_handler.event_width.connect(self.timing_display.update_period_width)
         self.period_handler.delay_width.connect(self.timing_display.update_delay_width)
+
+        # Pressure handler
+        pressure_update_rate = 2
+        reader = self.loader.new_reader()
+        self.pressure_handler = PressureHandler(reader, sample_rate, pressure_update_rate)
+        self.pressure_handler.target_pressure.connect(self.pressure_display.update_target_pressure)
+        self.pressure_handler.sample_pressure.connect(self.pressure_display.update_sample_pressure)
 
 
     # Runs on quitting the application
@@ -186,6 +200,10 @@ class MainWindow(QMainWindow):
         if self.period_handler is not None:
             self.period_handler.quit()
             self.period_handler.wait()
+
+        if self.pressure_handler is not None:
+            self.loader.quit()
+            self.loader.wait()
 
         if self.pulse_generator is not None:
             self.pulse_generator.quit()

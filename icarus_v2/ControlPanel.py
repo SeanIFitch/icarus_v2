@@ -24,7 +24,7 @@ class ControlPanel(QGroupBox):
         # Initialize modes
         mode_layout = QHBoxLayout()
         self.mode_buttons = {}
-        modes = ["Console", "Manual", "Pulsed"]
+        modes = ["Console", "Manual"]
         for mode in modes:
             mode_button = QRadioButton(mode)
             mode_button.setChecked(mode == self.mode)
@@ -38,7 +38,7 @@ class ControlPanel(QGroupBox):
         self.pressurize_button = ToggleButton("Pressurize open", "Pressurize close")
         self.depressurize_button = ToggleButton("Depressurize open", "Depressurize close")
         self.pulse_button = ToggleButton("Start pulsing", "Stop pulsing")
-        self.timing_settings_button = QPushButton("Settings")
+        self.timing_settings_button = QPushButton("Pulse Settings")
 
         # Set button layout
         self.button_layout = QVBoxLayout()
@@ -100,14 +100,10 @@ class ControlPanel(QGroupBox):
             self.button_layout.addWidget(self.pump_button)
             self.button_layout.addWidget(self.pressurize_button)
             self.button_layout.addWidget(self.depressurize_button)
-        elif self.mode == "Pulsed":
-            self.button_layout.addWidget(self.shutdown_button)
-            self.button_layout.addWidget(self.pump_button)
             self.button_layout.addWidget(self.pulse_button)
             self.button_layout.addWidget(self.timing_settings_button)
         elif self.mode == "Console":
             self.button_layout.addWidget(self.shutdown_button)
-            self.button_layout.addWidget(self.pump_button)
 
 
     # Connect buttons to the pulse generator

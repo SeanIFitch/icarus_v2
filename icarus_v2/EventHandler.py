@@ -2,10 +2,11 @@ from PySide6.QtCore import QThread
 import traceback
 
 class EventHandler(QThread):
-    def __init__(self, reader, sample_rate) -> None:
+    def __init__(self, reader, sample_rate, update_rate) -> None:
         super().__init__()
         self.reader = reader
         self.sample_rate = sample_rate
+        self.update_rate = update_rate
         self.running = False
 
 
@@ -13,7 +14,8 @@ class EventHandler(QThread):
     def run(self):
         self.running = True
         while(self.running):
-            data, buffer_index = self.reader.read(size=64, timeout=2)
+            data_to_get = int(self.sample_rate / self.update_rate)
+            data, buffer_index = self.reader.read(size=data_to_get, timeout=2)
             try:
                 event, chunk_index = self.detect_event(data)
             except RuntimeWarning:
