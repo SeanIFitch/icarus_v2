@@ -20,9 +20,13 @@ class PressureDisplay(QGroupBox):
         target_label = QLabel("Target:")
         sample_label = QLabel("Sample:")
 
+        # Font size
+        self.target_display.setStyleSheet("font-size: 24px;")
+        self.sample_display.setStyleSheet("font-size: 24px;")
+
         # Set main layout
         layout = QGridLayout()
-        layout.addWidget(main_label, 0, 0)
+        layout.addWidget(main_label, 0, 0, 1, 0)
         layout.addWidget(target_label, 1, 0)
         layout.addWidget(sample_label, 2, 0)
         layout.addWidget(self.target_display, 1, 1)
