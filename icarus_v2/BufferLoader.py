@@ -13,7 +13,7 @@ device_readings = np.dtype([
     ('pre_up', float),          # Analog CH4: pressurization valve upper sensor
     ('hi_pre_orig', float),     # Analog CH5: high pressure transducer at the origin
     ('hi_pre_sample', float),   # Analog CH6: high pressure transducer at the sample
-    ('pump', np.bool_),         # Digital CH0: high pressure pump
+    ('pump', np.bool_),         # Digital CH0: high pressure pump (Active high / pumping on True)
     ('depre_valve', np.bool_),  # Digital CH1: depressurize valve (Active low / open on False)
     ('pre_valve', np.bool_),    # Digital CH2: pressurize valve (Active low / open on False)
     ('log', np.bool_)           # Digital CH4: log (Active low / logging on False)

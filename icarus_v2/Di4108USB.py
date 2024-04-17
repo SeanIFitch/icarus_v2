@@ -153,7 +153,8 @@ class Di4108USB():
                 print(f"Error sending command: Response \"{expected_response.strip()}\" expected but \"{response.strip()}\" received.")
 
 
-    def set_DIO(self, value = 0b1111111, check_echo = True):
+    # Default value - pump off, valves open, not logging
+    def set_DIO(self, value = 0b1111000, check_echo = True):
         """
         Sets digital input/output state.
 
@@ -215,7 +216,7 @@ class Di4108USB():
         with self.stop_lock:
             self._send_cmd("stop", check_echo=False)
         # Turn all valves off
-        self.set_DIO(0b1111111, check_echo = False)
+        self.set_DIO(0b1111000, check_echo = False)
 
 
     def get_current_dio(self):

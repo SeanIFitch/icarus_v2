@@ -37,7 +37,7 @@ class DepressurizeHandler(EventHandler):
             event = True
             index = low_indeces[0]
 
-            # Raise warning if 2 low pulses detected in same chunk. Under default settings this will never happen unless 2 pulses are made within 16ms of each other
+            # Raise warning if 2 low pulses detected in same chunk. Under default settings this will never happen unless 2 pulses are made within 33ms of each other
             if len(low_indeces) > 1:
                 raise RuntimeError("Depressurize event dropped. Two events occured in same data chunk.")
 

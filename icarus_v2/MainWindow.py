@@ -86,7 +86,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.switch_time_plot, 2, 1)
         main_layout.addWidget(self.history_reset, 3, 1)
         main_layout.addWidget(self.pressure_display, 0, 2)
-        main_layout.addWidget(self.control_panel, 1, 2)
+        main_layout.addWidget(self.control_panel, 1, 2, 2, 2) # span 2 slots
         main_layout.addWidget(self.counter_panel, 3, 2)
 
         # Add layout to dummy widget and apply to main window
