@@ -44,23 +44,30 @@ class PulseGenerator(QThread):
             depressurize_width = self.depressurize_width
             period_width = self.period_width
             delay_width = self.delay_width
-
             # Get time before setting DIO for more precise timing
-            current_time = time()
+            begin_time = time()
 
             self._pulse_low(self.DEPRESSURIZE, depressurize_width)
-
-            # Sleep for remaining time out of delay
-            time_elapsed = time() - current_time
-            remaining_time = max(0, delay_width - time_elapsed)
-            sleep(remaining_time)
+            if not self.no_hang_sleep(begin_time + delay_width):
+                break
 
             self._pulse_low(self.PRESSURIZE, pressurize_width)
+            if not self.no_hang_sleep(begin_time + period_width):
+                break
 
-            # Sleep for remaining time
-            time_elapsed = time() - current_time
-            remaining_time = max(0, period_width - time_elapsed)
-            sleep(remaining_time)
+
+    # Sleep until end_time, checking for self.pulsing frequently
+    # Returns False if self.pulsing becomes false, true otherwise
+    def no_hang_sleep(self, end_time, running_check_hz = 10):
+        remaining_time = end_time - time()
+        while remaining_time >= 0:
+            sleep_time = min(1 / running_check_hz, remaining_time)
+            sleep(sleep_time)
+            remaining_time = end_time - time()
+
+            if not self.pulsing:
+                return False
+        return True
 
 
     def set_pressurize_low(self):

@@ -50,30 +50,33 @@ class ControlPanel(QGroupBox):
         layout.setAlignment(Qt.AlignTop)
         self.setLayout(layout)
 
-        self.mode = "Manual"  # Default mode is manual
         self.button_layout.addWidget(self.pump_button)
         self.button_layout.addWidget(self.pressurize_button)
         self.button_layout.addWidget(self.depressurize_button)
         self.button_layout.addWidget(self.pulse_button)
         self.button_layout.addWidget(self.timing_settings_button)
 
+
     def change_to_console(self):
         sender = self.sender()
-        # Only follow through if checking mode not unchecking
+        # Only follow through if enabling mode not disabling
         if sender.isChecked():
-            self.mode = "Console"
             # Remove all buttons from the layout
             for i in reversed(range(self.button_layout.count())):
                 widget = self.button_layout.itemAt(i).widget()
                 if widget is not None:
                     widget.setParent(None)
 
+            # Set pump on, valves closed
+            self.pump_button.setChecked(True)
+            self.pressurize_button.setChecked(True)
+            self.depressurize_button.setChecked(True)
+
 
     def change_to_manual(self):
         sender = self.sender()
-        # Only follow through if checking mode not unchecking
+        # Only follow through if enabling mode not disabling
         if sender.isChecked():
-            self.mode = "Manual"
             self.button_layout.addWidget(self.pump_button)
             self.button_layout.addWidget(self.pressurize_button)
             self.button_layout.addWidget(self.depressurize_button)
@@ -87,8 +90,8 @@ class ControlPanel(QGroupBox):
 
         self.shutdown_button.set_check_function(self.on_shutdown)
         self.shutdown_button.set_uncheck_function(self.on_restart)
-        self.pump_button.set_check_function(self.pulse_generator.set_pump_low)
-        self.pump_button.set_uncheck_function(self.pulse_generator.set_pump_high)
+        self.pump_button.set_check_function(self.pulse_generator.set_pump_high)
+        self.pump_button.set_uncheck_function(self.pulse_generator.set_pump_low)
         self.pressurize_button.set_check_function(self.pulse_generator.set_pressurize_high)
         self.pressurize_button.set_uncheck_function(self.pulse_generator.set_pressurize_low)
         self.depressurize_button.set_check_function(self.pulse_generator.set_depressurize_high)
@@ -99,24 +102,19 @@ class ControlPanel(QGroupBox):
 
 
     def on_shutdown(self):
-        # Prevent other buttons from doing anything while shutdown
+        # Turn pump off
         self.pump_button.setEnabled(False)
+        self.pump_button.setChecked(False)
+        # Stop pulsing
+        self.pulse_button.setEnabled(False)
+        self.pulse_button.setChecked(False)
+        # Open valves
         self.pressurize_button.setEnabled(False)
         self.depressurize_button.setEnabled(False)
-        self.pulse_button.setEnabled(False)
-
-        # Turn pump off
-        self.pump_button.setChecked(False)
-        # Shutdown device
-        # Stop pulsing
-        self.pulse_generator.quit()
-        self.pulse_generator.wait()
-        # Open valves
         self.pressurize_button.setChecked(False)
         self.depressurize_button.setChecked(False)
 
-        # Revert to manual mode so that valves may be closed
-        self.mode = "Manual"
+        # Revert to manual mode
         self.console_button.setChecked(False)
         self.manual_button.setChecked(True)
 
@@ -135,13 +133,11 @@ class ControlPanel(QGroupBox):
         self.depressurize_button.setEnabled(False)
 
         # Close valves
-        if not self.pressurize_button.isChecked():
-            self.pressurize_button.setChecked(True)
-        if not self.depressurize_button.isChecked():
-            self.depressurize_button.setChecked(True)
-            # Prevents 2 depressurize events in the same chunk
-            # One chunk is update_rate^-1 = 30^-1 = 0.0333 seconds
-            sleep(0.05)
+        self.pressurize_button.setChecked(True)
+        self.depressurize_button.setChecked(True)
+        # Prevents 2 depressurize events in the same chunk
+        # One chunk is update_rate^-1 = 30^-1 = 0.0333 seconds
+        sleep(0.05)
 
         self.pulse_generator.start()
 
