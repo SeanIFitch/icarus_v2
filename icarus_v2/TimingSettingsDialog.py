@@ -83,17 +83,23 @@ class TimingSettingsDialog(QDialog):
 
 
     # Apply changes to PulseGenerator and close the dialog
-    # Also does some minor error checking for nonsensical settings
+    # Also does some minor error checking for settings
     def apply(self) -> None:
         error = None
-        if self.pressurize_width / 1000 >= self.period_width:
+        if self.pressurize_width < 8:
+            error = "Pressurize width should be greater than 8ms."
+        elif self.depressurize_width < 8:
+            error = "Depressurize width should be greater than 8ms."
+        elif self.period_width < 1:
+            error = "Period width should be greater than 1s."
+        elif self.delay_width < 0.15:
+            error = "Delay width should be greater than 0.15s."
+        elif self.pressurize_width / 1000 >= self.period_width:
             error = "Pressurize width should be less than Period width."
         elif self.depressurize_width / 1000 >= self.period_width:
             error = "Depressurize width should be less than Period width."
         elif self.delay_width >= self.period_width:
             error = "Delay width should be less than Period width."
-        elif self.period_width < 0.05:
-            error = "Period width should be greater than 0.05s."
 
         if error is not None:
             open_error_dialog(error, QDialogButtonBox.Ok, self)
