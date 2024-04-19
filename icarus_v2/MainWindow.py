@@ -156,11 +156,11 @@ class MainWindow(QMainWindow):
     # Initialize event handlers and connect to widgets
     def init_event_handlers(self):
         sample_rate = self.loader.get_sample_rate()
-        event_update_rate = 30
+        event_update_hz = 30
 
         # Pressurize handler
         reader = self.loader.new_reader()
-        self.pressurize_handler = PressurizeHandler(reader, sample_rate, event_update_rate, self.pressure_event_display_range)
+        self.pressurize_handler = PressurizeHandler(reader, sample_rate, event_update_hz, self.pressure_event_display_range)
         self.pressurize_handler.event_data.connect(self.pressurize_plot.update_data)
         self.pressurize_handler.event_data.connect(self.pressure_plot.update_data)
         self.pressurize_handler.event_data.connect(self.switch_time_plot.update_pressurize_data)
@@ -170,7 +170,7 @@ class MainWindow(QMainWindow):
 
         # Depressurize handler
         reader = self.loader.new_reader()
-        self.depressurize_handler = DepressurizeHandler(reader, sample_rate, event_update_rate, self.pressure_event_display_range)
+        self.depressurize_handler = DepressurizeHandler(reader, sample_rate, event_update_hz, self.pressure_event_display_range)
         self.depressurize_handler.event_data.connect(self.depressurize_plot.update_data)
         self.depressurize_handler.event_data.connect(self.switch_time_plot.update_depressurize_data)
         self.depressurize_handler.event_data.connect(self.slope_plot.update_depressurize_data)
@@ -179,15 +179,15 @@ class MainWindow(QMainWindow):
 
         # Period handler
         reader = self.loader.new_reader()
-        self.period_handler = PeriodHandler(reader, sample_rate, event_update_rate, self.pressure_event_display_range)
+        self.period_handler = PeriodHandler(reader, sample_rate, event_update_hz, self.pressure_event_display_range)
         self.period_handler.event_data.connect(self.period_plot.update_data)
         self.period_handler.event_width.connect(self.timing_display.update_period_width)
         self.period_handler.delay_width.connect(self.timing_display.update_delay_width)
 
         # Pressure handler
-        pressure_update_rate = 2
+        pressure_update_hz = 2
         reader = self.loader.new_reader()
-        self.pressure_handler = PressureHandler(reader, sample_rate, pressure_update_rate)
+        self.pressure_handler = PressureHandler(reader, sample_rate, pressure_update_hz)
         self.pressure_handler.target_pressure.connect(self.pressure_display.update_target_pressure)
         self.pressure_handler.sample_pressure.connect(self.pressure_display.update_sample_pressure)
 
