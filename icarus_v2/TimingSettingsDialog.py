@@ -21,7 +21,7 @@ class TimingSettingsDialog(QDialog):
         self.pulse_generator = pulse_generator
 
         # Buttons to apply or discard changes
-        buttons = QDialogButtonBox.Apply | QDialogButtonBox.Cancel
+        buttons = QDialogButtonBox.Apply
         self.buttonBox = QDialogButtonBox(buttons)
         # Connect apply button to accept slot
         self.buttonBox.button(QDialogButtonBox.Apply).clicked.connect(self.apply)
@@ -78,7 +78,7 @@ class TimingSettingsDialog(QDialog):
         self.layout.addWidget(self.period_edit, 2, 1)
         self.layout.addWidget(self.delay_edit, 3, 1)
 
-        self.layout.addWidget(self.buttonBox, 4, 0)
+        self.layout.addWidget(self.buttonBox, 4, 0, 4, 1, alignment=Qt.AlignRight)
         self.setLayout(self.layout)
 
 

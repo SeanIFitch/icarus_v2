@@ -18,18 +18,18 @@ class PulseGenerator(QThread):
     LOG = 4
 
 
-    def __init__(self, device, pressurize_width = 10., depressurize_width = 10., period_width = 5., delay_width = 2.) -> None:
+    def __init__(self, device, timing_settings) -> None:
         super().__init__()
 
         self.device = device
 
         # duration to hold valves open in ms
-        self.pressurize_width = pressurize_width
-        self.depressurize_width = depressurize_width
+        self.pressurize_width = timing_settings["pressurize_width"]
+        self.depressurize_width = timing_settings["depressurize_width"]
 
         # period timings in s
-        self.period_width = period_width    # Time between depressurize pulses
-        self.delay_width = delay_width      # Time between depressurize and pressurize
+        self.period_width = timing_settings["period_width"]    # Time between depressurize pulses
+        self.delay_width = timing_settings["delay_width"]      # Time between depressurize and pressurize
 
         # Whether or not the device should be currently generating pulses
         self.pulsing = False

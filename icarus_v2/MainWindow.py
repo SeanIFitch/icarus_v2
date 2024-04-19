@@ -1,4 +1,6 @@
+# General utility imports
 import sys
+import json
 # GUI imports
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import (
@@ -33,6 +35,11 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super(MainWindow, self).__init__()
+
+        # Load application settings
+        with open("settings.json", "r") as file:
+            self.settings = json.load(file)
+
         self.initUI()
 
         # Initialize thread variables
@@ -71,7 +78,8 @@ class MainWindow(QMainWindow):
         self.control_panel = ControlPanel()
 
         # Info displays
-        self.counter_panel = CounterDisplay()
+        self.counter_panel = CounterDisplay(self.settings["counter_settings"])
+        self.counter_panel.save_settings.connect(self.save_settings)    # Signal for when counts should be saved
         self.timing_display = TimingDisplay()
         self.pressure_display = PressureDisplay()
 
@@ -112,7 +120,7 @@ class MainWindow(QMainWindow):
         self.loader = BufferLoader(device)
 
         # Controls device DIO
-        self.pulse_generator = PulseGenerator(device)
+        self.pulse_generator = PulseGenerator(device, self.settings["timing_settings"])
 
         # Connect widgets to backend
         self.setup_widgets()
@@ -184,9 +192,31 @@ class MainWindow(QMainWindow):
         self.pressure_handler.sample_pressure.connect(self.pressure_display.update_sample_pressure)
 
 
+    # Save timing and counter settings to settings.json
+    def save_settings(self):
+        settings = {
+            "counter_settings": {
+                "pump_count": self.counter_panel.pump_count,
+                "pressurize_count": self.counter_panel.pressurize_count,
+                "depressurize_count": self.counter_panel.depressurize_count
+            },
+            "timing_settings": {
+                "pressurize_width": self.pulse_generator.pressurize_width,
+                "depressurize_width": self.pulse_generator.depressurize_width,
+                "period_width": self.pulse_generator.period_width,
+                "delay_width": self.pulse_generator.delay_width
+            }
+        }
+
+        with open("settings.json", "w") as write_file:
+            json.dump(settings, write_file, indent=4)
+
+
     # Runs on quitting the application
     def closeEvent(self, event):
         super().closeEvent(event)
+
+        self.save_settings()
 
         # Cleanup QThreads
         if self.pressurize_handler is not None:

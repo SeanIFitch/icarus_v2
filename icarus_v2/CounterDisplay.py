@@ -3,17 +3,21 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QLabel
 )
+from PySide6.QtCore import Signal
 
 
 # Panel for counts of valves and such
 class CounterDisplay(QGroupBox):
-    def __init__(self):
+    save_settings = Signal(bool)
+
+
+    def __init__(self, settings):
         super().__init__()
 
         # Counters
-        self.pump_count = 0
-        self.pressurize_count = 0
-        self.depressurize_count = 0
+        self.pump_count = settings["pump_count"]
+        self.pressurize_count = settings["pressurize_count"]
+        self.depressurize_count = settings["depressurize_count"]
         self.pump_counter = QLabel(str(self.pump_count))
         self.pressurize_counter = QLabel(str(self.pressurize_count))
         self.depressurize_counter = QLabel(str(self.depressurize_count))
@@ -43,12 +47,23 @@ class CounterDisplay(QGroupBox):
         self.pump_count += 1
         self.pump_counter.setText(str(self.pump_count))
 
+        # Save counts to json every 10000 updates
+        if self.pump_count + self.pressurize_count + self.depressurize_count % 10000 == 0:
+            self.save_settings.emit(True)
+
 
     def increment_pressurize_count(self):
         self.pressurize_count += 1
         self.pressurize_counter.setText(str(self.pressurize_count))
 
+        # Save counts to json every 10000 updates
+        if self.pump_count + self.pressurize_count + self.depressurize_count % 10000 == 0:
+            self.save_settings.emit(True)
 
     def increment_depressurize_count(self):
         self.depressurize_count += 1
         self.depressurize_counter.setText(str(self.depressurize_count))
+
+        # Save counts to json every 10000 updates
+        if self.pump_count + self.pressurize_count + self.depressurize_count % 10000 == 0:
+            self.save_settings.emit(True)
