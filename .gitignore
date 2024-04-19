@@ -1,5 +1,2 @@
 # Ignore Python bytecode files
 __pycache__/
-
-# Leave default settings in repository
-settings.json
