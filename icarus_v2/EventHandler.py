@@ -1,7 +1,10 @@
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, Signal
 import traceback
+from Event import Event
 
 class EventHandler(QThread):
+    event_signal = Signal(Event)
+
     def __init__(self, reader, sample_rate, update_rate) -> None:
         super().__init__()
         self.reader = reader
@@ -23,14 +26,15 @@ class EventHandler(QThread):
                 event, chunk_index = False, -1
 
             # buffer_index is the index that the chunk started in in the buffer
-            # event index is the index that the event started in in that chunk
+            # chunk index is the index that the event started in in that chunk
             event_index = buffer_index + chunk_index
 
             # If an event occurs, transmit data to plot
             if event:
-                event_data = self.handle_event(event_index)
+                event_data, event_start = self.handle_event(event_index)
                 if event_data is not None:
-                    self.emit_data(event_data)
+                    new_event = Event(self.event_type, event_data, event_start)
+                    self.event_signal.emit(new_event)
 
 
     # Placeholder. 
@@ -41,13 +45,10 @@ class EventHandler(QThread):
 
 
     # Placeholder.
+    # event_index: absolute index of event in buffer
+    # Returns appropriate data and index of the event in the new data
     def handle_event(self, event_index):
-        return None
-
-
-    # Placeholder. Responsible for emitting to all pertinent signals.
-    def emit_data(self, event_data):
-        pass
+        return None, -1
 
 
     # Return a range of data around the event occuring at event_index

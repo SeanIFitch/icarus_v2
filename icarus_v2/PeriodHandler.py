@@ -1,20 +1,15 @@
 from EventHandler import EventHandler
-from PySide6.QtCore import Signal
 import numpy as np
 
 
 # Detects a period event and transmits data to plot
 class PeriodHandler(EventHandler):
-    event_data = Signal(np.ndarray)
-    event_width = Signal(float)
-    delay_width = Signal(float)
-
-
     def __init__(self, reader, sample_rate, update_rate, event_report_range) -> None:
         super().__init__(reader, sample_rate, update_rate)
         self.event_report_range = event_report_range # tuple of range of ms around an event to report e.g. (-10,140)
         self.last_depressurize_bit = None # variable to keep track of edges of data chunks in case an event lines up with the start of a chunk
         self.last_depressurize_event = None # variable to keep track of index of last depressurize event
+        self.event_type = "period"
 
 
     # Data: one chunk from the reader
@@ -53,6 +48,7 @@ class PeriodHandler(EventHandler):
         # No prior depressurize events
         if self.last_depressurize_event is None:
             data = None
+            current_event_idx = None
 
         else:
             # Update event_report_range based on period length and amount of data displayed before a period
@@ -64,26 +60,9 @@ class PeriodHandler(EventHandler):
 
             # Get data from last event based on new event_report_range
             data = self.get_event_data(self.last_depressurize_event)
+            current_event_idx = int(before * sample_rate_kHz)
 
         # Record event index
         self.last_depressurize_event = event_index
         # Return data to plot
-        return data
-
-    # Responsible for emitting to all pertinent signals.
-    def emit_data(self, event_data):
-        self.event_data.emit(event_data)
-
-        # Extract length of event from event_report_range
-        before, after = self.event_report_range
-        # after includes a buffer equal to before, so subtract the buffer from each end of the range
-        width_ms = after + 2 * before
-        width_s = width_ms / 1000
-        self.event_width.emit(width_s)
-
-        # Find length of delay
-        sample_rate_kHz = float(self.sample_rate) / 1000
-        event_index =  - int(after * sample_rate_kHz)
-        delay = np.argmin(event_data['pre_valve'][event_index:])
-        delay_s = float(delay) / self.sample_rate
-        self.delay_width.emit(delay_s)
+        return data, current_event_idx

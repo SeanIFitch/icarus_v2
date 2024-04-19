@@ -67,7 +67,8 @@ class SlopePlot(pg.PlotWidget):
         self.sample_rate = sample_rate
 
 
-    def update_pressurize_data(self, data):
+    def update_pressurize_data(self, event):
+        data = event.data
         # Find slope of pressure from the valve opening to the half max of pressure.
         event_index = np.argmin(data['pre_valve'])
         for channel, y in self.pressurize_y.items():
@@ -104,7 +105,8 @@ class SlopePlot(pg.PlotWidget):
             line_reference.setData(self.pressurize_x, np.asarray(self.pressurize_y[channel]))
 
 
-    def update_depressurize_data(self, data):
+    def update_depressurize_data(self, event):
+        data = event.data
         # Find slope of pressure from the valve opening to the half max of pressure.
         event_index = np.argmin(data['depre_valve'])
         for channel, y in self.depressurize_y.items():

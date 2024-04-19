@@ -67,7 +67,8 @@ class SwitchTimePlot(pg.PlotWidget):
         self.sample_rate = sample_rate
 
 
-    def update_pressurize_data(self, data):
+    def update_pressurize_data(self, event):
+        data = event.data
         # Find switch times.
         # This is time between the event and the minimum of x + y.
         # We transform such that the range of x is 5 times the range of y.
@@ -95,7 +96,8 @@ class SwitchTimePlot(pg.PlotWidget):
             line_reference.setData(self.pressurize_x, np.asarray(self.pressurize_y[channel]))
 
 
-    def update_depressurize_data(self, data):
+    def update_depressurize_data(self, event):
+        data = event.data
         # Find switch times.
         # This is time between the event and the minimum of x + y.
         # We transform such that the range of x is 5 times the range of y.

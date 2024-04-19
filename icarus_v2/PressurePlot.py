@@ -74,7 +74,8 @@ class PressurePlot(pg.PlotWidget):
             self.line_references[channel] = self.plot_line(dummy_x, dummy_y, color)
 
 
-    def update_data(self, data):
+    def update_data(self, event):
+        data = event.data
         # Add pressure to each line plotted.
         # This is the average pressure after the max pressure
         for channel, y in self.y.items():

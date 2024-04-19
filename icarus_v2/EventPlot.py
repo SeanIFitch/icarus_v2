@@ -72,7 +72,8 @@ class EventPlot(pg.PlotWidget):
         self.sample_rate = sample_rate
 
 
-    def update_data(self, data):
+    def update_data(self, event):
+        data = event.data
         # Calculate times based on time before event, length of data, and sample rate
         indeces = np.asarray(range(len(data)))
         if self.x_unit == "ms":

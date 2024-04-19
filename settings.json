@@ -1,13 +1,13 @@
 {
     "counter_settings": {
         "pump_count": 0,
-        "pressurize_count": 0,
-        "depressurize_count": 0
+        "pressurize_count": 884,
+        "depressurize_count": 909
     },
     "timing_settings": {
-        "pressurize_width": 10.0,
-        "depressurize_width": 10.0,
-        "period_width": 5.0,
-        "delay_width": 2.0
+        "pressurize_width": 1.0,
+        "depressurize_width": 1.0,
+        "period_width": 0.1,
+        "delay_width": 0.05
     }
 }

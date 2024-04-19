@@ -161,35 +161,34 @@ class MainWindow(QMainWindow):
         # Pressurize handler
         reader = self.loader.new_reader()
         self.pressurize_handler = PressurizeHandler(reader, sample_rate, event_update_hz, self.pressure_event_display_range)
-        self.pressurize_handler.event_data.connect(self.pressurize_plot.update_data)
-        self.pressurize_handler.event_data.connect(self.pressure_plot.update_data)
-        self.pressurize_handler.event_data.connect(self.switch_time_plot.update_pressurize_data)
-        self.pressurize_handler.event_data.connect(self.slope_plot.update_pressurize_data)
-        self.pressurize_handler.event_count_increment.connect(self.counter_panel.increment_pressurize_count)
-        self.pressurize_handler.event_width.connect(self.timing_display.update_pressurize_width)
+        self.pressurize_handler.event_signal.connect(self.pressurize_plot.update_data)
+        self.pressurize_handler.event_signal.connect(self.pressure_plot.update_data)
+        self.pressurize_handler.event_signal.connect(self.switch_time_plot.update_pressurize_data)
+        self.pressurize_handler.event_signal.connect(self.slope_plot.update_pressurize_data)
+        self.pressurize_handler.event_signal.connect(self.counter_panel.increment_pressurize_count)
+        self.pressurize_handler.event_signal.connect(self.timing_display.update_widths)
 
         # Depressurize handler
         reader = self.loader.new_reader()
         self.depressurize_handler = DepressurizeHandler(reader, sample_rate, event_update_hz, self.pressure_event_display_range)
-        self.depressurize_handler.event_data.connect(self.depressurize_plot.update_data)
-        self.depressurize_handler.event_data.connect(self.switch_time_plot.update_depressurize_data)
-        self.depressurize_handler.event_data.connect(self.slope_plot.update_depressurize_data)
-        self.depressurize_handler.event_count_increment.connect(self.counter_panel.increment_depressurize_count)
-        self.depressurize_handler.event_width.connect(self.timing_display.update_depressurize_width)
+        self.depressurize_handler.event_signal.connect(self.depressurize_plot.update_data)
+        self.depressurize_handler.event_signal.connect(self.switch_time_plot.update_depressurize_data)
+        self.depressurize_handler.event_signal.connect(self.slope_plot.update_depressurize_data)
+        self.depressurize_handler.event_signal.connect(self.counter_panel.increment_depressurize_count)
+        self.depressurize_handler.event_signal.connect(self.timing_display.update_widths)
 
         # Period handler
         reader = self.loader.new_reader()
         self.period_handler = PeriodHandler(reader, sample_rate, event_update_hz, self.pressure_event_display_range)
-        self.period_handler.event_data.connect(self.period_plot.update_data)
-        self.period_handler.event_width.connect(self.timing_display.update_period_width)
-        self.period_handler.delay_width.connect(self.timing_display.update_delay_width)
+        self.period_handler.event_signal.connect(self.period_plot.update_data)
+        self.period_handler.event_signal.connect(self.timing_display.update_widths)
 
         # Pressure handler
         pressure_update_hz = 2
         reader = self.loader.new_reader()
         self.pressure_handler = PressureHandler(reader, sample_rate, pressure_update_hz)
-        self.pressure_handler.target_pressure.connect(self.pressure_display.update_target_pressure)
-        self.pressure_handler.sample_pressure.connect(self.pressure_display.update_sample_pressure)
+        self.pressure_handler.event_signal.connect(self.pressure_display.update_target_pressure)
+        self.pressure_handler.event_signal.connect(self.pressure_display.update_sample_pressure)
 
 
     # Save timing and counter settings to settings.json
