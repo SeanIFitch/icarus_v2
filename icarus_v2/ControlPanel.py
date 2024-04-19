@@ -67,6 +67,8 @@ class ControlPanel(QGroupBox):
                 if widget is not None:
                     widget.setParent(None)
 
+            self.pulse_button.setChecked(False)
+
             # Set pump on, valves closed
             self.pump_button.setChecked(True)
             self.pressurize_button.setChecked(True)
