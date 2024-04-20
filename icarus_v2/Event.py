@@ -4,7 +4,7 @@ import numpy as np
 # Represents an event
 class Event():
     def __init__(self, event_type, data, event_index) -> None:
-        assert event_type == "pressurize" or event_type == "depressurize" or event_type == "period" or event_type == "pressure"
+        assert event_type == "pressurize" or event_type == "depressurize" or event_type == "period" or event_type == "pressure" or event_type == "pump"
 
         self.event_type = event_type
         self.data = data

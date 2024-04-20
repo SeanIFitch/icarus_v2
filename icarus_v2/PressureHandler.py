@@ -4,8 +4,8 @@ from Event import Event
 
 # Sends pressure data constantly. Events always occur.
 class PressureHandler(EventHandler):
-    def __init__(self, reader, sample_rate, update_rate) -> None:
-        super().__init__(reader, sample_rate, update_rate)
+    def __init__(self, loader, sample_rate, update_rate) -> None:
+        super().__init__(loader, sample_rate, update_rate)
         self.event_type = "pressure"
 
 

@@ -4,8 +4,8 @@ import numpy as np
 
 # Detects a pressurize event and transmits data to plot
 class PressurizeHandler(EventHandler):
-    def __init__(self, reader, sample_rate, update_rate, event_report_range) -> None:
-        super().__init__(reader, sample_rate, update_rate)
+    def __init__(self, loader, sample_rate, update_rate, event_report_range) -> None:
+        super().__init__(loader, sample_rate, update_rate)
         self.event_report_range = event_report_range # tuple of range of ms around an event to report e.g. (-10,140)
         self.last_pressurize_bit = None # variable to keep track of edges of data chunks in case an event lines up with the start of a chunk
         self.event_type = "pressurize"

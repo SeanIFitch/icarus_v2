@@ -36,11 +36,8 @@ class PressureDisplay(QGroupBox):
         self.setLayout(layout)
 
 
-    def update_target_pressure(self, event):
+    def update_pressure(self, event):
         target_pressure = event.get_target_pressure()
-        self.target_display.setText(f"{target_pressure:.3f}")
-
-
-    def update_sample_pressure(self, event):
         sample_pressure = event.get_sample_pressure()
+        self.target_display.setText(f"{target_pressure:.3f}")
         self.sample_display.setText(f"{sample_pressure:.3f}")

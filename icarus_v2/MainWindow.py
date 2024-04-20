@@ -20,10 +20,6 @@ from CounterDisplay import CounterDisplay
 from TimingDisplay import TimingDisplay
 from PressureDisplay import PressureDisplay
 from ErrorDialog import open_error_dialog
-# Data collection & Device imports
-from Di4108USB import Di4108USB
-from BufferLoader import BufferLoader
-from PulseGenerator import PulseGenerator
 # Event handler imports
 from PressurizeHandler import PressurizeHandler
 from DepressurizeHandler import DepressurizeHandler
@@ -33,25 +29,12 @@ from PressureHandler import PressureHandler
 
 class MainWindow(QMainWindow):
 
+    # Initializes all widgets and sets layout
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        # Load application settings
-        with open("settings.json", "r") as file:
-            self.settings = json.load(file)
+        self.data_handler = None
 
-        self.initUI()
-
-        # Initialize thread variables
-        self.loader = None
-        self.pressurize_handler = None
-        self.depressurize_handler = None
-        self.period_handler = None
-        self.pressure_handler = None
-
-
-    # Initializes all widgets and sets layout
-    def initUI(self):
         # Window settings
         self.setWindowTitle("Icarus NMR")
         self.setMinimumSize(QSize(800, 500))
@@ -78,8 +61,7 @@ class MainWindow(QMainWindow):
         self.control_panel = ControlPanel()
 
         # Info displays
-        self.counter_panel = CounterDisplay(self.settings["counter_settings"])
-        self.counter_panel.save_settings.connect(self.save_settings)    # Signal for when counts should be saved
+        self.counter_display = CounterDisplay()
         self.timing_display = TimingDisplay()
         self.pressure_display = PressureDisplay()
 
@@ -95,7 +77,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.history_reset, 3, 1)
         main_layout.addWidget(self.pressure_display, 0, 2)
         main_layout.addWidget(self.control_panel, 1, 2, 2, 2) # span 2 slots
-        main_layout.addWidget(self.counter_panel, 3, 2)
+        main_layout.addWidget(self.counter_display, 3, 2)
 
         # Add layout to dummy widget and apply to main window
         widget = QWidget()
@@ -103,150 +85,60 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(widget)
 
 
-    # Connects to the USB device, connects all widgets to handlers, starts acquiring data
-    def start_acquisition(self):
-        # Continually try to connect to usb device
-        while True:
-            try:
-                device = Di4108USB()
-                break  # Break out of the loop if acquisition is successful
-            except Exception as e:
-                # Open error dialog
-                if not open_error_dialog(e, QDialogButtonBox.Retry | QDialogButtonBox.Cancel, self):
-                    # Quit if cancel is selected
-                    sys.exit(0)
+    # Connects widgets to backend
+    def set_device(self, data_handler):
+        self.data_handler = data_handler
+        sample_rate = data_handler.get_sample_rate()
 
-        # Loads data from device into buffer
-        self.loader = BufferLoader(device)
-
-        # Controls device DIO
-        self.pulse_generator = PulseGenerator(device, self.settings["timing_settings"])
-
-        # Connect widgets to backend
-        self.setup_widgets()
-        self.init_event_handlers()
-
-        # Start threads
-        self.loader.start()
-        self.pressurize_handler.start()
-        self.depressurize_handler.start()
-        self.period_handler.start()
-        self.pressure_handler.start()
-
-
-    # Widget setup after backend is initialized
-    def setup_widgets(self):
-        sample_rate = self.loader.get_sample_rate()
-
-        # plots
+        # Pressurize plot
         self.pressurize_plot.set_sample_rate(sample_rate)
-        self.depressurize_plot.set_sample_rate(sample_rate)
-        self.period_plot.set_sample_rate(sample_rate)
-        self.switch_time_plot.set_sample_rate(sample_rate)
-        self.slope_plot.set_sample_rate(sample_rate)
+        data_handler.pressurize_handler.event_signal.connect(self.pressurize_plot.update_data)
 
+        # Depressurize plot
+        self.depressurize_plot.set_sample_rate(sample_rate)
+        data_handler.depressurize_handler.event_signal.connect(self.depressurize_plot.update_data)
+
+        # Period plot
+        self.period_plot.set_sample_rate(sample_rate)
+        data_handler.period_handler.event_signal.connect(self.period_plot.update_data)
+
+        # Pressure plot
+        data_handler.pressurize_handler.event_signal.connect(self.pressure_plot.update_data)
+
+        # Slope plot
+        self.slope_plot.set_sample_rate(sample_rate)
+        data_handler.pressurize_handler.event_signal.connect(self.slope_plot.update_pressurize_data)
+        data_handler.depressurize_handler.event_signal.connect(self.slope_plot.update_depressurize_data)
+
+        # Switch time plot
+        self.switch_time_plot.set_sample_rate(sample_rate)
+        data_handler.pressurize_handler.event_signal.connect(self.switch_time_plot.update_pressurize_data)
+        data_handler.depressurize_handler.event_signal.connect(self.switch_time_plot.update_depressurize_data)
+
+        # Timings display
+        data_handler.pressurize_handler.event_signal.connect(self.timing_display.update_widths)
+        data_handler.depressurize_handler.event_signal.connect(self.timing_display.update_widths)
+        data_handler.period_handler.event_signal.connect(self.timing_display.update_widths)
+
+        # Reset button
         self.history_reset.clicked.connect(self.pressure_plot.reset_lines)
         self.history_reset.clicked.connect(self.slope_plot.reset_lines)
         self.history_reset.clicked.connect(self.switch_time_plot.reset_lines)
 
+        # Pressure display
+        data_handler.pressure_handler.event_signal.connect(self.pressure_display.update_pressure)
+
         # Control panel
-        self.control_panel.set_pulse_generator(self.pulse_generator)
+        self.control_panel.set_pulse_generator(data_handler.pulse_generator)
 
-
-    # Initialize event handlers and connect to widgets
-    def init_event_handlers(self):
-        sample_rate = self.loader.get_sample_rate()
-        event_update_hz = 30
-
-        # Pressurize handler
-        reader = self.loader.new_reader()
-        self.pressurize_handler = PressurizeHandler(reader, sample_rate, event_update_hz, self.pressure_event_display_range)
-        self.pressurize_handler.event_signal.connect(self.pressurize_plot.update_data)
-        self.pressurize_handler.event_signal.connect(self.pressure_plot.update_data)
-        self.pressurize_handler.event_signal.connect(self.switch_time_plot.update_pressurize_data)
-        self.pressurize_handler.event_signal.connect(self.slope_plot.update_pressurize_data)
-        self.pressurize_handler.event_signal.connect(self.counter_panel.increment_pressurize_count)
-        self.pressurize_handler.event_signal.connect(self.timing_display.update_widths)
-
-        # Depressurize handler
-        reader = self.loader.new_reader()
-        self.depressurize_handler = DepressurizeHandler(reader, sample_rate, event_update_hz, self.pressure_event_display_range)
-        self.depressurize_handler.event_signal.connect(self.depressurize_plot.update_data)
-        self.depressurize_handler.event_signal.connect(self.switch_time_plot.update_depressurize_data)
-        self.depressurize_handler.event_signal.connect(self.slope_plot.update_depressurize_data)
-        self.depressurize_handler.event_signal.connect(self.counter_panel.increment_depressurize_count)
-        self.depressurize_handler.event_signal.connect(self.timing_display.update_widths)
-
-        # Period handler
-        reader = self.loader.new_reader()
-        self.period_handler = PeriodHandler(reader, sample_rate, event_update_hz, self.pressure_event_display_range)
-        self.period_handler.event_signal.connect(self.period_plot.update_data)
-        self.period_handler.event_signal.connect(self.timing_display.update_widths)
-
-        # Pressure handler
-        pressure_update_hz = 2
-        reader = self.loader.new_reader()
-        self.pressure_handler = PressureHandler(reader, sample_rate, pressure_update_hz)
-        self.pressure_handler.event_signal.connect(self.pressure_display.update_target_pressure)
-        self.pressure_handler.event_signal.connect(self.pressure_display.update_sample_pressure)
-
-
-    # Save timing and counter settings to settings.json
-    def save_settings(self):
-        settings = {
-            "counter_settings": {
-                "pump_count": self.counter_panel.pump_count,
-                "pressurize_count": self.counter_panel.pressurize_count,
-                "depressurize_count": self.counter_panel.depressurize_count
-            },
-            "timing_settings": {
-                "pressurize_width": self.pulse_generator.pressurize_width,
-                "depressurize_width": self.pulse_generator.depressurize_width,
-                "period_width": self.pulse_generator.period_width,
-                "delay_width": self.pulse_generator.delay_width
-            }
-        }
-
-        with open("settings.json", "w") as write_file:
-            json.dump(settings, write_file, indent=4)
+        # Counter display
+        data_handler.counter.update_counts.connect(self.counter_display.update_counts)
+        self.counter_display.update_counts(data_handler.counter.counts)
 
 
     # Runs on quitting the application
     def closeEvent(self, event):
         super().closeEvent(event)
 
-        self.save_settings()
-
-        # Cleanup QThreads
-        if self.pressurize_handler is not None:
-            self.pressurize_handler.quit()
-            self.pressurize_handler.wait()
-
-        if self.depressurize_handler is not None:
-            self.depressurize_handler.quit()
-            self.depressurize_handler.wait()
-
-        if self.period_handler is not None:
-            self.period_handler.quit()
-            self.period_handler.wait()
-
-        if self.pressure_handler is not None:
-            self.pressure_handler.quit()
-            self.pressure_handler.wait()
-
-        if self.pulse_generator is not None:
-            self.pulse_generator.quit()
-            self.pulse_generator.wait()
-
-        if self.loader is not None:
-            self.loader.quit()
-            self.loader.wait()
-
-
-# Run application
-if __name__ == "__main__":
-    app = QApplication([])
-    window = MainWindow()
-    window.show()
-    window.start_acquisition()
-    app.exec()
+        if self.data_handler is not None:
+            self.data_handler.quit()

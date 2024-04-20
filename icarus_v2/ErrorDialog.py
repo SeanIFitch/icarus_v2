@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
 )
 
 
-def open_error_dialog(error, buttons, parent=None):
+def open_error_dialog(error, buttons = QDialogButtonBox.Ok | QDialogButtonBox.Cancel, parent=None):
     dialog = ErrorDialog(str(error), buttons, parent=parent)
     return dialog.exec()
 
