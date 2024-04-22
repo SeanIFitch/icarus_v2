@@ -3,24 +3,48 @@ import numpy as np
 
 # Represents an event
 class Event():
-    def __init__(self, event_type, data, event_index) -> None:
-        assert (event_type == "pressurize" 
-            or event_type == "depressurize" 
-            or event_type == "period" 
-            or event_type == "pressure" 
-            or event_type == "pump"
-        )
+    PRESSURIZE = 0
+    DEPRESSURIZE = 1
+    PERIOD = 2
+    PRESSURE = 3
+    PUMP = 4
 
-        self.event_type = event_type
-        self.data = data
-        self.event_time = time()
+    def __init__(self, event_type, data, event_index) -> None:
+        if event_type == 'pressurize':
+            self.event_type = self.PRESSURIZE
+        elif event_type == 'depressurize':
+            self.event_type = self.DEPRESSURIZE
+        elif event_type == 'period':
+            self.event_type = self.PERIOD
+        elif event_type == 'pressure':
+            self.event_type = self.PRESSURE
+        elif event_type == 'pump':
+            self.event_type = self.PUMP
+        else:
+            raise RuntimeError(event_type + "event not supported.")
+
+        self.data = data # np.ndarray(?, device_readings)
+        self.event_time = time() # float
 
         # Required for some math
-        self.event_index = event_index # index where the actual event occured
+        self.event_index = event_index # index where the actual event occured uint8
+
+
+    def get_event_type(self):
+        if self.event_type == self.PRESSURIZE:
+            return 'pressurize'
+        elif self.event_type == self.DEPRESSURIZE:
+            return 'depressurize'
+        elif self.event_type == self.PERIOD:
+            return 'period'
+        elif self.event_type == self.PRESSURE:
+            return 'pressure'
+        elif self.event_type == self.PUMP:
+            return 'pump'
 
 
     def get_sample_pressure(self):
-        if self.event_type != 'pressure':
+        if self.event_type != self.PRESSURE:
             raise RuntimeError("Cannot call get_sample_pressure() on event type " + self.event_type) 
 
         sample_pressure = np.average(self.data['hi_pre_orig'])
@@ -28,7 +52,7 @@ class Event():
 
 
     def get_target_pressure(self):
-        if self.event_type != 'pressure':
+        if self.event_type != self.PRESSURE:
             raise RuntimeError("Cannot call get_target_pressure() on event type " + self.event_type) 
 
         target_pressure = np.average(self.data['target'])
@@ -37,9 +61,9 @@ class Event():
 
     # Returns time valve was open in terms of indeces, so divide result by device sample rate for time
     def get_valve_open_time(self):
-        if self.event_type == 'pressurize':
+        if self.event_type == self.PRESSURIZE:
             valve = 'pre_valve'
-        elif self.event_type == 'depressurize':
+        elif self.event_type == self.DEPRESSURIZE:
             valve = 'depre_valve'
         else:
             raise RuntimeError("Cannot call get_valve_open_time() on event type " + self.event_type)
@@ -54,7 +78,8 @@ class Event():
 
     # Returns period duration in terms of indeces, so divide result by device sample rate for time
     def get_period_width(self):
-        assert self.event_type == 'period'
+        if self.event_type != self.PERIOD:
+            raise RuntimeError("Cannot call get_period_width() on event type " + self.event_type) 
 
         # There is a buffer of equivalent size on either end of the data
         width = len(self.data) - 2 * self.event_index
@@ -63,7 +88,8 @@ class Event():
 
     # Returns delay duration in terms of indeces, so divide result by device sample rate for time
     def get_delay_width(self):
-        assert self.event_type == 'period'
+        if self.event_type != self.PERIOD:
+            raise RuntimeError("Cannot call get_delay_width() on event type " + self.event_type) 
 
         # Find length of delay
         delay = np.argmin(self.data['pre_valve'][self.event_index:])

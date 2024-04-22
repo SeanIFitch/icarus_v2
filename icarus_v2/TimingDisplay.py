@@ -37,13 +37,13 @@ class TimingDisplay(QGroupBox):
 
 
     def update_widths(self, event):
-        if event.event_type == 'pressurize':
+        if event.get_event_type() == 'pressurize':
             pressurize_width = event.get_valve_open_time()
             self.pressurize_display.setText(f"{pressurize_width:.2f}")
-        elif event.event_type == 'depressurize':
+        elif event.get_event_type() == 'depressurize':
             depressurize_width = event.get_valve_open_time()
             self.depressurize_display.setText(f"{depressurize_width:.2f}")
-        elif event.event_type == 'period':
+        elif event.get_event_type() == 'period':
             period_width = event.get_period_width()
             delay_width = event.get_delay_width()
             self.period_display.setText(f"{period_width:.2f}")

@@ -18,7 +18,7 @@ class Counter(QObject):
 
 
     def increment_count(self, event):
-        self.counts[event.event_type] += 1
+        self.counts[event.get_event_type()] += 1
         self.update_counts.emit(self.counts)
 
         # Save counts to json every 1000 updates
