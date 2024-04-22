@@ -23,13 +23,8 @@ class PulseGenerator(QThread):
 
         self.device = device
 
-        # duration to hold valves open in ms
-        self.pressurize_width = timing_settings["pressurize_width"]
-        self.depressurize_width = timing_settings["depressurize_width"]
-
-        # period timings in s
-        self.period_width = timing_settings["period_width"]    # Time between depressurize pulses
-        self.delay_width = timing_settings["delay_width"]      # Time between depressurize and pressurize
+        # dictionary containing pressurize_width, depressurize_width, period_width, delay_width
+        self.settings = timing_settings
 
         # Whether or not the device should be currently generating pulses
         self.pulsing = False
@@ -40,10 +35,10 @@ class PulseGenerator(QThread):
         self.pulsing = True
         while self.pulsing:
             # Make sure widths are not edited in the middle of a period. Otherwise this could cause sleeping for negative times.
-            pressurize_width = self.pressurize_width
-            depressurize_width = self.depressurize_width
-            period_width = self.period_width
-            delay_width = self.delay_width
+            pressurize_width = self.settings["pressurize_width"]
+            depressurize_width = self.settings["depressurize_width"]
+            period_width = self.settings["period_width"]
+            delay_width = self.settings["delay_width"]
             # Get time before setting DIO for more precise timing
             begin_time = time()
 
@@ -99,7 +94,7 @@ class PulseGenerator(QThread):
             pressurize_width = float(pressurize_width)
         except:
             return
-        self.pressurize_width = pressurize_width
+        self.settings["pressurize_width"] = pressurize_width
 
 
     def set_depressurize_width(self, depressurize_width):
@@ -107,7 +102,7 @@ class PulseGenerator(QThread):
             depressurize_width = float(depressurize_width)
         except:
             return
-        self.depressurize_width = depressurize_width
+        self.settings["depressurize_width"] = depressurize_width
 
 
     def set_period_width(self, period_width):
@@ -115,7 +110,7 @@ class PulseGenerator(QThread):
             period_width = float(period_width)
         except:
             return
-        self.period_width = period_width
+        self.settings["period_width"] = period_width
 
 
     def set_delay_width(self, delay_width):
@@ -123,7 +118,7 @@ class PulseGenerator(QThread):
             delay_width = float(delay_width)
         except:
             return
-        self.delay_width = delay_width
+        self.settings["delay_width"] = delay_width
 
 
     # Sets channel low for duration milliseconds

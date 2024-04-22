@@ -69,12 +69,7 @@ class DataHandler:
     def save_settings(self):
         settings = {
             "counter_settings": self.counter.counts,
-            "timing_settings": {
-                "pressurize_width": self.pulse_generator.pressurize_width,
-                "depressurize_width": self.pulse_generator.depressurize_width,
-                "period_width": self.pulse_generator.period_width,
-                "delay_width": self.pulse_generator.delay_width
-            }
+            "timing_settings": self.pulse_generator.settings
         }
 
         with open(self.settings_filename, "w") as write_file:
