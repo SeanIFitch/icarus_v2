@@ -4,7 +4,12 @@ import numpy as np
 # Represents an event
 class Event():
     def __init__(self, event_type, data, event_index) -> None:
-        assert event_type == "pressurize" or event_type == "depressurize" or event_type == "period" or event_type == "pressure" or event_type == "pump"
+        assert (event_type == "pressurize" 
+            or event_type == "depressurize" 
+            or event_type == "period" 
+            or event_type == "pressure" 
+            or event_type == "pump"
+        )
 
         self.event_type = event_type
         self.data = data
@@ -15,11 +20,17 @@ class Event():
 
 
     def get_sample_pressure(self):
+        if self.event_type != 'pressure':
+            raise RuntimeError("Cannot call get_sample_pressure() on event type " + self.event_type) 
+
         sample_pressure = np.average(self.data['hi_pre_orig'])
         return sample_pressure
 
 
     def get_target_pressure(self):
+        if self.event_type != 'pressure':
+            raise RuntimeError("Cannot call get_target_pressure() on event type " + self.event_type) 
+
         target_pressure = np.average(self.data['target'])
         return target_pressure
 

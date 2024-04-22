@@ -1,6 +1,7 @@
 from PySide6.QtCore import QThread
 from SPMCRingBuffer import SPMCRingBuffer, SPMCRingBufferReader
 import numpy as np
+from array import array
 
 
 # Structure to hold data from one time slot. 
