@@ -1,7 +1,7 @@
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, Signal
 from SPMCRingBuffer import SPMCRingBuffer, SPMCRingBufferReader
 import numpy as np
-from array import array
+from RawDataLogger import RawDataLogger
 
 
 # Structure to hold data from one time slot. 
@@ -28,6 +28,8 @@ class BufferLoader(QThread):
     PRESSURE_COEFFS = np.asarray([1.0]*7)
     PRESSURE_SENSOR_OFFSET = np.asarray([0.0]*7)
 
+    raw_data_signal = Signal(object)
+
     def __init__(self, device, buffer_seconds=120) -> None:
         super().__init__()
         self.device = device
@@ -37,10 +39,16 @@ class BufferLoader(QThread):
 
 
     def run(self):
+        logger = RawDataLogger()
+        self.raw_data_signal.connect(logger.log_event)
+
         self.device.start_scan()
 
         while self.device.acquiring:
             data = self.device.read_data()
+
+            self.raw_data_signal.emit(data)
+
             processed_data = self.process_data(data)
             self.buffer.enqueue(processed_data)
 

@@ -91,7 +91,7 @@ class MainWindow(QMainWindow):
 
         # Loader
         self.loader = EventLoader()
-        self.loader.read_events("logs/log_2024-04-23_07-37-03.xz")
+        self.loader.read_events("logs/example.xz")
         self.last_event_button.clicked.connect(self.loader.emit_last_event)
         self.next_event_button.clicked.connect(self.loader.emit_next_event)
 
