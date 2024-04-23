@@ -34,7 +34,7 @@ class SlopePlot(pg.PlotWidget):
         self.setBackground(window_color)
         self.setTitle("Pressure Change Slope", color=text_color, size="14pt")
         self.showGrid(x=True, y=True)
-        self.setYRange(-2, 2, padding=0)
+        #self.setYRange(-2, 2, padding=0)
         self.setMouseEnabled(x=False, y=False) # Prevent zooming
         self.hideButtons() # Remove autoScale button
 

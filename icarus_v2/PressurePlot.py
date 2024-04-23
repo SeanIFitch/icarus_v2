@@ -49,7 +49,7 @@ class PressurePlot(pg.PlotWidget):
         self.setBackground(window_color)
         self.setTitle("Pressure", color=text_color, size="14pt")
         self.showGrid(x=True, y=True)
-        self.setYRange(0, 3, padding=0)
+        #self.setYRange(0, 3, padding=0)
         self.setMouseEnabled(x=False, y=False) # Prevent zooming
         self.hideButtons() # Remove autoScale button
 
