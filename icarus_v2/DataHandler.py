@@ -1,5 +1,5 @@
 # General utility imports
-import sys
+from EventLogger import EventLogger
 import json
 from PySide6.QtCore import Signal
 # Data collection & Device imports
@@ -47,6 +47,11 @@ class DataHandler:
         self.period_handler = PeriodHandler(self.loader, sample_rate, event_update_hz, event_display_bounds)
         self.pressure_handler = PressureHandler(self.loader, sample_rate, pressure_update_hz)
 
+        # Logger
+        self.logger = EventLogger()
+        self.pressurize_handler.event_signal.connect(self.logger.log_event)
+        self.depressurize_handler.event_signal.connect(self.logger.log_event)
+
         # Keeps track of event counts
         self.counter = Counter(self.settings["counter_settings"])
         self.counter.save_settings.connect(self.save_settings)
@@ -79,6 +84,8 @@ class DataHandler:
     # Run on quitting data collection
     def quit(self):
         self.save_settings()
+
+        self.logger.close()
 
         # Cleanup QThreads
         if self.pressurize_handler is not None:

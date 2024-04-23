@@ -9,22 +9,25 @@ class Event():
     PRESSURE = 3
     PUMP = 4
 
-    def __init__(self, event_type, data, event_index) -> None:
-        if event_type == 'pressurize':
+    def __init__(self, event_type, data, event_index, event_time=None) -> None:
+        if event_type == 'pressurize' or event_type == self.PRESSURIZE:
             self.event_type = self.PRESSURIZE
-        elif event_type == 'depressurize':
+        elif event_type == 'depressurize' or event_type == self.DEPRESSURIZE:
             self.event_type = self.DEPRESSURIZE
-        elif event_type == 'period':
+        elif event_type == 'period' or event_type == self.PERIOD:
             self.event_type = self.PERIOD
-        elif event_type == 'pressure':
+        elif event_type == 'pressure' or event_type == self.PRESSURE:
             self.event_type = self.PRESSURE
-        elif event_type == 'pump':
+        elif event_type == 'pump' or event_type == self.PUMP:
             self.event_type = self.PUMP
         else:
             raise RuntimeError(event_type + "event not supported.")
 
         self.data = data # np.ndarray(?, device_readings)
-        self.event_time = time() # float
+        if event_time == None:
+            self.event_time = time() # float
+        else:
+            self.event_time = event_time
 
         # Required for some math
         self.event_index = event_index # index where the actual event occured uint8

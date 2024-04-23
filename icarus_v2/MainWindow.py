@@ -1,14 +1,9 @@
-# General utility imports
-import sys
-import json
 # GUI imports
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import (
-    QApplication,
     QMainWindow,
     QGridLayout,
     QWidget,
-    QDialogButtonBox,
     QPushButton
 )
 from EventPlot import EventPlot
@@ -19,12 +14,8 @@ from ControlPanel import ControlPanel
 from CounterDisplay import CounterDisplay
 from TimingDisplay import TimingDisplay
 from PressureDisplay import PressureDisplay
-from ErrorDialog import open_error_dialog
-# Event handler imports
-from PressurizeHandler import PressurizeHandler
-from DepressurizeHandler import DepressurizeHandler
-from PeriodHandler import PeriodHandler
-from PressureHandler import PressureHandler
+
+from EventLoader import EventLoader
 
 
 class MainWindow(QMainWindow):
@@ -55,7 +46,15 @@ class MainWindow(QMainWindow):
         self.pressure_plot = PressurePlot()
         self.slope_plot = SlopePlot()
         self.switch_time_plot = SwitchTimePlot()
+
         self.history_reset = QPushButton("Reset History")
+        self.last_event_button = QPushButton("Last Event")
+        self.next_event_button = QPushButton("Next Event")
+        button_layout = QGridLayout()
+        button_layout.addWidget(self.history_reset, 0, 0, 0, 1)
+        button_layout.addWidget(self.last_event_button, 1, 0)
+        button_layout.addWidget(self.next_event_button, 1, 1)
+
 
         # Device control panel
         self.control_panel = ControlPanel()
@@ -74,7 +73,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.pressure_plot, 0, 1)
         main_layout.addWidget(self.slope_plot, 1, 1)
         main_layout.addWidget(self.switch_time_plot, 2, 1)
-        main_layout.addWidget(self.history_reset, 3, 1)
+        main_layout.addLayout(button_layout, 3, 1)
         main_layout.addWidget(self.pressure_display, 0, 2)
         main_layout.addWidget(self.control_panel, 1, 2, 2, 2) # span 2 slots
         main_layout.addWidget(self.counter_display, 3, 2)
@@ -90,13 +89,21 @@ class MainWindow(QMainWindow):
         self.data_handler = data_handler
         sample_rate = data_handler.get_sample_rate()
 
+        # Loader
+        self.loader = EventLoader()
+        self.loader.read_events("logs/log_2024-04-23_07-37-03.xz")
+        self.last_event_button.clicked.connect(self.loader.emit_last_event)
+        self.next_event_button.clicked.connect(self.loader.emit_next_event)
+
         # Pressurize plot
         self.pressurize_plot.set_sample_rate(sample_rate)
         data_handler.pressurize_handler.event_signal.connect(self.pressurize_plot.update_data)
+        self.loader.pressurize_event_signal.connect(self.pressurize_plot.update_data)
 
         # Depressurize plot
         self.depressurize_plot.set_sample_rate(sample_rate)
         data_handler.depressurize_handler.event_signal.connect(self.depressurize_plot.update_data)
+        self.loader.depressurize_event_signal.connect(self.depressurize_plot.update_data)
 
         # Period plot
         self.period_plot.set_sample_rate(sample_rate)
