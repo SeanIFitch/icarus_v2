@@ -1,12 +1,13 @@
 import lzma
 import pickle
-from datetime import datetime
+#from datetime import datetime
+from time import time
 
 
 class EventLogger:
     def __init__(self):
-        current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        filename = f"logs/log_{current_datetime}.xz"
+        #current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"logs/log_{time()}.xz"
         self.file = lzma.open(filename, "ab")  # Opening file in append binary mode with LZMA compression
 
 
