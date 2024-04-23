@@ -1,13 +1,13 @@
 import lzma
 import pickle
-#from datetime import datetime
+from datetime import datetime
 from PySide6.QtCore import QThread
-from time import time
+
 
 class RawDataLogger(QThread):
     def __init__(self):
-        #current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        filename = f"raw_logs/log_{time()}.xz"
+        current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"raw_logs/log_{current_datetime}.xz"
         self.file = lzma.open(filename, "ab")  # Opening file in append binary mode with LZMA compression
 
 
