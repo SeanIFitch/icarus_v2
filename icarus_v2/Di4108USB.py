@@ -122,7 +122,7 @@ class Di4108USB():
         self.sample_rate = 60000000 / (srate * dec * deca)
         self._send_cmd('srate ' + str(srate))
         self._send_cmd('dec ' + str(dec))
-        self._send_cmd('deca ' + str(deca))
+        #self._send_cmd('deca ' + str(deca))
 
         # Calculate number of bytes to read
         self.points_to_read = 64
@@ -153,8 +153,8 @@ class Di4108USB():
                 print(f"Error sending command: Response \"{expected_response.strip()}\" expected but \"{response.strip()}\" received.")
 
 
-    # Default value - pump off, valves open, not logging
-    def set_DIO(self, value = 0b1111000, check_echo = True):
+    # Default value - pump off, valves closed, not logging
+    def set_DIO(self, value = 0b1111111, check_echo = True):
         """
         Sets digital input/output state.
 
@@ -162,6 +162,7 @@ class Di4108USB():
         """
         self.current_dio = int(value)
         self._send_cmd("dout " + str(int(value)), check_echo=check_echo)
+        print("dout " + str(bin(value)))
 
 
     def _read(self, size = None, timeout = 2000):
@@ -216,7 +217,7 @@ class Di4108USB():
         with self.stop_lock:
             self._send_cmd("stop", check_echo=False)
         # Turn all valves off
-        self.set_DIO(0b1111000, check_echo = False)
+        self.set_DIO(0b1111111, check_echo = False)
 
 
     def get_current_dio(self):

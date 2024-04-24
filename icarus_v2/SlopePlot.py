@@ -59,8 +59,11 @@ class SlopePlot(pg.PlotWidget):
         # Create a dictionary of lines for each channel listed in display_channels
         for channel in self.display_channels:
             color = self.CHANNEL_COLORS[channel]
-            self.pressurize_line_references[channel] = self.plot_line(dummy_x, dummy_y, color)
-            self.depressurize_line_references[channel] = self.plot_line(dummy_x, dummy_y, color)
+            pcol = "#B9121B"
+            dcol = '#59D8E6'
+    
+            self.pressurize_line_references[channel] = self.plot_line(dummy_x, dummy_y, pcol)
+            self.depressurize_line_references[channel] = self.plot_line(dummy_x, dummy_y, dcol)
 
 
     def set_sample_rate(self, sample_rate):

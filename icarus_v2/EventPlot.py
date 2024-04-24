@@ -6,18 +6,32 @@ import numpy as np
 
 class EventPlot(pg.PlotWidget):
     # Dictionary of color to plot each channel
-    CHANNEL_COLORS = {
-        'target': '#FFDC00',        # yellow
-        'depre_low': '#FF5252',     # salmon
+    """CHANNEL_COLORS = {
+        'target': '#FFDC00',        # yellow        
+        'depre_low': '#FF5252',     # salmon 
         'depre_up': '#B9121B',      # red
         'pre_low': '#289976',       # cyan
         'pre_up': '#004B8D',        # dark blue
-        'hi_pre_orig': '#732DD9',   # purple
-        'hi_pre_sample': '#AB47BC', # magenta
+        'hi_pre_orig': '#732DD9',   # purple 
+        'hi_pre_sample': '#AB47BC', # magenta 
         'pump': '#45BF55',          # light green
-        'depre_valve': '#FD7400',   # orange
+        'depre_valve': '#FD7400',   # orange 
         'pre_valve': '#59D8E6',     # light blue
         'log': '#374140'            # gray
+    }"""
+
+    CHANNEL_COLORS = {
+        'target': '#45BF55',          # light green
+        'depre_low': '#AB47BC',     # magenta
+        'depre_up': '#004B8D',      # blue
+        'pre_low': '#AB47BC',       # magenta
+        'pre_up': '#004B8D',        # blue
+        'hi_pre_orig': '#FFDC00',   # yellow
+        'hi_pre_sample': '#FFDC00', # yellow
+        'pump': 'red',          # N/A
+        'depre_valve': '#59D8E6',   # cyan
+        'pre_valve': '#B9121B',     # red
+        'log': 'red'            # N/A
     }
 
     # Dictionary of coefficient to apply when plotting each channel
@@ -29,10 +43,10 @@ class EventPlot(pg.PlotWidget):
         'pre_up': 0.1,
         'hi_pre_orig': 0.2,
         'hi_pre_sample': 0.2,
-        'pump': 10,
-        'depre_valve': 10.1,
-        'pre_valve': 10.2,
-        'log': 10.3
+        'pump': 2000,
+        'depre_valve': 2000,
+        'pre_valve': 2000,
+        'log': 2000
     }
 
     def __init__(self, display_channels, display_offset, title, x_unit = "ms", parent=None, background='default', plotItem=None, **kargs):

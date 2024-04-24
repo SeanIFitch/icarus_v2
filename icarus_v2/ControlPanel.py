@@ -30,8 +30,8 @@ class ControlPanel(QGroupBox):
         # Initialize buttons
         self.shutdown_button = ToggleButton("Shutdown", "Restart")
         self.pump_button = ToggleButton("Pump on", "Pump off")
-        self.pressurize_button = ToggleButton("Pressurize close", "Pressurize open")
-        self.depressurize_button = ToggleButton("Depressurize close", "Depressurize open")
+        self.pressurize_button = ToggleButton("Pressurize open", "Pressurize close")
+        self.depressurize_button = ToggleButton("Depressurize open", "Depressurize close")
         self.pulse_button = ToggleButton("Start pulsing", "Stop pulsing")
         self.timing_settings_button = QPushButton("Pulse Settings")
 
@@ -92,12 +92,12 @@ class ControlPanel(QGroupBox):
 
         self.shutdown_button.set_check_function(self.on_shutdown)
         self.shutdown_button.set_uncheck_function(self.on_restart)
-        self.pump_button.set_check_function(self.pulse_generator.set_pump_high)
-        self.pump_button.set_uncheck_function(self.pulse_generator.set_pump_low)
-        self.pressurize_button.set_check_function(self.pulse_generator.set_pressurize_high)
-        self.pressurize_button.set_uncheck_function(self.pulse_generator.set_pressurize_low)
-        self.depressurize_button.set_check_function(self.pulse_generator.set_depressurize_high)
-        self.depressurize_button.set_uncheck_function(self.pulse_generator.set_depressurize_low)
+        self.pump_button.set_uncheck_function(self.pulse_generator.set_pump_high)
+        self.pump_button.set_check_function(self.pulse_generator.set_pump_low)
+        self.pressurize_button.set_check_function(self.pulse_generator.set_pressurize_low)
+        self.pressurize_button.set_uncheck_function(self.pulse_generator.set_pressurize_high)
+        self.depressurize_button.set_check_function(self.pulse_generator.set_depressurize_low)
+        self.depressurize_button.set_uncheck_function(self.pulse_generator.set_depressurize_high)
         self.pulse_button.set_check_function(self.on_start_pulsing)
         self.pulse_button.set_uncheck_function(self.on_quit_pulsing)
         self.timing_settings_button.clicked.connect(self.open_timing_dialog)
@@ -113,8 +113,8 @@ class ControlPanel(QGroupBox):
         # Open valves
         self.pressurize_button.setEnabled(False)
         self.depressurize_button.setEnabled(False)
-        self.pressurize_button.setChecked(False)
-        self.depressurize_button.setChecked(False)
+        self.pressurize_button.setChecked(True)
+        self.depressurize_button.setChecked(True)
 
         # Revert to manual mode
         self.console_button.setChecked(False)
@@ -135,8 +135,8 @@ class ControlPanel(QGroupBox):
         self.depressurize_button.setEnabled(False)
 
         # Close valves
-        self.pressurize_button.setChecked(True)
-        self.depressurize_button.setChecked(True)
+        self.pressurize_button.setChecked(False)
+        self.depressurize_button.setChecked(False)
         # Prevents 2 depressurize events in the same chunk
         # One chunk is update_rate^-1 = 30^-1 = 0.0333 seconds
         sleep(0.05)

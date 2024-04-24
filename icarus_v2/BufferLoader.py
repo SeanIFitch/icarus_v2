@@ -25,7 +25,8 @@ device_readings = np.dtype([
 class BufferLoader(QThread):
     # Constants for pressure conversion
     # TODO: get actual values for these. there should be a method for setting and storing offsets.
-    PRESSURE_COEFFS = np.asarray([1, 20, 20, 20, 20, 10000]) # PSI
+    #PRESSURE_COEFFS = np.asarray([1, 20, 20, 20, 20, 10000, 10000]) # PSI
+    PRESSURE_COEFFS = np.asarray([1] * 7) # PSI
     PRESSURE_SENSOR_OFFSET = np.asarray([0.0]*7)
 
     raw_data_signal = Signal(object)

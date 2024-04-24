@@ -35,9 +35,9 @@ class MainWindow(QMainWindow):
         # Pressure event plots
         self.pressure_event_display_range = (-10,140) # How much data to view around pressurize events
         display_offset = 10
-        pressurize_channels = ['target', 'pre_low', 'pre_up', 'hi_pre_sample', 'depre_valve', 'pre_valve']
-        depressurize_channels = ['target', 'depre_low', 'depre_up', 'hi_pre_sample', 'depre_valve', 'pre_valve']
-        period_channels = ['target', 'hi_pre_orig', 'hi_pre_sample', 'pump', 'depre_valve', 'pre_valve']
+        pressurize_channels = ['target', 'pre_low', 'pre_up', 'hi_pre_sample', 'hi_pre_orig', 'depre_valve', 'pre_valve']
+        depressurize_channels = ['target', 'depre_low', 'depre_up', 'hi_pre_sample', 'hi_pre_orig', 'depre_valve', 'pre_valve']
+        period_channels = ['target', 'hi_pre_orig', 'hi_pre_sample', 'depre_valve', 'pre_valve']
         self.pressurize_plot = EventPlot(pressurize_channels, display_offset, "Pressurize")
         self.depressurize_plot = EventPlot(depressurize_channels, display_offset, "Depressurize")
         self.period_plot = EventPlot(period_channels, display_offset, "Period", x_unit="s")
@@ -91,7 +91,7 @@ class MainWindow(QMainWindow):
 
         # Loader
         self.loader = EventLoader()
-        self.loader.read_events("logs/example.xz")
+        self.loader.read_events("logs/log_2024-04-23_12-06-28.xz")
         self.last_event_button.clicked.connect(self.loader.emit_last_event)
         self.next_event_button.clicked.connect(self.loader.emit_next_event)
 

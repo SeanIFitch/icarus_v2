@@ -4,7 +4,9 @@ import pyqtgraph as pg
 import numpy as np
 from time import time
 
+# red and yellow
 
+# Right before depressurization
 class PressurePlot(pg.PlotWidget):
     # Dictionary of color to plot each channel
     CHANNEL_COLORS = {
@@ -13,8 +15,8 @@ class PressurePlot(pg.PlotWidget):
         'depre_up': '#B9121B',      # red
         'pre_low': '#289976',       # cyan
         'pre_up': '#004B8D',        # dark blue
-        'hi_pre_orig': '#732DD9',   # purple
-        'hi_pre_sample': '#AB47BC', # magenta
+        'hi_pre_orig': '#FFDC00',   # purple
+        'hi_pre_sample': '#FFDC00', # magenta
         'pump': '#45BF55',          # light green
         'depre_valve': '#FD7400',   # orange
         'pre_valve': '#59D8E6',     # light blue

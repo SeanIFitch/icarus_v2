@@ -40,7 +40,7 @@ class DataHandler:
         # Event handlers
         sample_rate = self.get_sample_rate()
         event_update_hz = 30
-        pressure_update_hz = 2
+        pressure_update_hz = 3
         event_display_bounds = (-10,140)
         self.pressurize_handler = PressurizeHandler(self.loader, sample_rate, event_update_hz, event_display_bounds)
         self.depressurize_handler = DepressurizeHandler(self.loader, sample_rate, event_update_hz, event_display_bounds)

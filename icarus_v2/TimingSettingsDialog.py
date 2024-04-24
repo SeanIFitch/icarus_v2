@@ -54,10 +54,10 @@ class TimingSettingsDialog(QDialog):
         self.delay_edit.setValidator(positive_validator)
 
         # Connect LineEdits
-        self.pressurize_width = self.pulse_generator.pressurize_width
-        self.depressurize_width = self.pulse_generator.depressurize_width
-        self.period_width = self.pulse_generator.period_width
-        self.delay_width = self.pulse_generator.delay_width
+        self.pressurize_width = self.pulse_generator.settings['pressurize_width']
+        self.depressurize_width = self.pulse_generator.settings['depressurize_width']
+        self.period_width = self.pulse_generator.settings['period_width']
+        self.delay_width = self.pulse_generator.settings['delay_width']
         self.pressurize_edit.setText(str(self.pressurize_width))
         self.depressurize_edit.setText(str(self.depressurize_width))
         self.period_edit.setText(str(self.period_width))
@@ -90,10 +90,10 @@ class TimingSettingsDialog(QDialog):
             error = "Pressurize width should be greater than 8ms."
         elif self.depressurize_width < 8:
             error = "Depressurize width should be greater than 8ms."
-        elif self.period_width < 1:
-            error = "Period width should be greater than 1s."
-        elif self.delay_width < 0.15:
-            error = "Delay width should be greater than 0.15s."
+        elif self.period_width < 3:
+            error = "Period width should be greater than 3s."
+        elif self.delay_width < 0.05:
+            error = "Delay width should be greater than 0.05s."
         elif self.pressurize_width / 1000 >= self.period_width:
             error = "Pressurize width should be less than Period width."
         elif self.depressurize_width / 1000 >= self.period_width:
