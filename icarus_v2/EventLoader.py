@@ -10,11 +10,11 @@ class EventLoader(QObject):
 
     def __init__(self):
         super().__init__()
-        self.events = []
-        self.index = 0
 
 
     def read_events(self, filename):
+        self.events = []
+        self.index = 0
         file = lzma.open(filename, "rb")  # Open file in read binary mode
         try:
             while True:

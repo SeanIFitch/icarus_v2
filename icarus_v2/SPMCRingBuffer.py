@@ -20,7 +20,12 @@ class SPMCRingBuffer:
     def enqueue(self, data):
         start = self.write_index % self.capacity
         end = start + len(data)
-        self.buffer[start:end] = data
+        if end < self.capacity:
+            self.buffer[start:end] = data
+        # Case where writing over end of buffer
+        else:
+            self.buffer[start:] = data[:self.capacity - start]
+            self.buffer[:end - self.capacity] = data[self.capacity - start:]
         self.write_index += len(data)
 
         # Notify readers that new data is available

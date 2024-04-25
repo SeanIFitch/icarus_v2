@@ -32,7 +32,7 @@ class DataHandler:
             return False
 
         # Loads data from device into buffer
-        self.loader = BufferLoader(device)
+        self.loader = BufferLoader(device, 5)
 
         # Controls device DIO
         self.pulse_generator = PulseGenerator(device, self.settings["timing_settings"])

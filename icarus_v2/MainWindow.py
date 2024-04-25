@@ -4,7 +4,8 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QGridLayout,
     QWidget,
-    QPushButton
+    QPushButton,
+    QFileDialog
 )
 from EventPlot import EventPlot
 from PressurePlot import PressurePlot
@@ -48,12 +49,16 @@ class MainWindow(QMainWindow):
         self.switch_time_plot = SwitchTimePlot()
 
         self.history_reset = QPushButton("Reset History")
+
+        # Logging
+        self.file_button = QPushButton("Choose File")
         self.last_event_button = QPushButton("Last Event")
         self.next_event_button = QPushButton("Next Event")
         button_layout = QGridLayout()
         button_layout.addWidget(self.history_reset, 0, 0, 0, 1)
         button_layout.addWidget(self.last_event_button, 1, 0)
         button_layout.addWidget(self.next_event_button, 1, 1)
+        button_layout.addWidget(self.file_button, 2, 0, 2, 1)
 
 
         # Device control panel
@@ -84,26 +89,37 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(widget)
 
 
+    def on_file(self):
+        file = QFileDialog.getOpenFileName(self, "Open Log", "logs", "Log Files (*.xz)")[0]
+        self.loader.read_events(file)
+        print(len(self.loader.events))
+
+    def init_loader(self):
+
+        self.pressurize_plot.set_sample_rate(4000)
+        self.depressurize_plot.set_sample_rate(4000)
+        # Loader
+        self.loader = EventLoader()
+        self.last_event_button.clicked.connect(self.loader.emit_last_event)
+        self.next_event_button.clicked.connect(self.loader.emit_next_event)
+        self.file_button.clicked.connect(self.on_file)
+
+        self.loader.pressurize_event_signal.connect(self.pressurize_plot.update_data)
+        self.loader.depressurize_event_signal.connect(self.depressurize_plot.update_data)
+
+
     # Connects widgets to backend
     def set_device(self, data_handler):
         self.data_handler = data_handler
         sample_rate = data_handler.get_sample_rate()
 
-        # Loader
-        self.loader = EventLoader()
-        self.loader.read_events("logs/log_2024-04-23_12-06-28.xz")
-        self.last_event_button.clicked.connect(self.loader.emit_last_event)
-        self.next_event_button.clicked.connect(self.loader.emit_next_event)
-
         # Pressurize plot
         self.pressurize_plot.set_sample_rate(sample_rate)
         data_handler.pressurize_handler.event_signal.connect(self.pressurize_plot.update_data)
-        self.loader.pressurize_event_signal.connect(self.pressurize_plot.update_data)
 
         # Depressurize plot
         self.depressurize_plot.set_sample_rate(sample_rate)
         data_handler.depressurize_handler.event_signal.connect(self.depressurize_plot.update_data)
-        self.loader.depressurize_event_signal.connect(self.depressurize_plot.update_data)
 
         # Period plot
         self.period_plot.set_sample_rate(sample_rate)

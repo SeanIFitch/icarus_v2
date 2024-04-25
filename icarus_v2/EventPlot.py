@@ -6,32 +6,18 @@ import numpy as np
 
 class EventPlot(pg.PlotWidget):
     # Dictionary of color to plot each channel
-    """CHANNEL_COLORS = {
-        'target': '#FFDC00',        # yellow        
-        'depre_low': '#FF5252',     # salmon 
-        'depre_up': '#B9121B',      # red
-        'pre_low': '#289976',       # cyan
-        'pre_up': '#004B8D',        # dark blue
-        'hi_pre_orig': '#732DD9',   # purple 
-        'hi_pre_sample': '#AB47BC', # magenta 
-        'pump': '#45BF55',          # light green
-        'depre_valve': '#FD7400',   # orange 
-        'pre_valve': '#59D8E6',     # light blue
-        'log': '#374140'            # gray
-    }"""
-
     CHANNEL_COLORS = {
-        'target': '#45BF55',          # light green
+        'target': '#45BF55',        # light green
         'depre_low': '#AB47BC',     # magenta
         'depre_up': '#004B8D',      # blue
         'pre_low': '#AB47BC',       # magenta
         'pre_up': '#004B8D',        # blue
         'hi_pre_orig': '#FFDC00',   # yellow
         'hi_pre_sample': '#FFDC00', # yellow
-        'pump': 'red',          # N/A
+        'pump': None,               # N/A
         'depre_valve': '#59D8E6',   # cyan
         'pre_valve': '#B9121B',     # red
-        'log': 'red'            # N/A
+        'log': None                 # N/A
     }
 
     # Dictionary of coefficient to apply when plotting each channel

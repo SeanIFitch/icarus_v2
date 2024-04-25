@@ -118,11 +118,9 @@ class Di4108USB():
         # Device reports 1 value per (dec * deca) readings. (default is by CIC filtering)
         srate = 3000
         dec = 5
-        deca = 1
-        self.sample_rate = 60000000 / (srate * dec * deca)
+        self.sample_rate = 60000000 / (srate * dec)
         self._send_cmd('srate ' + str(srate))
         self._send_cmd('dec ' + str(dec))
-        #self._send_cmd('deca ' + str(deca))
 
         # Calculate number of bytes to read
         self.points_to_read = 64
@@ -162,7 +160,6 @@ class Di4108USB():
         """
         self.current_dio = int(value)
         self._send_cmd("dout " + str(int(value)), check_echo=check_echo)
-        print("dout " + str(bin(value)))
 
 
     def _read(self, size = None, timeout = 2000):
