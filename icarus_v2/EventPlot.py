@@ -78,7 +78,10 @@ class EventPlot(pg.PlotWidget):
         self.line_references = {}
         for channel in display_channels:
             color = self.CHANNEL_COLORS[channel]
-            self.line_references[channel] = self.plot_line(dummy_x, dummy_y, color)
+            if channel == Channel.HI_PRE_SAMPLE:
+                 self.line_references[channel] = self.plot_line(dummy_x, dummy_y, color, Qt.DashLine)
+            else:
+                 self.line_references[channel] = self.plot_line(dummy_x, dummy_y, color)
 
 
     def set_sample_rate(self, sample_rate):

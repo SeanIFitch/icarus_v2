@@ -8,9 +8,7 @@ from PySide6.QtWidgets import (
     QFileDialog
 )
 from EventPlot import EventPlot
-from PressurePlot import PressurePlot
-from SlopePlot import SlopePlot
-from SwitchTimePlot import SwitchTimePlot
+from HistoryPlot import HistoryPlot
 from ControlPanel import ControlPanel
 from CounterDisplay import CounterDisplay
 from TimingDisplay import TimingDisplay
@@ -42,10 +40,7 @@ class MainWindow(QMainWindow):
         self.period_plot = EventPlot(Event.PERIOD, display_offset)
 
         # History plots
-        self.pressure_plot = PressurePlot()
-        self.slope_plot = SlopePlot()
-        self.switch_time_plot = SwitchTimePlot()
-
+        self.history_plot = HistoryPlot(4000)
         self.history_reset = QPushButton("Reset History")
 
         # Logging
@@ -53,10 +48,10 @@ class MainWindow(QMainWindow):
         self.last_event_button = QPushButton("Last Event")
         self.next_event_button = QPushButton("Next Event")
         button_layout = QGridLayout()
-        button_layout.addWidget(self.history_reset, 0, 0, 0, 1)
+        button_layout.addWidget(self.history_reset, 0, 0, 1, 2)
         button_layout.addWidget(self.last_event_button, 1, 0)
         button_layout.addWidget(self.next_event_button, 1, 1)
-        button_layout.addWidget(self.file_button, 2, 0, 2, 1)
+        button_layout.addWidget(self.file_button, 2, 0, 1, 2)
 
 
         # Device control panel
@@ -73,12 +68,10 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.depressurize_plot, 1, 0)
         main_layout.addWidget(self.period_plot, 2, 0)
         main_layout.addWidget(self.timing_display, 3, 0)
-        main_layout.addWidget(self.pressure_plot, 0, 1)
-        main_layout.addWidget(self.slope_plot, 1, 1)
-        main_layout.addWidget(self.switch_time_plot, 2, 1)
+        main_layout.addWidget(self.history_plot, 0, 1, 3, 1)
         main_layout.addLayout(button_layout, 3, 1)
         main_layout.addWidget(self.pressure_display, 0, 2)
-        main_layout.addWidget(self.control_panel, 1, 2, 2, 2) # span 2 slots
+        main_layout.addWidget(self.control_panel, 1, 2, 2, 2)
         main_layout.addWidget(self.counter_display, 3, 2)
 
         # Add layout to dummy widget and apply to main window
@@ -123,28 +116,15 @@ class MainWindow(QMainWindow):
         self.period_plot.set_sample_rate(sample_rate)
         data_handler.period_handler.event_signal.connect(self.period_plot.update_data)
 
-        # Pressure plot
-        data_handler.pressurize_handler.event_signal.connect(self.pressure_plot.update_data)
-
-        # Slope plot
-        self.slope_plot.set_sample_rate(sample_rate)
-        data_handler.pressurize_handler.event_signal.connect(self.slope_plot.update_pressurize_data)
-        data_handler.depressurize_handler.event_signal.connect(self.slope_plot.update_depressurize_data)
-
-        # Switch time plot
-        self.switch_time_plot.set_sample_rate(sample_rate)
-        data_handler.pressurize_handler.event_signal.connect(self.switch_time_plot.update_pressurize_data)
-        data_handler.depressurize_handler.event_signal.connect(self.switch_time_plot.update_depressurize_data)
+        # History plot
+        data_handler.pressurize_handler.event_signal.connect(self.history_plot.add_event)
+        data_handler.depressurize_handler.event_signal.connect(self.history_plot.add_event)
+        self.history_reset.clicked.connect(self.history_plot.reset_history)
 
         # Timings display
         data_handler.pressurize_handler.event_signal.connect(self.timing_display.update_widths)
         data_handler.depressurize_handler.event_signal.connect(self.timing_display.update_widths)
         data_handler.period_handler.event_signal.connect(self.timing_display.update_widths)
-
-        # Reset button
-        self.history_reset.clicked.connect(self.pressure_plot.reset_lines)
-        self.history_reset.clicked.connect(self.slope_plot.reset_lines)
-        self.history_reset.clicked.connect(self.switch_time_plot.reset_lines)
 
         # Pressure display
         data_handler.pressure_handler.event_signal.connect(self.pressure_display.update_pressure)

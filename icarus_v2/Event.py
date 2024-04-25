@@ -4,6 +4,7 @@ from Channel import Channel, get_channel
 
 
 # Represents an event
+# All methods which extract information for plotting are in this class
 class Event():
     PRESSURIZE = 0
     DEPRESSURIZE = 1
@@ -28,6 +29,31 @@ class Event():
         self.event_index = event_index # index where the actual event occured uint8
 
 
+    # used to call all info functions
+    def get_event_info(self, info_type):
+        if info_type == "origin pressure":
+            return self.get_initial_origin()
+        elif info_type == "sample pressure":
+            return self.get_initial_sample()
+        elif info_type == "depress origin slope":
+            return self.get_origin_slope()
+        elif info_type == "depress sample slope":
+            return self.get_sample_slope()
+        elif info_type == "press origin slope":
+            return self.get_origin_slope()
+        elif info_type == "press sample slope":
+            return self.get_sample_slope()
+        elif info_type == "depress origin switch":
+            return self.get_origin_switch_time()
+        elif info_type == "depress sample switch":
+            return self.get_sample_switch_time()
+        elif info_type == "press origin switch":
+            return self.get_origin_switch_time()
+        elif info_type == "press sample switch":
+            return self.get_sample_switch_time()
+
+
+    # Average of entire event
     def get_sample_pressure(self):
         if self.event_type != self.PRESSURE:
             raise RuntimeError("Cannot call get_sample_pressure() on event type " + self.event_type) 
@@ -36,6 +62,7 @@ class Event():
         return sample_pressure
 
 
+    # Average of entire event
     def get_target_pressure(self):
         if self.event_type != self.PRESSURE:
             raise RuntimeError("Cannot call get_target_pressure() on event type " + self.event_type) 
@@ -79,3 +106,62 @@ class Event():
         # Find length of delay
         delay = np.argmin(get_channel(self.data, Channel.PRE_VALVE)[self.event_index:])
         return delay
+
+
+    # Returns pressure before event starts
+    def get_initial_sample(self):
+        if self.event_type != self.DEPRESSURIZE:
+            raise RuntimeError("Cannot call get_initial_sample() on event type " + self.event_type)
+
+        sample_pressure = np.average(get_channel(self.data, Channel.HI_PRE_SAMPLE)[:self.event_index])
+        return sample_pressure
+
+
+    # Returns pressure before event starts
+    def get_initial_origin(self):
+        if self.event_type != self.DEPRESSURIZE:
+            raise RuntimeError("Cannot call get_initial_origin() on event type " + self.event_type)
+
+        sample_pressure = np.average(get_channel(self.data, Channel.HI_PRE_ORIG)[:self.event_index])
+        return sample_pressure
+
+
+    # Returns difference of index of half max and event_index
+    def get_origin_switch_time(self):
+        if self.event_type != self.DEPRESSURIZE and self.event_type != self.PRESSURIZE:
+            raise RuntimeError("Cannot call get_origin_slope() on event type " + self.event_type)
+
+        data = get_channel(self.data, Channel.HI_PRE_ORIG)
+        minimum = np.min(data)
+        data_range = np.max(data) - minimum
+        half_max = minimum + (data_range / 2)
+        half_max_index = np.argmin(np.abs(data - half_max))
+
+        return half_max_index - self.event_index
+
+
+    # Returns difference of index of half max and event_index
+    def get_sample_switch_time(self):
+        if self.event_type != self.DEPRESSURIZE and self.event_type != self.PRESSURIZE:
+            raise RuntimeError("Cannot call get_origin_slope() on event type " + self.event_type)
+
+        data = get_channel(self.data, Channel.HI_PRE_SAMPLE)
+        minimum = np.min(data)
+        data_range = np.max(data) - minimum
+        half_max = minimum + (data_range / 2)
+        half_max_index = np.argmin(np.abs(data - half_max))
+
+        return half_max_index - self.event_index
+
+
+    def get_origin_slope(self):
+        if self.event_type != self.DEPRESSURIZE and self.event_type != self.PRESSURIZE:
+            raise RuntimeError("Cannot call get_origin_slope() on event type " + self.event_type)
+
+        return np.random.randint(-5, 5)
+
+    def get_sample_slope(self):
+        if self.event_type != self.DEPRESSURIZE and self.event_type != self.PRESSURIZE:
+            raise RuntimeError("Cannot call get_sample_slope() on event type " + self.event_type)
+
+        return np.random.randint(-5, 5)
