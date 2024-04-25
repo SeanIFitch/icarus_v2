@@ -2,46 +2,59 @@ from PySide6.QtGui import QPalette
 from PySide6.QtCore import Qt
 import pyqtgraph as pg
 import numpy as np
+from Channel import Channel, get_channel
+from Event import Event
 
 
 class EventPlot(pg.PlotWidget):
     # Dictionary of color to plot each channel
     CHANNEL_COLORS = {
-        'target': '#45BF55',        # light green
-        'depre_low': '#AB47BC',     # magenta
-        'depre_up': '#004B8D',      # blue
-        'pre_low': '#AB47BC',       # magenta
-        'pre_up': '#004B8D',        # blue
-        'hi_pre_orig': '#FFDC00',   # yellow
-        'hi_pre_sample': '#FFDC00', # yellow
-        'pump': None,               # N/A
-        'depre_valve': '#59D8E6',   # cyan
-        'pre_valve': '#B9121B',     # red
-        'log': None                 # N/A
+        Channel.TARGET: '#45BF55',        # light green
+        Channel.DEPRE_LOW: '#AB47BC',     # magenta
+        Channel.DEPRE_UP: '#004B8D',      # blue
+        Channel.PRE_LOW: '#AB47BC',       # magenta
+        Channel.PRE_UP: '#004B8D',        # blue
+        Channel.HI_PRE_ORIG: '#FFDC00',   # yellow
+        Channel.HI_PRE_SAMPLE: '#FFDC00', # yellow
+        Channel.PUMP: None,               # N/A
+        Channel.DEPRE_VALVE: '#59D8E6',   # cyan
+        Channel.PRE_VALVE: '#B9121B',     # red
+        Channel.LOG: None                 # N/A
     }
 
     # Dictionary of coefficient to apply when plotting each channel
     CHANNEL_COEFFICIENTS = {
-        'target': 0.2,
-        'depre_low': 0.1,
-        'depre_up': 0.1,
-        'pre_low': 0.1,
-        'pre_up': 0.1,
-        'hi_pre_orig': 0.2,
-        'hi_pre_sample': 0.2,
-        'pump': 2000,
-        'depre_valve': 2000,
-        'pre_valve': 2000,
-        'log': 2000
+        Channel.TARGET: 0.2,
+        Channel.DEPRE_LOW: 0.1,
+        Channel.DEPRE_UP: 0.1,
+        Channel.PRE_LOW: 0.1,
+        Channel.PRE_UP: 0.1,
+        Channel.HI_PRE_ORIG: 0.2,
+        Channel.HI_PRE_SAMPLE: 0.2,
+        Channel.PUMP: 2000,
+        Channel.DEPRE_VALVE: 2000,
+        Channel.PRE_VALVE: 2000,
+        Channel.LOG: 2000
     }
 
-    def __init__(self, display_channels, display_offset, title, x_unit = "ms", parent=None, background='default', plotItem=None, **kargs):
-        super().__init__(parent, background, plotItem, **kargs)
+    def __init__(self, event_type, display_offset):
+        super().__init__()
+
+        if event_type == Event.PRESSURIZE:
+            display_channels = [Channel.TARGET, Channel.PRE_LOW, Channel.PRE_UP, Channel.HI_PRE_SAMPLE, Channel.HI_PRE_ORIG, Channel.DEPRE_VALVE, Channel.PRE_VALVE]
+            self.x_unit = 'ms'
+            title = "Pressurize"
+        elif event_type == Event.DEPRESSURIZE:
+            display_channels = [Channel.TARGET, Channel.DEPRE_LOW, Channel.DEPRE_UP, Channel.HI_PRE_SAMPLE, Channel.HI_PRE_ORIG, Channel.DEPRE_VALVE, Channel.PRE_VALVE]
+            self.x_unit = 'ms'
+            title = "Depressurize"
+        elif event_type == Event.PERIOD:
+            display_channels = [Channel.TARGET, Channel.HI_PRE_SAMPLE, Channel.HI_PRE_ORIG, Channel.DEPRE_VALVE, Channel.PRE_VALVE]
+            self.x_unit = 's'
+            title = "Period"
 
         # Amount of time in ms to offset x axis. t=0 should be the event occurence.
         self.display_offset = display_offset
-        # Unit for x-axis
-        self.x_unit = x_unit
 
         window_color = self.palette().color(QPalette.Window)
         text_color = self.palette().color(QPalette.WindowText)
@@ -56,7 +69,7 @@ class EventPlot(pg.PlotWidget):
         # Axis Labels
         styles = {'color':text_color}
         self.setLabel('left', 'Pressure (kbar)', **styles)
-        self.setLabel('bottom', f'Time ({x_unit})', **styles)
+        self.setLabel('bottom', f'Time ({self.x_unit})', **styles)
 
         dummy_x = [-10,140]
         dummy_y = [0,0]
@@ -86,7 +99,7 @@ class EventPlot(pg.PlotWidget):
         # update data for each line
         for channel, line_reference in self.line_references.items():
             coefficient = self.CHANNEL_COEFFICIENTS[channel]
-            line_reference.setData(times, data[channel] * coefficient)
+            line_reference.setData(times, get_channel(data, channel) * coefficient)
 
 
     def plot_line(self, x, y, color, style = Qt.SolidLine):

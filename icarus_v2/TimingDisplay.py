@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QLabel
 )
+from Event import Event
 
 
 # Panel for counts of valves and such
@@ -37,13 +38,15 @@ class TimingDisplay(QGroupBox):
 
 
     def update_widths(self, event):
-        if event.get_event_type() == 'pressurize':
+        if event.event_type == Event.PRESSURIZE:
             pressurize_width = event.get_valve_open_time()
             self.pressurize_display.setText(f"{pressurize_width:.2f}")
-        elif event.get_event_type() == 'depressurize':
+
+        elif event.event_type == Event.DEPRESSURIZE:
             depressurize_width = event.get_valve_open_time()
             self.depressurize_display.setText(f"{depressurize_width:.2f}")
-        elif event.get_event_type() == 'period':
+
+        elif event.event_type == Event.PERIOD:
             period_width = event.get_period_width()
             delay_width = event.get_delay_width()
             self.period_display.setText(f"{period_width:.2f}")

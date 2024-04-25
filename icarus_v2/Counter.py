@@ -1,4 +1,5 @@
 from PySide6.QtCore import Signal, QObject
+from Event import Event
 
 
 # Keeps track of and logs valve counts
@@ -18,7 +19,13 @@ class Counter(QObject):
 
 
     def increment_count(self, event):
-        self.counts[event.get_event_type()] += 1
+        if event.event_type == Event.PUMP:
+            self.counts["pump"] += 1
+        elif event.event_type == Event.PRESSURIZE:
+            self.counts["pressurize"] += 1
+        elif event.event_type == Event.DEPRESSURIZE:
+            self.counts["depressurize"] += 1
+
         self.update_counts.emit(self.counts)
 
         # Save counts to json every 1000 updates
