@@ -6,7 +6,7 @@ from Event import Event
 class PressureHandler(EventHandler):
     def __init__(self, loader, sample_rate, update_rate) -> None:
         super().__init__(loader, sample_rate, update_rate)
-        self.event_type = "pressure"
+        self.event_type = Event.PRESSURE
 
 
     # Loops to transmit data if an event occurs

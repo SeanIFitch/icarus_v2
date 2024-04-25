@@ -9,11 +9,9 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
 
-    try:
-        data_handler = DataHandler("settings.json")
-        window.set_device(data_handler)
-    except:
-        print("failed to connect")
+    data_handler = DataHandler("settings.json")
+    window.set_device(data_handler)
+
     window.init_loader()
 
     app.exec()

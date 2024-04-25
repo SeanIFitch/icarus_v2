@@ -1,7 +1,7 @@
 # General utility imports
-from EventLogger import EventLogger
+from Logger import Logger
 import json
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QObject
 # Data collection & Device imports
 from Di4108USB import Di4108USB
 from BufferLoader import BufferLoader
@@ -14,7 +14,7 @@ from PeriodHandler import PeriodHandler
 from PressureHandler import PressureHandler
 
 # Define the DataHandler class
-class DataHandler:
+class DataHandler(QObject):
     display_error = Signal(str)
 
     def __init__(self, settings_filename):
@@ -32,7 +32,7 @@ class DataHandler:
             return False
 
         # Loads data from device into buffer
-        self.loader = BufferLoader(device, 5)
+        self.loader = BufferLoader(device)
 
         # Controls device DIO
         self.pulse_generator = PulseGenerator(device, self.settings["timing_settings"])
@@ -48,7 +48,7 @@ class DataHandler:
         self.pressure_handler = PressureHandler(self.loader, sample_rate, pressure_update_hz)
 
         # Logger
-        self.logger = EventLogger()
+        self.logger = Logger()
         self.pressurize_handler.event_signal.connect(self.logger.log_event)
         self.depressurize_handler.event_signal.connect(self.logger.log_event)
 

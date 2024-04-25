@@ -1,5 +1,7 @@
 from EventHandler import EventHandler
 import numpy as np
+from Channel import Channel, get_channel
+from Event import Event
 
 
 # Detects a period event and transmits data to plot
@@ -9,14 +11,14 @@ class PeriodHandler(EventHandler):
         self.event_report_range = event_report_range # tuple of range of ms around an event to report e.g. (-10,140)
         self.last_depressurize_bit = None # variable to keep track of edges of data chunks in case an event lines up with the start of a chunk
         self.last_depressurize_event = None # variable to keep track of index of last depressurize event
-        self.event_type = "period"
+        self.event_type = Event.PERIOD
 
 
     # Data: one chunk from the reader
     # Returns whether a depressurize event occurs and the index of the event
     # This logic is the same as for DepressurizeHandler
     def detect_event(self, data):
-        depre_valve = data['depre_valve']
+        depre_valve = get_channel(data, Channel.DEPRE_VALVE)
         # valve array with prior value inserted and last value popped
         valve_offset = np.insert(depre_valve, 0, self.last_depressurize_bit)[:-1]
 

@@ -13,21 +13,10 @@ class Di4108USB():
         """
         Initializes a di_4108 object and sets up device for reading.
         """
-        self.acquiring = True
-        self.sample_rate = 0
-        self.usb_buff = 0
-        self.device = None
-        self.endpoint_in = None
-        self.endpoint_out = None
-        self.points_to_read = 0
-        self.channels_to_read = 0
-        self.bytes_to_read = 0
-        self.current_dio = None
-
         self.stop_lock = Lock() # Used to make sure you do not stop the device while reading
 
-        self._find_device()
-        self._setup_device()
+        self.find_device()
+        self.setup_device()
 
 
     def __enter__(self):
@@ -46,7 +35,7 @@ class Di4108USB():
         self.close_device()
 
 
-    def _find_device(self):
+    def find_device(self):
         """
         Finds the usb device.
         
@@ -76,7 +65,7 @@ class Di4108USB():
                 raise RuntimeError
 
 
-    def _setup_device(self):
+    def setup_device(self):
         # Reinitialize device
         self.device.reset()
         # Set the first configuration as active
@@ -98,13 +87,13 @@ class Di4108USB():
         # Stop in case device was left running
         self.stop()
         # Set all dio ports to switches
-        self._send_cmd("endo 127")
+        self.send_cmd("endo 127")
         # Define binary output mode
-        self._send_cmd("encode 0")
+        self.send_cmd("encode 0")
         # Set packet size = 1024 bytes
-        self._send_cmd("ps 6")
+        self.send_cmd("ps 6")
         # Set all channels to CIC filtering
-        self._send_cmd("filter * 1")
+        self.send_cmd("filter * 1")
 
         # Set slist which is order of channels to sample. See device protocol for more info.
         # Prior documentation said this was:
@@ -112,15 +101,15 @@ class Di4108USB():
         # This is actually A0-A6 at +-10V, Digital
         slist = ["0 0","1 1","2 2","3 3","4 4","5 5","6 6","7 8"]
         for i in slist:
-            self._send_cmd("slist " + i)
+            self.send_cmd("slist " + i)
 
         # Sample rate (Hz) = 60,000,000 / (srate * dec * deca)
         # Device reports 1 value per (dec * deca) readings. (default is by CIC filtering)
         srate = 3000
         dec = 5
         self.sample_rate = 60000000 / (srate * dec)
-        self._send_cmd('srate ' + str(srate))
-        self._send_cmd('dec ' + str(dec))
+        self.send_cmd('srate ' + str(srate))
+        self.send_cmd('dec ' + str(dec))
 
         # Calculate number of bytes to read
         self.points_to_read = 64
@@ -129,7 +118,7 @@ class Di4108USB():
         self.bytes_to_read = self.channels_to_read * 2 * self.points_to_read
 
 
-    def _send_cmd(self, command, encoding='utf-8', check_echo = True):
+    def send_cmd(self, command, encoding='utf-8', check_echo = True):
         """
         Sends a command to the USB device.
 
@@ -143,7 +132,7 @@ class Di4108USB():
         # Expect a response unless the device is currently reading
         # Not reading a response can leave the response in the buffer which can cause data processing issues or overflow
         if not self.acquiring:
-            response = self._read()
+            response = self.read()
             if response is not None:
                 response = bytes(response).decode(encoding, errors='ignore').strip('\0')
             expected_response = command+'\r'
@@ -159,10 +148,10 @@ class Di4108USB():
         :param value: States to set.
         """
         self.current_dio = int(value)
-        self._send_cmd("dout " + str(int(value)), check_echo=check_echo)
+        self.send_cmd("dout " + str(int(value)), check_echo=check_echo)
 
 
-    def _read(self, size = None, timeout = 2000):
+    def read(self, size = None, timeout = 2000):
         if size == None:
             size = self.usb_buff
         data = self.device.read(self.endpoint_in, size, timeout=timeout)
@@ -175,7 +164,7 @@ class Di4108USB():
         # Start reading
         self.acquiring = True
 
-        self._send_cmd('start')
+        self.send_cmd('start')
 
 
     def end_scan(self):
@@ -184,7 +173,7 @@ class Di4108USB():
 
 
     def read_data(self):
-        data = self._read(self.bytes_to_read)
+        data = self.read(self.bytes_to_read)
         if data is None:
             return None
 
@@ -212,7 +201,7 @@ class Di4108USB():
         """
         self.acquiring = False # Signals to stop acquiring
         with self.stop_lock:
-            self._send_cmd("stop", check_echo=False)
+            self.send_cmd("stop", check_echo=False)
         # Turn all valves off
         self.set_DIO(0b1111111, check_echo = False)
 
