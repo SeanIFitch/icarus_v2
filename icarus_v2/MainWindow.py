@@ -34,7 +34,7 @@ class MainWindow(QMainWindow):
         # Window settings
         self.setWindowTitle("Icarus NMR")
         self.showMaximized()
-        self.setMinimumSize(QSize(800, 500))
+        self.setMinimumSize(QSize(800, 600))
 
         # Setup the toolbar
         self.toolbar = QToolBar()

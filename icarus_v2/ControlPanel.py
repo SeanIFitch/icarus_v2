@@ -2,12 +2,12 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
-    QPushButton,
     QRadioButton,
     QVBoxLayout,
     QLabel,
 )
 from ToggleButton import ToggleButton
+from TogglePictureButton import TogglePictureButton
 from time import sleep
 
 
@@ -27,7 +27,9 @@ class ControlPanel(QGroupBox):
         self.manual_button.toggled.connect(self.change_to_manual)
 
         # Initialize buttons
-        self.shutdown_button = ToggleButton("Shutdown", "Restart")
+        self.shutdown_button = TogglePictureButton("icons/shutdown.svg", "Shutdown", "Restart")
+        self.shutdown_button.set_size(100,100)
+
         self.pump_button = ToggleButton("Pump on", "Pump off")
         self.pressurize_button = ToggleButton("Pressurize open", "Pressurize close")
         self.depressurize_button = ToggleButton("Depressurize open", "Depressurize close")
@@ -41,7 +43,7 @@ class ControlPanel(QGroupBox):
         mode_layout.addWidget(self.console_button)
         mode_layout.addWidget(self.manual_button)
         layout = QVBoxLayout()
-        layout.addWidget(self.shutdown_button)
+        layout.addWidget(self.shutdown_button, alignment=Qt.AlignHCenter)
         layout.addWidget(QLabel("Change Mode:"))
         layout.addLayout(mode_layout)
         layout.addLayout(self.button_layout)

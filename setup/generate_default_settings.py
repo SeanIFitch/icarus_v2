@@ -52,7 +52,7 @@ if __name__ == "__main__":
         HI_PRE_ORIG:    20 / (32768 * 10000 * 14503.7738),
         HI_PRE_SAMPLE:  20 / (32768 * 10000 * 14503.7738),
         DEPRE_VALVE:    2.8,    # Arbitrary for visibility
-        PRE_VALVE:      2.8,    # Arbitrary for visibility
+        PRE_VALVE:      2.85,    # Arbitrary for visibility
     }
 
     tube = 100.0

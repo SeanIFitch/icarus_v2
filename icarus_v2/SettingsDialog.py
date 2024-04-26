@@ -128,6 +128,9 @@ class SettingsDialog(QDialog):
         main_layout.addWidget(hardware_group)
         main_layout.addWidget(button_box)
 
+        # Default selection
+        button_box.button(QDialogButtonBox.Apply).setFocus()
+
 
     # Apply changes to config_manager and close the dialog
     # Also does some minor error checking for timing settings
