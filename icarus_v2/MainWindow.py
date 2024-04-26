@@ -35,12 +35,13 @@ class MainWindow(QMainWindow):
         # Pressure event plots
         self.pressure_event_display_range = (-10,140) # How much data to view around pressurize events
         display_offset = 10
-        self.pressurize_plot = EventPlot(Event.PRESSURIZE, display_offset)
-        self.depressurize_plot = EventPlot(Event.DEPRESSURIZE, display_offset)
-        self.period_plot = EventPlot(Event.PERIOD, display_offset)
+        sample_rate = 4000
+        self.pressurize_plot = EventPlot(Event.PRESSURIZE, display_offset, sample_rate)
+        self.depressurize_plot = EventPlot(Event.DEPRESSURIZE, display_offset, sample_rate)
+        self.period_plot = EventPlot(Event.PERIOD, display_offset, sample_rate)
 
         # History plots
-        self.history_plot = HistoryPlot(4000)
+        self.history_plot = HistoryPlot(sample_rate)
         self.history_reset = QPushButton("Reset History")
 
         # Logging
@@ -86,9 +87,6 @@ class MainWindow(QMainWindow):
         print(len(self.loader.events))
 
     def init_loader(self):
-
-        self.pressurize_plot.set_sample_rate(4000)
-        self.depressurize_plot.set_sample_rate(4000)
         # Loader
         self.loader = EventLoader()
         self.last_event_button.clicked.connect(self.loader.emit_last_event)
@@ -102,18 +100,10 @@ class MainWindow(QMainWindow):
     # Connects widgets to backend
     def set_device(self, data_handler):
         self.data_handler = data_handler
-        sample_rate = data_handler.get_sample_rate()
 
-        # Pressurize plot
-        self.pressurize_plot.set_sample_rate(sample_rate)
+        # Event Plots
         data_handler.pressurize_handler.event_signal.connect(self.pressurize_plot.update_data)
-
-        # Depressurize plot
-        self.depressurize_plot.set_sample_rate(sample_rate)
         data_handler.depressurize_handler.event_signal.connect(self.depressurize_plot.update_data)
-
-        # Period plot
-        self.period_plot.set_sample_rate(sample_rate)
         data_handler.period_handler.event_signal.connect(self.period_plot.update_data)
 
         # History plot

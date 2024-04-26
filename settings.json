@@ -1,8 +1,8 @@
 {
     "counter_settings": {
         "pump": 0,
-        "pressurize": 2349,
-        "depressurize": 2353
+        "pressurize": 2379,
+        "depressurize": 2384
     },
     "timing_settings": {
         "pressurize_width": 10.0,

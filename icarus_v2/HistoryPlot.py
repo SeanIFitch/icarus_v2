@@ -1,7 +1,7 @@
 from PySide6.QtGui import QPalette
 from PySide6.QtCore import Qt
-import pyqtgraph as pg
 from PySide6.QtWidgets import QWidget, QVBoxLayout
+import pyqtgraph as pg
 from Event import Event
 
 
@@ -9,15 +9,15 @@ class HistoryPlot(QWidget):
     # Dictionary of pens to plot each line
     PENS = {
         "origin pressure": pg.mkPen(color='#FFDC00', style=Qt.SolidLine),       # yellow
-        "sample pressure": pg.mkPen(color='#FFDC00', style=Qt.DashLine),      # yellow dashed
+        "sample pressure": pg.mkPen(color='#FFDC00', style=Qt.DashLine),        # yellow dashed
         "depress origin slope": pg.mkPen(color='#59D8E6', style=Qt.SolidLine),  # cyan
-        "depress sample slope": pg.mkPen(color='#59D8E6', style=Qt.DashLine), # cyan dashed
+        "depress sample slope": pg.mkPen(color='#59D8E6', style=Qt.DashLine),   # cyan dashed
         "press origin slope": pg.mkPen(color='#B9121B', style=Qt.SolidLine),    # red
-        "press sample slope": pg.mkPen(color='#B9121B', style=Qt.DashLine),   # red dashed
+        "press sample slope": pg.mkPen(color='#B9121B', style=Qt.DashLine),     # red dashed
         "depress origin switch": pg.mkPen(color='#59D8E6', style=Qt.SolidLine), # cyan
-        "depress sample switch": pg.mkPen(color='#59D8E6', style=Qt.DashLine),# cyan dashed
+        "depress sample switch": pg.mkPen(color='#59D8E6', style=Qt.DashLine),  # cyan dashed
         "press origin switch": pg.mkPen(color='#B9121B', style=Qt.SolidLine),   # red
-        "press sample switch": pg.mkPen(color='#B9121B', style=Qt.DashLine),  # red dashed
+        "press sample switch": pg.mkPen(color='#B9121B', style=Qt.DashLine),    # red dashed
     }
 
     # Dictionary of coefficient to apply when plotting each channel

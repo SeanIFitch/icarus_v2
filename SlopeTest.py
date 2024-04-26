@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.ndimage import gaussian_filter
 
 
 # Seed for reproducibility
@@ -14,7 +15,6 @@ y += np.random.normal(scale=0.1, size=y.size)
 dy = np.diff(y) / np.diff(x)
 
 # Smooth the derivative to reduce noise
-from scipy.ndimage import gaussian_filter
 dy_smoothed = gaussian_filter(dy, sigma=5)
 
 # Find the start and end of the ramp
