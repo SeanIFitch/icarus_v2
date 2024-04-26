@@ -1,6 +1,7 @@
 import json
 from copy import deepcopy
 from PySide6.QtCore import Signal, QObject
+from Channel import Channel
 
 
 # Responsible for loading and saving settings
@@ -18,13 +19,21 @@ class ConfigurationManager(QObject):
 
 
     def get_settings(self, key):
-        return deepcopy(self.settings[key])
+        value = deepcopy(self.settings[key])
+        # Convert to enum rather than int
+        if key == 'plotting_coefficients':
+            value = dict([(Channel(int(k)), v) for k,v in value.items()])
+        return value
 
 
-    def save_settings(self, key, value):
+    def save_settings(self, key, value, emit=True):
+        # Convert to int rather than enum
+        if key == 'plotting_coefficients':
+            value = dict([(k.value, v) for k,v in value.items()])
         self.settings[key] = value
 
         with open(self.filename, "w") as file:
             json.dump(self.settings, file, indent=4)
 
-        self.settings_updated.emit(key)
+        if emit:
+            self.settings_updated.emit(key)

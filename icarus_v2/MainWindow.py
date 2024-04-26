@@ -39,10 +39,14 @@ class MainWindow(QMainWindow):
         # Setup the toolbar
         self.toolbar = QToolBar()
         self.addToolBar(Qt.BottomToolBarArea, self.toolbar)
+        self.toolbar.setMovable(False)
         # Add a settings button
         settings_action = QAction(QIcon(), "Settings", self)
         settings_action.triggered.connect(self.open_settings)
         self.toolbar.addAction(settings_action)
+        # Add a history reset button
+        self.history_reset_action = QAction(QIcon(), "Reset History", self)
+        self.toolbar.addAction(self.history_reset_action)
 
         # Initialize all widgets
 
@@ -50,26 +54,24 @@ class MainWindow(QMainWindow):
         self.pressure_event_display_range = (-10,140) # How much data to view around pressurize events
         display_offset = 10
         sample_rate = 4000
-        self.pressurize_plot = EventPlot(Event.PRESSURIZE, display_offset, sample_rate)
-        self.depressurize_plot = EventPlot(Event.DEPRESSURIZE, display_offset, sample_rate)
-        self.period_plot = EventPlot(Event.PERIOD, display_offset, sample_rate)
+        self.pressurize_plot = EventPlot(Event.PRESSURIZE, display_offset, sample_rate, self.config_manager)
+        self.depressurize_plot = EventPlot(Event.DEPRESSURIZE, display_offset, sample_rate, self.config_manager)
+        self.period_plot = EventPlot(Event.PERIOD, display_offset, sample_rate, self.config_manager)
 
         # History plots
-        self.history_plot = HistoryPlot(sample_rate)
-        self.history_reset = QPushButton("Reset History")
+        self.history_plot = HistoryPlot(sample_rate, config_manager)
 
         # Logging
         self.file_button = QPushButton("Choose File")
         self.last_event_button = QPushButton("Last Event")
         self.next_event_button = QPushButton("Next Event")
         button_layout = QGridLayout()
-        button_layout.addWidget(self.history_reset, 0, 0, 1, 2)
-        button_layout.addWidget(self.last_event_button, 1, 0)
-        button_layout.addWidget(self.next_event_button, 1, 1)
-        button_layout.addWidget(self.file_button, 2, 0, 1, 2)
+        button_layout.addWidget(self.last_event_button, 0, 0)
+        button_layout.addWidget(self.next_event_button, 0, 1)
+        button_layout.addWidget(self.file_button, 1, 0, 1, 1)
 
         # Device control panel
-        self.control_panel = ControlPanel(self.config_manager)
+        self.control_panel = ControlPanel()
 
         # Info displays
         self.counter_display = CounterDisplay()
@@ -123,7 +125,7 @@ class MainWindow(QMainWindow):
         # History plot
         data_handler.pressurize_handler.event_signal.connect(self.history_plot.add_event)
         data_handler.depressurize_handler.event_signal.connect(self.history_plot.add_event)
-        self.history_reset.clicked.connect(self.history_plot.reset_history)
+        self.history_reset_action.triggered.connect(self.history_plot.reset_history)
 
         # Timings display
         data_handler.pressurize_handler.event_signal.connect(self.timing_display.update_widths)

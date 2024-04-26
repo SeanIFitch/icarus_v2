@@ -49,8 +49,7 @@ class DataHandler(QObject):
         self.depressurize_handler.event_signal.connect(self.logger.log_event)
 
         # Keeps track of event counts
-        self.counter = Counter(self.config_manager.get_settings("counter_settings"))
-        self.counter.save_settings.connect(lambda x: self.config_manager.save_settings("counter_settings", self.counter.counts))
+        self.counter = Counter(self.config_manager)
         self.pressurize_handler.event_signal.connect(self.counter.increment_count)
         self.depressurize_handler.event_signal.connect(self.counter.increment_count)
 

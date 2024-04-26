@@ -8,16 +8,14 @@ from PySide6.QtWidgets import (
     QLabel,
 )
 from ToggleButton import ToggleButton
-from TimingSettingsDialog import TimingSettingsDialog
 from time import sleep
 
 
 # Control panel for manual and console operation
 class ControlPanel(QGroupBox):
-    def __init__(self, config_manager, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        self.config_manager = config_manager
         self.pulse_generator = None
 
         # Initialize modes
@@ -34,7 +32,6 @@ class ControlPanel(QGroupBox):
         self.pressurize_button = ToggleButton("Pressurize open", "Pressurize close")
         self.depressurize_button = ToggleButton("Depressurize open", "Depressurize close")
         self.pulse_button = ToggleButton("Start pulsing", "Stop pulsing")
-        self.timing_settings_button = QPushButton("Pulse Settings")
 
         # Set button layout
         self.button_layout = QVBoxLayout()
@@ -55,7 +52,6 @@ class ControlPanel(QGroupBox):
         self.button_layout.addWidget(self.pressurize_button)
         self.button_layout.addWidget(self.depressurize_button)
         self.button_layout.addWidget(self.pulse_button)
-        self.button_layout.addWidget(self.timing_settings_button)
 
 
     def change_to_console(self):
@@ -101,7 +97,6 @@ class ControlPanel(QGroupBox):
         self.depressurize_button.set_uncheck_function(self.pulse_generator.set_depressurize_high)
         self.pulse_button.set_check_function(self.on_start_pulsing)
         self.pulse_button.set_uncheck_function(self.on_quit_pulsing)
-        self.timing_settings_button.clicked.connect(self.open_timing_dialog)
 
 
     def on_shutdown(self):
@@ -151,8 +146,3 @@ class ControlPanel(QGroupBox):
         self.pulse_generator.wait()
         self.pressurize_button.setEnabled(True)
         self.depressurize_button.setEnabled(True)
-
-
-    def open_timing_dialog(self):
-        dialog = TimingSettingsDialog(self.config_manager, parent=self)
-        return dialog.exec()

@@ -20,34 +20,22 @@ class EventPlot(pg.PlotWidget):
         Channel.PRE_VALVE: pg.mkPen(color='#B9121B', style=Qt.SolidLine),       # red
     }
 
-    # Dictionary of coefficient to apply when plotting each channel
-    CHANNEL_COEFFICIENTS = {
-        Channel.TARGET: 0.2,
-        Channel.DEPRE_LOW: 0.1,
-        Channel.DEPRE_UP: 0.1,
-        Channel.PRE_LOW: 0.1,
-        Channel.PRE_UP: 0.1,
-        Channel.HI_PRE_ORIG: 0.2,
-        Channel.HI_PRE_SAMPLE: 0.2,
-        Channel.DEPRE_VALVE: 2.8,   # Arbitrary for visibility
-        Channel.PRE_VALVE: 2.8,     # Arbitrary for visibility
-    }
-
-    def __init__(self, event_type, display_offset, sample_rate):
+    def __init__(self, event_type, display_offset, sample_rate, config_manager):
         super().__init__()
 
+        display_channels = [Channel.TARGET, Channel.HI_PRE_SAMPLE, Channel.HI_PRE_ORIG, Channel.DEPRE_VALVE, Channel.PRE_VALVE]
+
         if event_type == Event.PRESSURIZE:
-            display_channels = [Channel.TARGET, Channel.PRE_LOW, Channel.PRE_UP, Channel.HI_PRE_SAMPLE, Channel.HI_PRE_ORIG, Channel.DEPRE_VALVE, Channel.PRE_VALVE]
+            display_channels += [Channel.PRE_LOW, Channel.PRE_UP]
             self.x_unit = 'ms'
             title = "Pressurize"
             self.setXRange(-10, 140)
         elif event_type == Event.DEPRESSURIZE:
-            display_channels = [Channel.TARGET, Channel.DEPRE_LOW, Channel.DEPRE_UP, Channel.HI_PRE_SAMPLE, Channel.HI_PRE_ORIG, Channel.DEPRE_VALVE, Channel.PRE_VALVE]
+            display_channels += [Channel.DEPRE_LOW, Channel.DEPRE_UP]
             self.x_unit = 'ms'
             title = "Depressurize"
             self.setXRange(-10, 140)
         elif event_type == Event.PERIOD:
-            display_channels = [Channel.TARGET, Channel.HI_PRE_SAMPLE, Channel.HI_PRE_ORIG, Channel.DEPRE_VALVE, Channel.PRE_VALVE]
             self.x_unit = 's'
             title = "Period"
 
@@ -55,6 +43,9 @@ class EventPlot(pg.PlotWidget):
         self.display_offset = display_offset
 
         self.sample_rate = sample_rate
+        self.config_manager = config_manager
+        self.config_manager.settings_updated.connect(self.update_settings)
+        self.coefficients = config_manager.get_settings("plotting_coefficients")
 
         window_color = self.palette().color(QPalette.Window)
         text_color = self.palette().color(QPalette.WindowText)
@@ -90,5 +81,10 @@ class EventPlot(pg.PlotWidget):
 
         # update data for each line
         for channel, line_reference in self.line_references.items():
-            coefficient = self.CHANNEL_COEFFICIENTS[channel]
+            coefficient = self.coefficients[channel]
             line_reference.setData(times, get_channel(data, channel) * coefficient)
+
+
+    def update_settings(self, key):
+        if key == "plotting_coefficients":
+            self.coefficients = self.config_manager.get_settings(key)

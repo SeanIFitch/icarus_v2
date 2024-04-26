@@ -3,6 +3,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 import pyqtgraph as pg
 from Event import Event
+from Channel import Channel
 
 
 class HistoryPlot(QWidget):
@@ -20,25 +21,15 @@ class HistoryPlot(QWidget):
         "press sample switch": pg.mkPen(color='#B9121B', style=Qt.DashLine),    # red dashed
     }
 
-    # Dictionary of coefficient to apply when plotting each channel
-    COEFFICIENTS = {
-        "origin pressure": 1,
-        "sample pressure": 1,
-        "depress origin slope": 1,
-        "depress sample slope": 1,
-        "press origin slope": 1,
-        "press sample slope": 1,
-        "depress origin switch": 1,
-        "depress sample switch": 1,
-        "press origin switch": 0.25,    # ms per index
-        "press sample switch": 0.25,    # ms per index
-    }
 
-
-    def __init__(self, sample_rate):
+    def __init__(self, sample_rate, config_manager):
         super().__init__()
 
         self.sample_rate = sample_rate
+        self.config_manager = config_manager
+        self.update_settings("plotting_coefficients")
+        self.config_manager.settings_updated.connect(self.update_settings)
+
         # Dictionary of line references
         self.lines = {}
         # Colors for plots
@@ -173,7 +164,7 @@ class HistoryPlot(QWidget):
         self.data[time_to_update].append(event.event_time - self.initial_time)
         for update in lines_to_update:
             # Add event to data dict
-            self.data[update].append(event.get_event_info(update) * self.COEFFICIENTS[update])
+            self.data[update].append(event.get_event_info(update) * self.coefficients[update])
             # Update plot
             self.lines[update].setData(self.data[time_to_update], self.data[update])
 
@@ -187,3 +178,21 @@ class HistoryPlot(QWidget):
         if currently_zoomed_out:
             # Only need to do pressure plot since plot x ranges are linked
             self.pressure_plot.setXRange(self.limits[0], self.limits[1])
+
+
+    def update_settings(self, key):
+        if key == "plotting_coefficients":
+            plotting_coefficients = self.config_manager.get_settings(key)
+            # Dictionary of coefficient to apply when plotting each channel
+            self.coefficients = {
+                "origin pressure": plotting_coefficients[Channel.HI_PRE_ORIG],
+                "sample pressure": plotting_coefficients[Channel.HI_PRE_SAMPLE],
+                "depress origin slope": plotting_coefficients[Channel.HI_PRE_ORIG] * 4,
+                "depress sample slope": plotting_coefficients[Channel.HI_PRE_SAMPLE] * 4,
+                "press origin slope": plotting_coefficients[Channel.HI_PRE_ORIG] * 4,
+                "press sample slope": plotting_coefficients[Channel.HI_PRE_SAMPLE] * 4,
+                "depress origin switch": 0.25,
+                "depress sample switch": 0.25,
+                "press origin switch": 0.25,    # ms per index
+                "press sample switch": 0.25,    # ms per index
+            }

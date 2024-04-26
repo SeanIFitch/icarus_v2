@@ -130,7 +130,7 @@ class SettingsDialog(QDialog):
 
 
     # Apply changes to config_manager and close the dialog
-    # Also does some minor error checking for settings
+    # Also does some minor error checking for timing settings
     def apply(self) -> None:
         error = None
         if self.timing_settings['pressurize_width'] < 8:
@@ -218,17 +218,3 @@ class SettingsDialog(QDialog):
         except:
             return
         self.tube_length = tube_length
-
-
-
-
-# Example of how to use this dialog
-if __name__ == "__main__":
-    from PySide6.QtWidgets import QApplication
-    import sys
-    from ConfigurationManager import ConfigurationManager
-
-    app = QApplication(sys.argv)
-    dialog = SettingsDialog(ConfigurationManager())
-    dialog.show()
-    sys.exit(app.exec())
