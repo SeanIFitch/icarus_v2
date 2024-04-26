@@ -12,19 +12,19 @@ class Counter(QObject):
         super().__init__()
         # Counters
         self.counts = {
-            "pump": settings["pump"],
-            "pressurize": settings["pressurize"],
-            "depressurize": settings["depressurize"]
+            "pump_count": settings["pump_count"],
+            "pressurize_count": settings["pressurize_count"],
+            "depressurize_count": settings["depressurize_count"]
         }
 
 
     def increment_count(self, event):
         if event.event_type == Event.PUMP:
-            self.counts["pump"] += 1
+            self.counts["pump_count"] += 1
         elif event.event_type == Event.PRESSURIZE:
-            self.counts["pressurize"] += 1
+            self.counts["pressurize_count"] += 1
         elif event.event_type == Event.DEPRESSURIZE:
-            self.counts["depressurize"] += 1
+            self.counts["depressurize_count"] += 1
 
         self.update_counts.emit(self.counts)
 

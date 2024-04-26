@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QWidget,
     QPushButton,
-    QFileDialog
+    QFileDialog,
 )
 from EventPlot import EventPlot
 from HistoryPlot import HistoryPlot
@@ -21,13 +21,15 @@ from EventLoader import EventLoader
 class MainWindow(QMainWindow):
 
     # Initializes all widgets and sets layout
-    def __init__(self):
+    def __init__(self, config_manager):
         super(MainWindow, self).__init__()
 
+        self.config_manager = config_manager
         self.data_handler = None
 
         # Window settings
         self.setWindowTitle("Icarus NMR")
+        self.showMaximized()
         self.setMinimumSize(QSize(800, 500))
 
         # Initialize all widgets
@@ -53,7 +55,6 @@ class MainWindow(QMainWindow):
         button_layout.addWidget(self.last_event_button, 1, 0)
         button_layout.addWidget(self.next_event_button, 1, 1)
         button_layout.addWidget(self.file_button, 2, 0, 1, 2)
-
 
         # Device control panel
         self.control_panel = ControlPanel()
@@ -85,6 +86,7 @@ class MainWindow(QMainWindow):
         file = QFileDialog.getOpenFileName(self, "Open Log", "logs", "Log Files (*.xz)")[0]
         self.loader.read_events(file)
         print(len(self.loader.events))
+
 
     def init_loader(self):
         # Loader

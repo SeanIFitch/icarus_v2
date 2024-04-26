@@ -37,6 +37,6 @@ class CounterDisplay(QGroupBox):
 
 
     def update_counts(self, counts):
-        self.pump_counter.setText(str(counts['pump']))
-        self.pressurize_counter.setText(str(counts['pressurize']))
-        self.depressurize_counter.setText(str(counts['depressurize']))
+        self.pump_counter.setText(str(counts['pump_count']))
+        self.pressurize_counter.setText(str(counts['pressurize_count']))
+        self.depressurize_counter.setText(str(counts['depressurize_count']))

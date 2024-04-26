@@ -1,6 +1,5 @@
 # General utility imports
 from Logger import Logger
-import json
 from PySide6.QtCore import Signal, QObject
 # Data collection & Device imports
 from Di4108USB import Di4108USB
@@ -17,11 +16,8 @@ from PressureHandler import PressureHandler
 class DataHandler(QObject):
     display_error = Signal(str)
 
-    def __init__(self, settings_filename):
-        # Load application settings
-        self.settings_filename = settings_filename
-        with open(self.settings_filename, "r") as file:
-            self.settings = json.load(file)
+    def __init__(self, config_manager):
+        self.config_manager = config_manager
 
         # Try to connect to usb device
         try:
@@ -35,10 +31,10 @@ class DataHandler(QObject):
         self.loader = BufferLoader(device)
 
         # Controls device DIO
-        self.pulse_generator = PulseGenerator(device, self.settings["timing_settings"])
+        self.pulse_generator = PulseGenerator(device, self.config_manager.get_settings("timing_settings"))
 
         # Event handlers
-        sample_rate = self.get_sample_rate()
+        sample_rate = 4000
         event_update_hz = 30
         pressure_update_hz = 3
         event_display_bounds = (-10,140)
@@ -53,8 +49,8 @@ class DataHandler(QObject):
         self.depressurize_handler.event_signal.connect(self.logger.log_event)
 
         # Keeps track of event counts
-        self.counter = Counter(self.settings["counter_settings"])
-        self.counter.save_settings.connect(self.save_settings)
+        self.counter = Counter(self.config_manager.get_settings("counter_settings"))
+        self.counter.save_settings.connect(lambda x: self.config_manager.save_settings("counter_settings", self.counter.counts))
         self.pressurize_handler.event_signal.connect(self.counter.increment_count)
         self.depressurize_handler.event_signal.connect(self.counter.increment_count)
 
@@ -66,24 +62,9 @@ class DataHandler(QObject):
         self.pressure_handler.start()
 
 
-    def get_sample_rate(self):
-        return self.loader.get_sample_rate()
-
-
-    # Save timing and counter settings to settings file
-    def save_settings(self):
-        settings = {
-            "counter_settings": self.counter.counts,
-            "timing_settings": self.pulse_generator.settings
-        }
-
-        with open(self.settings_filename, "w") as write_file:
-            json.dump(settings, write_file, indent=4)
-
-
     # Run on quitting data collection
     def quit(self):
-        self.save_settings()
+        self.config_manager.save_settings("counter_settings", self.counter.counts)
 
         self.logger.close()
 
