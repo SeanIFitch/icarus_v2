@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QComboBox
 )
-from PySide6.QtCore import Qt
 from PySide6.QtGui import QDoubleValidator, QIntValidator
 from ErrorDialog import open_error_dialog
 
