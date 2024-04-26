@@ -14,9 +14,10 @@ from time import sleep
 
 # Control panel for manual and console operation
 class ControlPanel(QGroupBox):
-    def __init__(self, parent=None):
+    def __init__(self, config_manager, parent=None):
         super().__init__(parent=parent)
 
+        self.config_manager = config_manager
         self.pulse_generator = None
 
         # Initialize modes
@@ -153,5 +154,5 @@ class ControlPanel(QGroupBox):
 
 
     def open_timing_dialog(self):
-        dialog = TimingSettingsDialog(self.pulse_generator, parent=self)
+        dialog = TimingSettingsDialog(self.config_manager, parent=self)
         return dialog.exec()

@@ -10,62 +10,51 @@ from PySide6.QtGui import QDoubleValidator
 from ErrorDialog import open_error_dialog
 
 
-# Dialog for changing pulsed mode timings.
-# When the LineEdits are used, member variables of this class are changed. 
-# Changes are not applied to the real PulseGenerator until Apply is clicked.
-class TimingSettingsDialog(QDialog):
-    def __init__(self, pulse_generator, parent=None):
+class SettingsDialog(QDialog):
+    def __init__(self, config_loader, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("Pulsed Mode Timings")
-        self.pulse_generator = pulse_generator
+        self.config_loader = config_loader
+        self.setWindowTitle("Settings")
+        self.setGeometry(100, 100, 200, 200)
+
+        layout = QGridLayout()
+        self.setLayout(layout)
 
         # Buttons to apply or discard changes
         buttons = QDialogButtonBox.Apply
         self.buttonBox = QDialogButtonBox(buttons)
         # Connect apply button to accept slot
         self.buttonBox.button(QDialogButtonBox.Apply).clicked.connect(self.apply)
-        self.buttonBox.rejected.connect(self.reject)
 
-        # Timing controls
-        pressurize_label = QLabel("Pressurize Width (ms):")
-        depressurize_label = QLabel("Depressurize Width (ms):")
-        period_label = QLabel("Period (s):")
-        delay_label = QLabel("Delay (s):")
-        self.pressurize_edit = QLineEdit()
-        self.depressurize_edit = QLineEdit()
-        self.period_edit = QLineEdit()
-        self.delay_edit = QLineEdit()
-        # View settings
-        self.pressurize_edit.setFixedWidth(40)
-        self.depressurize_edit.setFixedWidth(40)
-        self.period_edit.setFixedWidth(40)
-        self.delay_edit.setFixedWidth(40)
-        self.pressurize_edit.setAlignment(Qt.AlignRight)
-        self.depressurize_edit.setAlignment(Qt.AlignRight)
-        self.period_edit.setAlignment(Qt.AlignRight)
-        self.delay_edit.setAlignment(Qt.AlignRight)
+        # Labels
+        pump_count_label = QLabel("Pump Count:")
+        pressurize_count_label = QLabel("Pressurize Count:")
+        depressurize_count_label = QLabel("Depressurize Count:")
+        tube_length_label = QLabel("Tube Length (cm):")
+        theme_label = QLabel("Theme:")
+
+
+
+
+        # Generate LineEdits
+        self.line_edits = {}
+        self.timing_settings = deepcopy(self.pulse_generator.settings)
         # Allow only positive floating-point numbers
         positive_validator = QDoubleValidator()
         positive_validator.setBottom(0)
-        self.pressurize_edit.setValidator(positive_validator)
-        self.depressurize_edit.setValidator(positive_validator)
-        self.period_edit.setValidator(positive_validator)
-        self.delay_edit.setValidator(positive_validator)
+        for key, value in self.timing_settings:
+            line_edit = QLineEdit()
+            line_edit.setFixedWidth(40)
+            line_edit.setAlignment(Qt.AlignRight)
+            line_edit.setValidator(positive_validator)
+            line_edit.setText(str(value))
+            self.line_edits[key] = line_edit
 
-        # Connect LineEdits
-        self.pressurize_width = self.pulse_generator.settings['pressurize_width']
-        self.depressurize_width = self.pulse_generator.settings['depressurize_width']
-        self.period_width = self.pulse_generator.settings['period_width']
-        self.delay_width = self.pulse_generator.settings['delay_width']
-        self.pressurize_edit.setText(str(self.pressurize_width))
-        self.depressurize_edit.setText(str(self.depressurize_width))
-        self.period_edit.setText(str(self.period_width))
-        self.delay_edit.setText(str(self.delay_width))
-        self.pressurize_edit.textChanged.connect(self.set_pressurize_width)
-        self.depressurize_edit.textChanged.connect(self.set_depressurize_width)
-        self.period_edit.textChanged.connect(self.set_period_width)
-        self.delay_edit.textChanged.connect(self.set_delay_width)
+        self.line_edits['pressurize_width'].textChanged.connect(self.set_pressurize_width)
+        self.line_edits['depressurize_width'].textChanged.connect(self.set_depressurize_width)
+        self.line_edits['period_width'].textChanged.connect(self.set_period_width)
+        self.line_edits['delay_width'].textChanged.connect(self.set_delay_width)
 
         # Set layout
         self.layout = QGridLayout()
@@ -106,10 +95,7 @@ class TimingSettingsDialog(QDialog):
             # Do not apply changes or close window
             return
 
-        self.pulse_generator.set_pressurize_width(self.pressurize_width)
-        self.pulse_generator.set_depressurize_width(self.depressurize_width)
-        self.pulse_generator.set_period_width(self.period_width)
-        self.pulse_generator.set_delay_width(self.delay_width)
+        self.pulse_generator.update_settings(self.timing_settings)
         self.close()
 
 
@@ -118,7 +104,7 @@ class TimingSettingsDialog(QDialog):
             pressurize_width = float(pressurize_width)
         except:
             return
-        self.pressurize_width = pressurize_width
+        self.timing_settings['pressurize_width'] = pressurize_width
 
 
     def set_depressurize_width(self, depressurize_width):
@@ -126,7 +112,7 @@ class TimingSettingsDialog(QDialog):
             depressurize_width = float(depressurize_width)
         except:
             return
-        self.depressurize_width = depressurize_width
+        self.timing_settings['depressurize_width'] = depressurize_width
 
 
     def set_period_width(self, period_width):
@@ -134,7 +120,7 @@ class TimingSettingsDialog(QDialog):
             period_width = float(period_width)
         except:
             return
-        self.period_width = period_width
+        self.timing_settings['period_width'] = period_width
 
 
     def set_delay_width(self, delay_width):
@@ -142,4 +128,4 @@ class TimingSettingsDialog(QDialog):
             delay_width = float(delay_width)
         except:
             return
-        self.delay_width = delay_width
+        self.timing_settings['delay_width'] = delay_width

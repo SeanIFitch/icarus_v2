@@ -18,13 +18,15 @@ class PulseGenerator(QThread):
     LOG = 4
 
 
-    def __init__(self, device, timing_settings) -> None:
+    def __init__(self, device, config_manager) -> None:
         super().__init__()
 
         self.device = device
+        self.config_manager = config_manager
 
         # dictionary containing pressurize_width, depressurize_width, period_width, delay_width
-        self.settings = timing_settings
+        self.settings = config_manager.get_settings('timing_settings')
+        self.config_manager.settings_updated.connect(self.update_settings)
 
         # Whether or not the device should be currently generating pulses
         self.pulsing = False
@@ -89,36 +91,9 @@ class PulseGenerator(QThread):
         self._set_high(self.PUMP)
 
 
-    def set_pressurize_width(self, pressurize_width):
-        try:
-            pressurize_width = float(pressurize_width)
-        except:
-            return
-        self.settings["pressurize_width"] = pressurize_width
-
-
-    def set_depressurize_width(self, depressurize_width):
-        try:
-            depressurize_width = float(depressurize_width)
-        except:
-            return
-        self.settings["depressurize_width"] = depressurize_width
-
-
-    def set_period_width(self, period_width):
-        try:
-            period_width = float(period_width)
-        except:
-            return
-        self.settings["period_width"] = period_width
-
-
-    def set_delay_width(self, delay_width):
-        try:
-            delay_width = float(delay_width)
-        except:
-            return
-        self.settings["delay_width"] = delay_width
+    def update_settings(self, key = 'timing_settings'):
+        if key == 'timing_settings':
+            self.settings = self.config_manager.get_settings(key)
 
 
     # Sets channel low for duration milliseconds

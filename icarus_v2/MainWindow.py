@@ -6,13 +6,17 @@ from PySide6.QtWidgets import (
     QWidget,
     QPushButton,
     QFileDialog,
+    QToolBar
 )
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon, QAction
 from EventPlot import EventPlot
 from HistoryPlot import HistoryPlot
 from ControlPanel import ControlPanel
 from CounterDisplay import CounterDisplay
 from TimingDisplay import TimingDisplay
 from PressureDisplay import PressureDisplay
+from SettingsDialog import SettingsDialog
 
 from Event import Event
 from EventLoader import EventLoader
@@ -31,6 +35,14 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Icarus NMR")
         self.showMaximized()
         self.setMinimumSize(QSize(800, 500))
+
+        # Setup the toolbar
+        self.toolbar = QToolBar()
+        self.addToolBar(Qt.BottomToolBarArea, self.toolbar)
+        # Add a settings button
+        settings_action = QAction(QIcon(), "Settings", self)
+        settings_action.triggered.connect(self.open_settings)
+        self.toolbar.addAction(settings_action)
 
         # Initialize all widgets
 
@@ -57,7 +69,7 @@ class MainWindow(QMainWindow):
         button_layout.addWidget(self.file_button, 2, 0, 1, 2)
 
         # Device control panel
-        self.control_panel = ControlPanel()
+        self.control_panel = ControlPanel(self.config_manager)
 
         # Info displays
         self.counter_display = CounterDisplay()
@@ -135,3 +147,9 @@ class MainWindow(QMainWindow):
 
         if self.data_handler is not None:
             self.data_handler.quit()
+
+
+    def open_settings(self):
+        # Open the settings dialog
+        dialog = SettingsDialog(self.config_manager)
+        dialog.exec()

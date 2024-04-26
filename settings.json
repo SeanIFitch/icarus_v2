@@ -1,13 +1,26 @@
 {
     "counter_settings": {
-        "pump": 0,
-        "pressurize": 2379,
-        "depressurize": 2384
+        "pump_count": 0,
+        "pressurize_count": 0,
+        "depressurize_count": 0
     },
     "timing_settings": {
         "pressurize_width": 10.0,
         "depressurize_width": 10.0,
-        "period_width": 3.0,
-        "delay_width": 0.05
-    }
+        "period_width": 5.0,
+        "delay_width": 2.0
+    },
+    "plotting_coefficients": {
+        "0": 8.416451758231363e-07,
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 1,
+        "5": 4.2082258791156826e-12,
+        "6": 4.2082258791156826e-12,
+        "8": 2.8,
+        "9": 2.8
+    },
+    "tube_length": 100.0,
+    "theme": "dark"
 }

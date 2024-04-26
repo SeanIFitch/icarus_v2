@@ -55,12 +55,17 @@ if __name__ == "__main__":
         PRE_VALVE:      2.8,    # Arbitrary for visibility
     }
 
+    tube = 100.0
+    theme = "dark"
 
     settings = {
-        "counter": counter,
+        "counter_settings": counter,
         "timing_settings": timing_settings,
-        "plotting_coefficients": coefficients
+        "plotting_coefficients": coefficients,
+        "tube_length": tube,
+        "theme": theme
     }
+
 
     filename = "settings.json"
     save_settings(filename)

@@ -31,7 +31,7 @@ class DataHandler(QObject):
         self.loader = BufferLoader(device)
 
         # Controls device DIO
-        self.pulse_generator = PulseGenerator(device, self.config_manager.get_settings("timing_settings"))
+        self.pulse_generator = PulseGenerator(device, self.config_manager)
 
         # Event handlers
         sample_rate = 4000

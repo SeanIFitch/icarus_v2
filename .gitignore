@@ -1,2 +1,4 @@
 # Ignore Python bytecode files
 __pycache__/
+logs/
+raw_logs/
