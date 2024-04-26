@@ -2,13 +2,13 @@
     "timing_settings": {
         "pressurize_width": 10.0,
         "depressurize_width": 10.0,
-        "period_width": 3.0,
-        "delay_width": 0.15
+        "period_width": 5.0,
+        "delay_width": 2.0
     },
     "counter_settings": {
         "pump_count": 0,
-        "pressurize_count": 57,
-        "depressurize_count": 57
+        "pressurize_count": 0,
+        "depressurize_count": 0
     },
     "plotting_coefficients": {
         "0": 8.416451758231363e-07,
@@ -21,6 +21,6 @@
         "8": 2.8,
         "9": 2.8
     },
-    "tube_length": 10.0,
+    "tube_length": 100.0,
     "theme": "Dark"
 }

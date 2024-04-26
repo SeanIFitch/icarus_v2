@@ -56,11 +56,11 @@ if __name__ == "__main__":
     }
 
     tube = 100.0
-    theme = "dark"
+    theme = "Dark"
 
     settings = {
-        "counter_settings": counter,
         "timing_settings": timing_settings,
+        "counter_settings": counter,
         "plotting_coefficients": coefficients,
         "tube_length": tube,
         "theme": theme
