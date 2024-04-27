@@ -99,7 +99,10 @@ class MainWindow(QMainWindow):
     def on_file(self):
         file = QFileDialog.getOpenFileName(self, "Open Log", "logs", "Log Files (*.xz)")[0]
         self.loader.read_events(file)
-        print(len(self.loader.events))
+        # load history
+        for event in self.loader.events:
+            if event.event_type == Event.PRESSURIZE or event.event_type == Event.DEPRESSURIZE:
+                self.history_plot.add_event(event)
 
 
     def init_loader(self):
