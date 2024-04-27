@@ -62,7 +62,7 @@ class PeriodHandler(EventHandler):
 
             # Get data from last event based on new event_report_range
             data = self.get_event_data(self.last_depressurize_event)
-            current_event_idx = int(before * sample_rate_kHz)
+            current_event_idx = int( - before * sample_rate_kHz)
 
         # Record event index
         self.last_depressurize_event = event_index

@@ -59,7 +59,7 @@ class SettingsDialog(QDialog):
         timings_layout.addWidget(self.depressurize_width_edit, 1, 1)
         timings_layout.addWidget(self.period_width_edit, 2, 1)
         timings_layout.addWidget(self.delay_width_edit, 3, 1)
-        timings_group = QGroupBox("Counters")
+        timings_group = QGroupBox("Pulse Timings")
         timings_group.setLayout(timings_layout)
 
         # Preferences section

@@ -19,13 +19,7 @@ class DataHandler(QObject):
     def __init__(self, config_manager):
         self.config_manager = config_manager
 
-        # Try to connect to usb device
-        try:
-            device = Di4108USB()
-        except Exception as e:
-            # Open error dialog
-            self.display_error.emit(e)
-            return False
+        device = Di4108USB()
 
         # Loads data from device into buffer
         self.loader = BufferLoader(device)
@@ -47,6 +41,7 @@ class DataHandler(QObject):
         self.logger = Logger()
         self.pressurize_handler.event_signal.connect(self.logger.log_event)
         self.depressurize_handler.event_signal.connect(self.logger.log_event)
+        self.period_handler.event_signal.connect(self.logger.log_event)
 
         # Keeps track of event counts
         self.counter = Counter(self.config_manager)

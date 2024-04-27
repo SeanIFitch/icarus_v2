@@ -20,9 +20,12 @@ class EventPlot(pg.PlotWidget):
         Channel.PRE_VALVE: pg.mkPen(color='#B9121B', style=Qt.SolidLine),       # red
     }
 
-    def __init__(self, event_type, display_offset, sample_rate, config_manager):
+    def __init__(self, event_type, config_manager):
         super().__init__()
 
+        self.config_manager = config_manager
+        self.config_manager.settings_updated.connect(self.update_settings)
+        self.coefficients = config_manager.get_settings("plotting_coefficients")
         display_channels = [Channel.TARGET, Channel.HI_PRE_SAMPLE, Channel.HI_PRE_ORIG, Channel.DEPRE_VALVE, Channel.PRE_VALVE]
 
         if event_type == Event.PRESSURIZE:
@@ -39,24 +42,14 @@ class EventPlot(pg.PlotWidget):
             self.x_unit = 's'
             title = "Period"
 
-        # Amount of time in ms to offset x axis. t=0 should be the event occurence.
-        self.display_offset = display_offset
-
-        self.sample_rate = sample_rate
-        self.config_manager = config_manager
-        self.config_manager.settings_updated.connect(self.update_settings)
-        self.coefficients = config_manager.get_settings("plotting_coefficients")
-
         window_color = self.palette().color(QPalette.Window)
         text_color = self.palette().color(QPalette.WindowText)
         self.setBackground(window_color)
-
         self.setTitle(title, color=text_color, size="14pt")
         self.showGrid(x=True, y=True)
-        self.setYRange(0, 3)
+        #self.setYRange(0, 3)
         self.setMouseEnabled(x=False, y=False) # Prevent zooming
         self.hideButtons() # Remove autoScale button
-
         # Axis Labels
         styles = {'color':text_color}
         self.setLabel('left', 'Pressure (kbar)', **styles)
@@ -70,14 +63,11 @@ class EventPlot(pg.PlotWidget):
 
     def update_data(self, event):
         data = event.data
-        # Calculate times based on time before event, length of data, and sample rate
-        indeces = np.asarray(range(len(data)))
-        if self.x_unit == "ms":
-            sample_rate_kHz = float(self.sample_rate) / 1000 # Hz to kHz
-            times = (indeces / sample_rate_kHz) - self.display_offset
-        elif self.x_unit == "s":
-            offset_sec = float(self.display_offset) / 1000 # ms to s
-            times = (indeces / self.sample_rate) - offset_sec
+        # Calculate times based on event.data_end_time and event_index
+        time_before_event = - event.data_end_time * event.event_index / (len(data) - event.event_index)
+        times = np.linspace(time_before_event, event.data_end_time, len(data))
+        if self.x_unit == "s":
+            times /= 1000
 
         # update data for each line
         for channel, line_reference in self.line_references.items():

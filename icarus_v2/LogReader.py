@@ -4,9 +4,10 @@ from Event import Event
 from PySide6.QtCore import Signal, QObject
 
 # Load events from logs
-class EventLoader(QObject):
+class LogReader(QObject):
     pressurize_event_signal = Signal(Event)
     depressurize_event_signal = Signal(Event)
+    period_event_signal = Signal(Event)
 
     def __init__(self):
         super().__init__()
@@ -24,7 +25,8 @@ class EventLoader(QObject):
                     event_dict['event_type'],
                     event_dict['data'],
                     event_dict['event_index'],
-                    event_dict['event_time']
+                    event_dict['event_time'],
+                    event_dict['data_end_time']
                 )
                 self.events.append(event)
         except EOFError:
@@ -37,6 +39,8 @@ class EventLoader(QObject):
             self.depressurize_event_signal.emit(event)
         elif event.event_type == Event.PRESSURIZE:
             self.pressurize_event_signal.emit(event)
+        elif event.event_type == Event.PERIOD:
+            self.period_event_signal.emit(event)
         if self.index < len(self.events):
             self.index += 1
 
@@ -49,6 +53,8 @@ class EventLoader(QObject):
             self.depressurize_event_signal.emit(event)
         elif event.event_type == Event.PRESSURIZE:
             self.pressurize_event_signal.emit(event)
+        elif event.event_type == Event.PERIOD:
+            self.period_event_signal.emit(event)
 
 
     def close(self):

@@ -15,7 +15,8 @@ class Logger:
             'event_type': event.event_type,
             'data': event.data,
             'event_time': event.event_time,
-            'event_index': event.event_index
+            'event_index': event.event_index,
+            'data_end_time': event.data_end_time
         }
         pickle.dump(event_dict, self.file, protocol=pickle.HIGHEST_PROTOCOL)
 

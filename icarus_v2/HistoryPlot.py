@@ -45,7 +45,7 @@ class HistoryPlot(QWidget):
         self.pressure_plot.setTitle("Pressure", color=text_color, size="14pt")
         self.pressure_plot.setLabel('left', 'Pressure (kBar)', **style)
         self.pressure_plot.setLabel('bottom', 'Time (s)', **style)
-        self.pressure_plot.setYRange(0, 3)
+        #self.pressure_plot.setYRange(0, 3)
         self.pressure_plot.hideButtons() # Remove autoScale button
         self.lines["origin pressure"] = self.pressure_plot.plot([], [], pen=self.PENS["origin pressure"])
         self.lines["sample pressure"] = self.pressure_plot.plot([], [], pen=self.PENS["sample pressure"])

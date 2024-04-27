@@ -19,7 +19,7 @@ from PressureDisplay import PressureDisplay
 from SettingsDialog import SettingsDialog
 
 from Event import Event
-from EventLoader import EventLoader
+from LogReader import LogReader
 
 
 class MainWindow(QMainWindow):
@@ -52,11 +52,10 @@ class MainWindow(QMainWindow):
 
         # Pressure event plots
         self.pressure_event_display_range = (-10,140) # How much data to view around pressurize events
-        display_offset = 10
         sample_rate = 4000
-        self.pressurize_plot = EventPlot(Event.PRESSURIZE, display_offset, sample_rate, self.config_manager)
-        self.depressurize_plot = EventPlot(Event.DEPRESSURIZE, display_offset, sample_rate, self.config_manager)
-        self.period_plot = EventPlot(Event.PERIOD, display_offset, sample_rate, self.config_manager)
+        self.pressurize_plot = EventPlot(Event.PRESSURIZE, self.config_manager)
+        self.depressurize_plot = EventPlot(Event.DEPRESSURIZE, self.config_manager)
+        self.period_plot = EventPlot(Event.PERIOD, self.config_manager)
 
         # History plots
         self.history_plot = HistoryPlot(sample_rate, config_manager)
@@ -104,13 +103,14 @@ class MainWindow(QMainWindow):
 
     def init_loader(self):
         # Loader
-        self.loader = EventLoader()
+        self.loader = LogReader()
         self.last_event_button.clicked.connect(self.loader.emit_last_event)
         self.next_event_button.clicked.connect(self.loader.emit_next_event)
         self.file_button.clicked.connect(self.on_file)
 
         self.loader.pressurize_event_signal.connect(self.pressurize_plot.update_data)
         self.loader.depressurize_event_signal.connect(self.depressurize_plot.update_data)
+        self.loader.period_event_signal.connect(self.period_plot.update_data)
 
 
     # Connects widgets to backend

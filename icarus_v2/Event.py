@@ -12,21 +12,31 @@ class Event():
     PRESSURE = 3
     PUMP = 4
 
-    def __init__(self, event_type, data, event_index, event_time=None) -> None:
+    def __init__(self, event_type, data, event_index = None, event_time=None, data_end_time = None) -> None:
         if type(event_type) == int and event_type <=4 and event_type >=0:
             self.event_type = event_type
         else:
             raise RuntimeError(event_type + "event not supported.")
 
-        self.data = data # np.ndarray (?,8) np.int16
-
         if event_time == None:
             self.event_time = time() # float
+        # Case where this is a priorly generated event being deserialized
         else:
             self.event_time = event_time
 
         # Required for some math
         self.event_index = event_index # index where the actual event occured uint8
+        if data_end_time is None and event_index is not None:
+            self.data_end_time = (len(data) - self.event_index) / 4 # time in ms from event_index to end. Assumes srate = 4000
+        else:
+            self.data_end_time = data_end_time
+
+        # Period events can be long. Therefore only take 600 data points to log and plot. (same as pressurize and depressurize plots)
+        # No statistical analysis of period events is necessary, so this loss of data is fine.
+        if self.event_type == self.PERIOD and data_end_time is None:
+            self.data = self.compress_data(data, 600)
+        else:
+            self.data = data # np.ndarray (?,8) np.int16
 
 
     # used to call all info functions
@@ -51,6 +61,28 @@ class Event():
             return self.get_origin_switch_time()
         elif info_type == "press sample switch":
             return self.get_sample_switch_time()
+
+
+    # Decrease size of data. Takes every nth data point, making sure not to lose valve events.
+    def compress_data(self, data, num_points):
+        if len(data) <= num_points:
+            return data
+        else:
+            step = len(data) / num_points
+            indices = np.round(np.arange(0, num_points) * step).astype(int)
+            compressed_data = np.copy(data[indices])
+
+            # Recover lost valve events so they are plotted
+            depressurize_indeces = np.argmin(get_channel(data, Channel.DEPRE_VALVE))
+            pressurize_indeces = np.argmin(get_channel(data, Channel.PRE_VALVE))
+            compressed_depressurize_indeces = np.unique((depressurize_indeces / step).astype(int))
+            compressed_pressurize_indeces = np.unique((pressurize_indeces / step).astype(int))
+            # Set to false with bitwise operation
+            depre_mask = np.int16(0b1111111111111011)
+            pre_mask = np.int16(0b1111111111110111)
+            compressed_data[compressed_depressurize_indeces,7] = compressed_data[compressed_depressurize_indeces,7] & depre_mask
+            compressed_data[compressed_pressurize_indeces,7] = compressed_data[compressed_pressurize_indeces,7] & pre_mask
+            return compressed_data
 
 
     # Average of entire event

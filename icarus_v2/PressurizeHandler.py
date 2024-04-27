@@ -48,6 +48,6 @@ class PressurizeHandler(EventHandler):
 
         before, after = self.event_report_range
         sample_rate_kHz = float(self.sample_rate) / 1000
-        event_index = int(before * sample_rate_kHz)
+        event_index = int( - before * sample_rate_kHz)
 
         return data, event_index

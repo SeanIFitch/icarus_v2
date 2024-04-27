@@ -18,5 +18,5 @@ class PressureHandler(EventHandler):
             data, buffer_index = self.reader.read(size=data_to_get, timeout=2)
 
             # Transmit data to plot
-            new_event = Event(self.event_type, data, None)
+            new_event = Event(self.event_type, data)
             self.event_signal.emit(new_event)
