@@ -5,12 +5,12 @@ from Event import Event
 # Keeps track of and logs valve counts
 class Counter(QObject):
     save_settings = Signal(bool)
-    update_counts = Signal(dict)
 
 
-    def __init__(self, config_manager):
+    def __init__(self, config_manager, update_counts_signal):
         super().__init__()
 
+        self.update_counts = update_counts_signal
         self.config_manager = config_manager
         self.config_manager.settings_updated.connect(self.update_settings)
         self.counts = config_manager.get_settings("counter_settings")
@@ -26,8 +26,8 @@ class Counter(QObject):
 
         self.update_counts.emit(self.counts)
 
-        # Save counts to json every 1000 updates
-        if sum(self.counts.values()) % 1000 == 0:
+        # Save counts to json every 100 updates
+        if sum(self.counts.values()) % 100 == 0:
             # Do not emit so that this does not call self.update_settings
             self.config_manager.save_settings("counter_settings", self.counts, emit=False)
 

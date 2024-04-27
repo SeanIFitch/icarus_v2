@@ -3,6 +3,7 @@ from MainWindow import MainWindow
 from DataHandler import DataHandler
 from PySide6.QtWidgets import QApplication
 
+from time import time
 
 # Application entry point
 if __name__ == "__main__":
@@ -10,10 +11,10 @@ if __name__ == "__main__":
 
     app = QApplication([])
     window = MainWindow(config_manager)
-    window.show()
 
     data_handler = DataHandler(config_manager)
     window.set_device(data_handler)
+    data_handler.start()
 
     window.init_loader()
 

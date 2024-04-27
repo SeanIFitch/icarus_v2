@@ -39,18 +39,18 @@ if __name__ == "__main__":
         "delay_width": 2.0
     }
 
-    # Dataq: volts = value_read * range / 32768     # range = 20
+    # Dataq: volts = value_read * range / 32768     # range = 10
     # Low pressure sensor: psi = volts / 20
     # High pressure sensor: psi = volts / 10000
     # kBar: kbar = psi / 14503.7738
     coefficients = {
-        TARGET:         20 * 400 / (32768 * 20 * 14503.7738),
-        DEPRE_LOW:      1,      # Arbitrary for visibility
-        DEPRE_UP:       1,      # Arbitrary for visibility
-        PRE_LOW:        1,      # Arbitrary for visibility
-        PRE_UP:         1,      # Arbitrary for visibility
-        HI_PRE_ORIG:    20 / (32768 * 10000 * 14503.7738),
-        HI_PRE_SAMPLE:  20 / (32768 * 10000 * 14503.7738),
+        TARGET:         10 * 14503.7738 / (32768 * 10000),
+        DEPRE_LOW:      0.00015,      # Arbitrary for visibility
+        DEPRE_UP:       0.00015,      # Arbitrary for visibility
+        PRE_LOW:        0.00015,      # Arbitrary for visibility
+        PRE_UP:         0.00015,      # Arbitrary for visibility
+        HI_PRE_ORIG:    10 * 14503.7738 / (32768 * 10000),
+        HI_PRE_SAMPLE:  10 * 14503.7738 / (32768 * 10000),
         DEPRE_VALVE:    2.8,    # Arbitrary for visibility
         PRE_VALVE:      2.85,    # Arbitrary for visibility
     }

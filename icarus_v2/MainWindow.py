@@ -59,6 +59,7 @@ class MainWindow(QMainWindow):
 
         # History plots
         self.history_plot = HistoryPlot(sample_rate, config_manager)
+        self.history_reset_action.triggered.connect(self.history_plot.reset_history)
 
         # Logging
         self.file_button = QPushButton("Choose File")
@@ -116,31 +117,32 @@ class MainWindow(QMainWindow):
     # Connects widgets to backend
     def set_device(self, data_handler):
         self.data_handler = data_handler
+        self.data_handler.acquisition_started_signal.connect(self.acquisition_started)
 
         # Event Plots
-        data_handler.pressurize_handler.event_signal.connect(self.pressurize_plot.update_data)
-        data_handler.depressurize_handler.event_signal.connect(self.depressurize_plot.update_data)
-        data_handler.period_handler.event_signal.connect(self.period_plot.update_data)
+        data_handler.pressurize_event_signal.connect(self.pressurize_plot.update_data)
+        data_handler.depressurize_event_signal.connect(self.depressurize_plot.update_data)
+        data_handler.period_event_signal.connect(self.period_plot.update_data)
 
         # History plot
-        data_handler.pressurize_handler.event_signal.connect(self.history_plot.add_event)
-        data_handler.depressurize_handler.event_signal.connect(self.history_plot.add_event)
-        self.history_reset_action.triggered.connect(self.history_plot.reset_history)
+        data_handler.pressurize_event_signal.connect(self.history_plot.add_event)
+        data_handler.depressurize_event_signal.connect(self.history_plot.add_event)
 
         # Timings display
-        data_handler.pressurize_handler.event_signal.connect(self.timing_display.update_widths)
-        data_handler.depressurize_handler.event_signal.connect(self.timing_display.update_widths)
-        data_handler.period_handler.event_signal.connect(self.timing_display.update_widths)
+        data_handler.pressurize_event_signal.connect(self.timing_display.update_widths)
+        data_handler.depressurize_event_signal.connect(self.timing_display.update_widths)
+        data_handler.period_event_signal.connect(self.timing_display.update_widths)
 
         # Pressure display
-        data_handler.pressure_handler.event_signal.connect(self.pressure_display.update_pressure)
-
-        # Control panel
-        self.control_panel.set_pulse_generator(data_handler.pulse_generator)
+        data_handler.pressure_event_signal.connect(self.pressure_display.update_pressure)
 
         # Counter display
-        data_handler.counter.update_counts.connect(self.counter_display.update_counts)
-        self.counter_display.update_counts(data_handler.counter.counts)
+        data_handler.update_counts_signal.connect(self.counter_display.update_counts)
+
+
+    def acquisition_started(self):
+        self.control_panel.set_pulse_generator(self.data_handler.pulse_generator)
+        self.counter_display.update_counts(self.data_handler.counter.counts)
 
 
     # Runs on quitting the application

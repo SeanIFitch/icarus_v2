@@ -3,12 +3,10 @@ import traceback
 from Event import Event
 
 class EventHandler(QThread):
-    event_signal = Signal(Event)
-
-
-    def __init__(self, loader, sample_rate, update_rate) -> None:
+    def __init__(self, loader, signal, sample_rate, update_rate) -> None:
         super().__init__()
         self.reader = loader.new_reader()
+        self.signal = signal
         self.sample_rate = sample_rate
         self.update_rate = update_rate
         self.running = False
@@ -35,7 +33,7 @@ class EventHandler(QThread):
                 event_data, event_start = self.handle_event(event_index)
                 if event_data is not None:
                     new_event = Event(self.event_type, event_data, event_start)
-                    self.event_signal.emit(new_event)
+                    self.signal.emit(new_event)
 
 
     # Placeholder. 
