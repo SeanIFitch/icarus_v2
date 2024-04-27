@@ -9,17 +9,18 @@ from PySide6.QtWidgets import QLabel, QGridLayout, QWidget
 
 class EventPlot(QWidget):
     # Dictionary of color to plot each channel
-    PENS = {
-        Channel.TARGET: pg.mkPen(color='#45BF55', style=Qt.SolidLine),          # light green
-        Channel.DEPRE_LOW: pg.mkPen(color='#AB47BC', style=Qt.SolidLine),       # magenta
-        Channel.DEPRE_UP: pg.mkPen(color='#004B8D', style=Qt.SolidLine),        # blue
-        Channel.PRE_LOW: pg.mkPen(color='#AB47BC', style=Qt.SolidLine),         # magenta
-        Channel.PRE_UP: pg.mkPen(color='#004B8D', style=Qt.SolidLine),          # blue
-        Channel.HI_PRE_ORIG: pg.mkPen(color='#FFDC00', style=Qt.SolidLine),     # yellow
-        Channel.HI_PRE_SAMPLE: pg.mkPen(color='#FFDC00', style=Qt.DashLine),    # yellow dashed
-        Channel.DEPRE_VALVE: pg.mkPen(color='#59D8E6', style=Qt.SolidLine),     # cyan
-        Channel.PRE_VALVE: pg.mkPen(color='#B9121B', style=Qt.SolidLine),       # red
+    LINE_STYLES = {
+        Channel.TARGET: ('#45BF55', Qt.SolidLine),          # light green
+        Channel.DEPRE_LOW: ('#AB47BC', Qt.SolidLine),       # magenta
+        Channel.DEPRE_UP: ('#004B8D', Qt.SolidLine),        # blue
+        Channel.PRE_LOW: ('#AB47BC', Qt.SolidLine),         # magenta
+        Channel.PRE_UP: ('#004B8D', Qt.SolidLine),          # blue
+        Channel.HI_PRE_ORIG: ('#FFDC00', Qt.SolidLine),     # yellow
+        Channel.HI_PRE_SAMPLE: ('#FFDC00', Qt.DashLine),    # yellow dashed
+        Channel.DEPRE_VALVE: ('#59D8E6', Qt.SolidLine),     # cyan
+        Channel.PRE_VALVE: ('#B9121B', Qt.SolidLine),       # red
     }
+
 
     def __init__(self, event_type, config_manager):
         super().__init__()
@@ -59,7 +60,9 @@ class EventPlot(QWidget):
         # Create a dictionary of lines for each channel listed in display_channels
         self.line_references = {}
         for channel in display_channels:
-            self.line_references[channel] = self.plot.plot([], [], pen=self.PENS[channel])
+            style = self.LINE_STYLES[channel]
+            pen = pg.mkPen(color=style[0], style=style[1])
+            self.line_references[channel] = self.plot.plot([], [], pen=pen)
 
         labels = self.init_labels()
 
@@ -72,31 +75,34 @@ class EventPlot(QWidget):
 
     def init_labels(self):
         layout = QGridLayout()
-        if self.event_type == Event.PRESSURIZE:
-            self.pressurize_display = QLabel("0")
-            pressurize_label = QLabel("Pressurize Width (ms):")
-            layout.addWidget(pressurize_label, 0, 0)
-            layout.addWidget(self.pressurize_display, 0, 1)
-
-        elif self.event_type == Event.DEPRESSURIZE:
-            self.depressurize_display = QLabel("0")
-            depressurize_label = QLabel("Depressurize Width (ms):")
-            layout.addWidget(depressurize_label, 1, 0)
-            layout.addWidget(self.depressurize_display, 1, 1)
+        press_color = self.LINE_STYLES[Channel.PRE_VALVE][0]
+        depress_color = self.LINE_STYLES[Channel.DEPRE_VALVE][0]
+        size = 11
+        if self.event_type == Event.PRESSURIZE or self.event_type == Event.DEPRESSURIZE:
+            color = press_color if self.event_type == Event.PRESSURIZE else depress_color
+            self.width_display = QLabel("0.00")
+            label = QLabel("Valve Open (ms):")
+            self.width_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+            label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+            layout.addWidget(label, 0, 0)
+            layout.addWidget(self.width_display, 0, 1)
 
         elif self.event_type == Event.PERIOD:
             self.period_display = QLabel("0")
             self.delay_display = QLabel("0")
             period_label = QLabel("Period (s):")
             delay_label = QLabel("Delay (s):")
+            self.period_display.setStyleSheet(f"color: {depress_color}; font-size: {size}px;")
+            self.delay_display.setStyleSheet(f"color: {press_color}; font-size: {size}px;")
+            period_label.setStyleSheet(f"color: {depress_color}; font-size: {size}px;")
+            delay_label.setStyleSheet(f"color: {press_color}; font-size: {size}px;")
             layout.addWidget(period_label, 0, 0)
             layout.addWidget(delay_label, 1, 0)
             layout.addWidget(self.period_display, 0, 1)
             layout.addWidget(self.delay_display, 1, 1)
 
-        #layout.setContentsMargins(0, title_height, 0, 0)
+        layout.setContentsMargins(0, 35, 5, 0)
         return layout
-
 
 
     def update_data(self, event):
@@ -113,13 +119,9 @@ class EventPlot(QWidget):
             line_reference.setData(times, get_channel(data, channel) * coefficient)
 
         # Update timings labels
-        if event.event_type == Event.PRESSURIZE:
-            pressurize_width = event.get_valve_open_time() / 4
-            self.pressurize_display.setText(f"{pressurize_width:.2f}")
-
-        elif event.event_type == Event.DEPRESSURIZE:
-            depressurize_width = event.get_valve_open_time() / 4
-            self.depressurize_display.setText(f"{depressurize_width:.2f}")
+        if event.event_type == Event.PRESSURIZE or event.event_type == Event.DEPRESSURIZE:
+            width = event.get_valve_open_time() / 4
+            self.width_display.setText(f"{width:.2f}")
 
         elif event.event_type == Event.PERIOD:
             period_width = event.get_period_width()
