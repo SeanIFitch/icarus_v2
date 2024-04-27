@@ -3,17 +3,24 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QLabel
 )
+from Event import Event
+from PySide6.QtCore import QCoreApplication
 
 
 # Panel for counts of valves and such
 class CounterDisplay(QGroupBox):
-    def __init__(self):
+    def __init__(self, config_manager):
         super().__init__()
 
+        self.config_manager = config_manager
+        self.config_manager.settings_updated.connect(self.update_settings)
+        self.counts = config_manager.get_settings("counter_settings")
+        QCoreApplication.instance().aboutToQuit.connect(self.save_settings)
+
         # Counters
-        self.pump_counter = QLabel("0")
-        self.pressurize_counter = QLabel("0")
-        self.depressurize_counter = QLabel("0")
+        self.pump_counter = QLabel(str(self.counts["pump_count"]))
+        self.pressurize_counter = QLabel(str(self.counts["pressurize_count"]))
+        self.depressurize_counter = QLabel(str(self.counts["depressurize_count"]))
         self.stroke_display = QLabel("0")
 
         # Labels
@@ -36,7 +43,28 @@ class CounterDisplay(QGroupBox):
         self.setLayout(layout)
 
 
-    def update_counts(self, counts):
-        self.pump_counter.setText(str(counts['pump_count']))
-        self.pressurize_counter.setText(str(counts['pressurize_count']))
-        self.depressurize_counter.setText(str(counts['depressurize_count']))
+    def increment_count(self, event):
+        if event.event_type == Event.PUMP:
+            self.counts["pump_count"] += 1
+            self.pump_counter.setText(str(self.counts['pump_count']))
+        elif event.event_type == Event.PRESSURIZE:
+            self.counts["pressurize_count"] += 1
+            self.pressurize_counter.setText(str(self.counts['pressurize_count']))
+        elif event.event_type == Event.DEPRESSURIZE:
+            self.counts["depressurize_count"] += 1
+            self.depressurize_counter.setText(str(self.counts['depressurize_count']))
+
+        # Save counts to json every 100 updates
+        if sum(self.counts.values()) % 100 == 0:
+            # Do not emit so that this does not call self.update_settings
+            self.save_settings()
+
+
+    def save_settings(self):
+        self.config_manager.save_settings("counter_settings", self.counts, emit=False)
+
+
+    def update_settings(self, key):
+        if key == 'counter_settings':
+            self.counts = self.config_manager.get_settings(key)
+            self.increment_count(None)

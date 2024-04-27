@@ -74,7 +74,7 @@ class MainWindow(QMainWindow):
         self.control_panel = ControlPanel()
 
         # Info displays
-        self.counter_display = CounterDisplay()
+        self.counter_display = CounterDisplay(config_manager)
         self.timing_display = TimingDisplay()
         self.pressure_display = PressureDisplay()
 
@@ -137,12 +137,12 @@ class MainWindow(QMainWindow):
         data_handler.pressure_event_signal.connect(self.pressure_display.update_pressure)
 
         # Counter display
-        data_handler.update_counts_signal.connect(self.counter_display.update_counts)
+        data_handler.pressurize_event_signal.connect(self.counter_display.increment_count)
+        data_handler.depressurize_event_signal.connect(self.counter_display.increment_count)
 
 
     def acquisition_started(self):
         self.control_panel.set_pulse_generator(self.data_handler.pulse_generator)
-        self.counter_display.update_counts(self.data_handler.counter.counts)
 
 
     # Runs on quitting the application

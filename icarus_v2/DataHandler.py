@@ -6,7 +6,6 @@ from time import sleep
 from Di4108USB import Di4108USB
 from BufferLoader import BufferLoader
 from PulseGenerator import PulseGenerator
-from Counter import Counter
 from Event import Event
 # Event handler imports
 from PressurizeHandler import PressurizeHandler
@@ -33,7 +32,6 @@ class DataHandler(QThread):
         self.connecting = False
         self.device = None
         self.logger = None
-        self.counter = None
         self.loader = None
         self.pressurize_handler = None
         self.depressurize_handler = None
@@ -78,11 +76,6 @@ class DataHandler(QThread):
         self.depressurize_event_signal.connect(self.logger.log_event)
         self.period_event_signal.connect(self.logger.log_event)
 
-        # Keeps track of event counts
-        self.counter = Counter(self.config_manager, self.update_counts_signal)
-        self.pressurize_event_signal.connect(self.counter.increment_count)
-        self.depressurize_event_signal.connect(self.counter.increment_count)
-
         # Start threads
         self.loader.start()
         self.pressurize_handler.start()
@@ -95,9 +88,6 @@ class DataHandler(QThread):
 
     def quit(self):
         self.connecting = False
-
-        if self.counter is not None:
-            self.config_manager.save_settings("counter_settings", self.counter.counts)
 
         if self.logger is not None:
             self.logger.close()
