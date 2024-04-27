@@ -14,7 +14,6 @@ from EventPlot import EventPlot
 from HistoryPlot import HistoryPlot
 from ControlPanel import ControlPanel
 from CounterDisplay import CounterDisplay
-from TimingDisplay import TimingDisplay
 from PressureDisplay import PressureDisplay
 from SettingsDialog import SettingsDialog
 
@@ -75,7 +74,6 @@ class MainWindow(QMainWindow):
 
         # Info displays
         self.counter_display = CounterDisplay(config_manager)
-        self.timing_display = TimingDisplay()
         self.pressure_display = PressureDisplay()
 
         # Set main layout
@@ -83,7 +81,6 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.pressurize_plot, 0, 0)
         main_layout.addWidget(self.depressurize_plot, 1, 0)
         main_layout.addWidget(self.period_plot, 2, 0)
-        main_layout.addWidget(self.timing_display, 3, 0)
         main_layout.addWidget(self.history_plot, 0, 1, 3, 1)
         main_layout.addLayout(button_layout, 3, 1)
         main_layout.addWidget(self.pressure_display, 0, 2)
@@ -130,11 +127,6 @@ class MainWindow(QMainWindow):
         # History plot
         data_handler.pressurize_event_signal.connect(self.history_plot.add_event)
         data_handler.depressurize_event_signal.connect(self.history_plot.add_event)
-
-        # Timings display
-        data_handler.pressurize_event_signal.connect(self.timing_display.update_widths)
-        data_handler.depressurize_event_signal.connect(self.timing_display.update_widths)
-        data_handler.period_event_signal.connect(self.timing_display.update_widths)
 
         # Pressure display
         data_handler.pressure_event_signal.connect(self.pressure_display.update_pressure)
