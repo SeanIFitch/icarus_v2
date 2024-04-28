@@ -31,6 +31,16 @@ def get_channel(data, channel):
         return channel_data.astype(np.bool_)
 
 
+# Used for ramp detection
+def gaussian_filter(data, kernel_size, sigma=1):
+    """Applies a 1D Gaussian filter to the data."""
+    kernel_range = np.arange(-kernel_size // 2 + 1, kernel_size // 2 + 1)
+    kernel = np.exp(-kernel_range**2 / (2 * sigma**2))
+    kernel /= kernel.sum()
+    return np.convolve(data, kernel, mode='same')
+
+
+
 # Represents an event
 # All methods which extract information for plotting are in this class
 class Event():
@@ -215,16 +225,38 @@ class Event():
 
 
     def get_origin_slope(self):
-        if self.event_type != self.DEPRESSURIZE and self.event_type != self.PRESSURIZE:
-            raise RuntimeError("Cannot call get_origin_slope() on event type " + self.event_type)
+        return self.get_slope(Channel.HI_PRE_ORIG)
 
-        return np.random.randint(-5, 5)
 
     def get_sample_slope(self):
+        return self.get_slope(Channel.HI_PRE_SAMPLE)
+
+
+    # Returns slope of pressurization or depressurization
+    def get_slope(self, channel):
         if self.event_type != self.DEPRESSURIZE and self.event_type != self.PRESSURIZE:
-            raise RuntimeError("Cannot call get_sample_slope() on event type " + self.event_type)
+            raise RuntimeError(f"Cannot call get_slope() on event type {self.event_type}")
 
-        data = get_channel(self, Channel.HI_PRE_SAMPLE)
+        y = get_channel(self, channel)
+        x = range(len(y))
+
+        # Calculate the first derivative of the data
+        dy = np.diff(y) / np.diff(x)
+        dy_smoothed = gaussian_filter(dy, 5, 5)
+
+        # Find the start and end of the ramp
+        if self.event_type == Event.PRESSURIZE:
+            threshold = 0.4 * max(dy_smoothed)
+            indeces = np.where(dy_smoothed > threshold)
+        elif self.event_type == Event.DEPRESSURIZE:
+            threshold = 0.4 * min(dy_smoothed)
+            indeces = np.where(dy_smoothed < threshold)
+
+        if len(indeces[0]) == 0:
+            return 0
+        ramp_start = indeces[0][0] + 1  # +1 to correct index after diff
+        ramp_end = indeces[0][-1] + 1
+        slope = (y[ramp_end] - y[ramp_start]) / (ramp_end - ramp_start)
+        return slope
 
 
-        return np.random.randint(-5, 5)
