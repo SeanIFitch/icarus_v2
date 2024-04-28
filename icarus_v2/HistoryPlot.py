@@ -21,6 +21,24 @@ class HistoryPlot(QWidget):
         "press sample switch": pg.mkPen(color='#B9121B', style=Qt.DashLine),    # red dashed
     }
 
+    # Dictionary of lines updated on certain events
+    EVENT_LINES = {
+        Event.PRESSURIZE: [
+                "press origin slope", 
+                "press sample slope", 
+                "press origin switch", 
+                "press sample switch"
+            ],
+        Event.DEPRESSURIZE: [
+                "origin pressure",
+                "sample pressure",
+                "depress origin slope", 
+                "depress sample slope", 
+                "depress origin switch", 
+                "depress sample switch"
+            ]
+    }
+
 
     def __init__(self, config_manager):
         super().__init__()
@@ -95,8 +113,10 @@ class HistoryPlot(QWidget):
 
     def reset_history(self):
         self.data = {
-            "depress time": [],
-            "press time": [],
+            "time": {
+                Event.DEPRESSURIZE: [], 
+                Event.PRESSURIZE: []
+            },
             "origin pressure": [],
             "sample pressure": [],
             "depress origin slope": [],
@@ -122,50 +142,15 @@ class HistoryPlot(QWidget):
 
 
     def add_event(self, event):
-        # Define start time of plots
-        if self.initial_time is None:
-            self.initial_time = event.event_time
-
         # Check if currently fully zoomed out
         current_x_range = self.pressure_plot.viewRange()[0]
         low_diff = current_x_range[0] - self.limits[0]
         hi_diff = self.limits[1] - current_x_range[1]
         currently_zoomed_out = low_diff + hi_diff < 1
 
-        if event.event_type == Event.PRESSURIZE:
-            time_to_update = "press time"
-
-            # list of lines to update
-            lines_to_update =[
-                "press origin slope", 
-                "press sample slope", 
-                "press origin switch", 
-                "press sample switch"
-            ]
-
-        elif event.event_type == Event.DEPRESSURIZE:
-            time_to_update = "depress time"
-
-            # list of lines to update
-            lines_to_update = [
-                "origin pressure",
-                "sample pressure",
-                "depress origin slope", 
-                "depress sample slope", 
-                "depress origin switch", 
-                "depress sample switch"
-            ]
-
-        else:
-            raise RuntimeError(f"Event of type {event.event_type} sent to HistoryPlot.add_event")
-
-        # Update data
-        self.data[time_to_update].append(event.event_time - self.initial_time)
-        for update in lines_to_update:
-            # Add event to data dict
-            self.data[update].append(event.get_event_info(update) * self.coefficients[update])
-            # Update plot
-            self.lines[update].setData(self.data[time_to_update], self.data[update])
+        self.process_data(event)
+        for update in self.EVENT_LINES[event.event_type]:
+            self.lines[update].setData(self.data["time"][event.event_type], self.data[update])
 
         # Update limits to fit new point
         max_view = max(event.event_time - self.initial_time, self.pressure_plot.viewRange()[0][1])
@@ -177,6 +162,37 @@ class HistoryPlot(QWidget):
         if currently_zoomed_out:
             # Only need to do pressure plot since plot x ranges are linked
             self.pressure_plot.setXRange(self.limits[0], self.limits[1])
+
+
+    # Assumes list is sorted by time
+    def load_event_list(self, list):
+        for event in list:
+            if event.event_type == Event.PRESSURIZE or event.event_type == Event.DEPRESSURIZE:
+                self.process_data(event)
+
+        for update in self.EVENT_LINES[Event.DEPRESSURIZE]:
+            self.lines[update].setData(self.data["time"][Event.DEPRESSURIZE], self.data[update])
+        for update in self.EVENT_LINES[Event.PRESSURIZE]:
+            self.lines[update].setData(self.data["time"][Event.PRESSURIZE], self.data[update])
+
+        self.limits = (0, list[-1].event_time - self.initial_time)
+        self.pressure_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1])
+        self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1])
+        self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1])
+        # Only need to do pressure plot since plot x ranges are linked
+        self.pressure_plot.setXRange(self.limits[0], self.limits[1])
+
+
+    def process_data(self, event):
+        # Define start time of plots
+        if self.initial_time is None:
+            self.initial_time = event.event_time
+
+        # Update data
+        self.data["time"][event.event_type].append(event.event_time - self.initial_time)
+        for update in self.EVENT_LINES[event.event_type]:
+            # Add event to data dict
+            self.data[update].append(event.get_event_info(update) * self.coefficients[update])
 
 
     def update_settings(self, key):

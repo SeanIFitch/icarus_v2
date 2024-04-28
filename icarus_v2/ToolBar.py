@@ -1,27 +1,53 @@
-from PySide6.QtWidgets import QToolBar
+from PySide6.QtWidgets import QToolBar, QFileDialog
 from PySide6.QtGui import QIcon, QAction
-from PySide6.QtCore import Qt
 from SettingsDialog import SettingsDialog
+from PySide6.QtCore import Signal
 
 
 class ToolBar(QToolBar):
-    def __init__(self, config_manager, history_plot, parent=None):
+    set_mode_signal = Signal(str)
+
+
+    def __init__(self, config_manager, log_reader, history_plot, parent=None):
         super().__init__(parent=parent)
 
         self.config_manager = config_manager
+        self.log_reader = log_reader
         self.setMovable(False)
 
-        # Add a settings button
+        # Settings button
         settings_action = QAction(QIcon(), "Settings", self)
         settings_action.triggered.connect(self.open_settings)
         self.addAction(settings_action)
-        # Add a history reset button
+
+        # History reset button
         self.history_reset_action = QAction(QIcon(), "Reset History", self)
-        self.addAction(self.history_reset_action)
         self.history_reset_action.triggered.connect(history_plot.reset_history)
+        self.addAction(self.history_reset_action)
+
+        # Log Loader mode button
+        self.change_mode_action = QAction(QIcon(), "Load Log", self)
+        self.change_mode_action.triggered.connect(self.change_log_mode)
+        self.addAction(self.change_mode_action)
 
 
     def open_settings(self):
         # Open the settings dialog
         dialog = SettingsDialog(self.config_manager, self.parent())
         dialog.exec()
+
+
+    def change_log_mode(self):
+        if self.change_mode_action.text() == "Load Log":
+            file = QFileDialog.getOpenFileName(self, "Open Log", "logs", "Log Files (*.xz)")[0]
+            # No file selected
+            if file == "":
+                return
+
+            self.log_reader.read_events(file)
+            self.change_mode_action.setText("Close Log")
+            self.set_mode_signal.emit("log")
+
+        elif self.change_mode_action.text() == "Close Log":
+            self.change_mode_action.setText("Open Log")
+            self.set_mode_signal.emit("device")

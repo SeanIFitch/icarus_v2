@@ -18,10 +18,10 @@ class PulseGenerator(QThread):
     LOG = 4
 
 
-    def __init__(self, device, config_manager) -> None:
+    def __init__(self, config_manager) -> None:
         super().__init__()
 
-        self.device = device
+        self.device = None
         self.config_manager = config_manager
 
         # dictionary containing pressurize_width, depressurize_width, period_width, delay_width
@@ -30,6 +30,10 @@ class PulseGenerator(QThread):
 
         # Whether or not the device should be currently generating pulses
         self.pulsing = False
+
+
+    def set_device(self, device):
+        self.device = device
 
 
     # Pressurizes and depressurizes at regular intervals
@@ -99,6 +103,8 @@ class PulseGenerator(QThread):
     # Sets channel low for duration milliseconds
     # Raises RuntimeError if channel is already low
     def _pulse_low(self, channel, duration):
+        if self.device is None:
+            raise RuntimeError("Running PulseGenerator when device is not initialized")
         # int representing the current state of dio
         current_dio = self.device.get_current_dio()
         # binary representation of channel to pulse
@@ -127,6 +133,8 @@ class PulseGenerator(QThread):
     # Sets channel low
     # Raises RuntimeError if channel is already low
     def _set_low(self, channel):
+        if self.device is None:
+            raise RuntimeError("Running PulseGenerator when device is not initialized")
         # int representing the current state of dio
         current_dio = self.device.get_current_dio()
         # binary representation of channel to pulse
@@ -143,6 +151,8 @@ class PulseGenerator(QThread):
     # Sets channel high
     # Raises RuntimeError if channel is already high
     def _set_high(self, channel):
+        if self.device is None:
+            raise RuntimeError("Running PulseGenerator when device is not initialized")
         # int representing the current state of dio
         current_dio = self.device.get_current_dio()
         # binary representation of channel to pulse

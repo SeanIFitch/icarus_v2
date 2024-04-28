@@ -29,6 +29,7 @@ class DataHandler(QThread):
         super().__init__()
 
         self.config_manager = config_manager
+        self.pulse_generator = PulseGenerator(self.config_manager)
         self.connecting = False
         self.device = None
         self.logger = None
@@ -37,7 +38,6 @@ class DataHandler(QThread):
         self.depressurize_handler = None
         self.period_handler = None
         self.pressure_handler = None
-        self.pulse_generator = None
 
 
     # Connect to a device
@@ -60,7 +60,7 @@ class DataHandler(QThread):
         self.loader = BufferLoader(self.device)
 
         # Controls device DIO
-        self.pulse_generator = PulseGenerator(self.device, self.config_manager)
+        self.pulse_generator.set_device(self.device)
 
         # Event handlers
         sample_rate = 4000

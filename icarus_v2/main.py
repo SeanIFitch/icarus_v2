@@ -9,11 +9,10 @@ if __name__ == "__main__":
 
     app = QApplication([])
     window = MainWindow(config_manager)
+    window.showMaximized()
 
     data_handler = DataHandler(config_manager)
     window.set_device(data_handler)
     data_handler.start()
-
-    window.init_loader()
 
     app.exec()

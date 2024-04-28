@@ -12,7 +12,7 @@ from time import sleep
 
 
 # Control panel for manual and console operation
-class ControlPanel(QGroupBox):
+class DeviceControlPanel(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
