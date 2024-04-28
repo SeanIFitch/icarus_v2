@@ -4,7 +4,8 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QGridLayout,
     QWidget,
-    QGroupBox,
+    QGroupBox, 
+    QSizePolicy
 )
 from PySide6.QtCore import Qt
 from EventPlot import EventPlot
@@ -78,6 +79,8 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.period_plot, 2, 0)
         self.main_layout.addWidget(self.history_plot, 0, 1, 3, 1)
         self.main_layout.addLayout(control_layout, 0, 2, 2, 2)
+        # Make event plots keep same height
+        self.period_plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         # Add layout to dummy widget and apply to main window
         widget = QWidget()
