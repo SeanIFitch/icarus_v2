@@ -172,10 +172,10 @@ class HistoryPlot(QWidget):
         # Update limits to fit new point
         max_view = max(event.event_time - self.initial_time, self.pressure_plot.viewRange()[0][1])
         self.limits = (0, max_view)
+        if self.min_zoom < 10 and max_view >= 10: self.min_zoom = 10
         self.pressure_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
         self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
         self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
-        if self.min_zoom < 10 and max_view >= 10: self.min_zoom = 10
         # Update view range iff was already zoomed out
         if currently_zoomed_out:
             # Only need to do pressure plot since plot x ranges are linked
@@ -196,7 +196,9 @@ class HistoryPlot(QWidget):
         for update in self.EVENT_LINES[Event.PRESSURIZE]:
             self.lines[update].setData(self.data["time"][Event.PRESSURIZE], self.data[update])
 
-        self.limits = (0, list[-1].event_time - self.initial_time)
+        max_view = max(list[-1].event_time - self.initial_time, self.pressure_plot.viewRange()[0][1])
+        self.limits = (0, max_view)
+        if self.min_zoom < 10 and max_view >= 10: self.min_zoom = 10
         self.pressure_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
         self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
         self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)

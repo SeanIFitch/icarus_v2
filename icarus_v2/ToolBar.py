@@ -24,7 +24,7 @@ class ToolBar(QToolBar):
         self.addAction(self.history_reset_action)
 
         # Log Loader mode button
-        self.change_mode_action = QAction(QIcon(), "Load Log", self)
+        self.change_mode_action = QAction(QIcon(), "Open Logs", self)
         self.change_mode_action.triggered.connect(self.change_log_mode)
         self.addAction(self.change_mode_action)
 
@@ -36,10 +36,10 @@ class ToolBar(QToolBar):
 
 
     def change_log_mode(self):
-        if self.change_mode_action.text() == "Load Log":
+        if self.change_mode_action.text() == "Open Logs":
             self.change_mode_action.setText("Close Logs")
             self.set_mode_signal.emit("log")
 
         elif self.change_mode_action.text() == "Close Logs":
-            self.change_mode_action.setText("Load Log")
+            self.change_mode_action.setText("Open Logs")
             self.set_mode_signal.emit("device")
