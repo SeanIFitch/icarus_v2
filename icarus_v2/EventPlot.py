@@ -76,7 +76,7 @@ class EventPlot(QWidget):
         layout = QGridLayout()
         press_color = self.LINE_STYLES[Channel.PRE_VALVE][0]
         depress_color = self.LINE_STYLES[Channel.DEPRE_VALVE][0]
-        size = 11
+        size = 12
         if self.event_type == Event.PRESSURIZE or self.event_type == Event.DEPRESSURIZE:
             color = press_color if self.event_type == Event.PRESSURIZE else depress_color
             self.width_display = QLabel("0.00")

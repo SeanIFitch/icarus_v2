@@ -1,23 +1,25 @@
 from PySide6.QtGui import QPalette
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QGridLayout
 import pyqtgraph as pg
 from Event import Event, Channel
+from bisect import bisect_right, bisect_left
+import numpy as np
 
 
 class HistoryPlot(QWidget):
     # Dictionary of pens to plot each line
-    PENS = {
-        "origin pressure": pg.mkPen(color='#FFDC00', style=Qt.SolidLine),       # yellow
-        "sample pressure": pg.mkPen(color='#FFDC00', style=Qt.DashLine),        # yellow dashed
-        "depress origin slope": pg.mkPen(color='#59D8E6', style=Qt.SolidLine),  # cyan
-        "depress sample slope": pg.mkPen(color='#59D8E6', style=Qt.DashLine),   # cyan dashed
-        "press origin slope": pg.mkPen(color='#B9121B', style=Qt.SolidLine),    # red
-        "press sample slope": pg.mkPen(color='#B9121B', style=Qt.DashLine),     # red dashed
-        "depress origin switch": pg.mkPen(color='#59D8E6', style=Qt.SolidLine), # cyan
-        "depress sample switch": pg.mkPen(color='#59D8E6', style=Qt.DashLine),  # cyan dashed
-        "press origin switch": pg.mkPen(color='#B9121B', style=Qt.SolidLine),   # red
-        "press sample switch": pg.mkPen(color='#B9121B', style=Qt.DashLine),    # red dashed
+    LINE_STYLES = {
+        "origin pressure": ('#FFDC00',Qt.SolidLine),       # yellow
+        "sample pressure": ('#FFDC00',Qt.DashLine),        # yellow dashed
+        "depress origin slope": ('#59D8E6',Qt.SolidLine),  # cyan
+        "depress sample slope": ('#59D8E6',Qt.DashLine),   # cyan dashed
+        "press origin slope": ('#B9121B',Qt.SolidLine),    # red
+        "press sample slope": ('#B9121B',Qt.DashLine),     # red dashed
+        "depress origin switch": ('#59D8E6',Qt.SolidLine), # cyan
+        "depress sample switch": ('#59D8E6',Qt.DashLine),  # cyan dashed
+        "press origin switch": ('#B9121B',Qt.SolidLine),   # red
+        "press sample switch": ('#B9121B',Qt.DashLine),    # red dashed
     }
 
     # Dictionary of lines updated on certain events
@@ -51,7 +53,7 @@ class HistoryPlot(QWidget):
         # Colors for plots
         window_color = self.palette().color(QPalette.Window)
         text_color = self.palette().color(QPalette.WindowText)
-        style = {'color': text_color}
+        text_style = {'color': text_color}
 
         # Pressure plot
         self.pressure_plot = pg.PlotWidget()
@@ -59,12 +61,17 @@ class HistoryPlot(QWidget):
         self.pressure_plot.showGrid(x=True, y=True)
         self.pressure_plot.setMouseEnabled(x=True, y=False)
         self.pressure_plot.setTitle("Pressure", color=text_color, size="14pt")
-        self.pressure_plot.setLabel('left', 'Pressure (kBar)', **style)
-        self.pressure_plot.setLabel('bottom', 'Time (s)', **style)
+        self.pressure_plot.setLabel('left', 'Pressure (kBar)', **text_style)
+        self.pressure_plot.setLabel('bottom', 'Time (s)', **text_style)
         #self.pressure_plot.setYRange(0, 3)
         self.pressure_plot.hideButtons() # Remove autoScale button
-        self.lines["origin pressure"] = self.pressure_plot.plot([], [], pen=self.PENS["origin pressure"])
-        self.lines["sample pressure"] = self.pressure_plot.plot([], [], pen=self.PENS["sample pressure"])
+        style = self.LINE_STYLES["origin pressure"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["origin pressure"] = self.pressure_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["sample pressure"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["sample pressure"] = self.pressure_plot.plot([], [], pen=pen)
+        self.pressure_plot.getPlotItem().getViewBox().sigStateChanged.connect(self.set_text)
 
         # Slope plot
         self.slope_plot = pg.PlotWidget()
@@ -72,14 +79,22 @@ class HistoryPlot(QWidget):
         self.slope_plot.showGrid(x=True, y=True)
         self.slope_plot.setMouseEnabled(x=True, y=False)
         self.slope_plot.setTitle("Pressure Change Slope", color=text_color, size="14pt")
-        self.slope_plot.setLabel('left', 'Slope (kBar/ms)', **style)
-        self.slope_plot.setLabel('bottom', 'Time (s)', **style)
+        self.slope_plot.setLabel('left', 'Slope (kBar/ms)', **text_style)
+        self.slope_plot.setLabel('bottom', 'Time (s)', **text_style)
         #self.slope_plot.setYRange(-5, 5)
         self.slope_plot.hideButtons() # Remove autoScale button
-        self.lines["depress origin slope"] = self.slope_plot.plot([], [], pen=self.PENS["depress origin slope"])
-        self.lines["depress sample slope"] = self.slope_plot.plot([], [], pen=self.PENS["depress sample slope"])
-        self.lines["press origin slope"] = self.slope_plot.plot([], [], pen=self.PENS["press origin slope"])
-        self.lines["press sample slope"] = self.slope_plot.plot([], [], pen=self.PENS["press sample slope"])
+        style = self.LINE_STYLES["depress origin slope"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["depress origin slope"] = self.slope_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["depress sample slope"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["depress sample slope"] = self.slope_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["press origin slope"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["press origin slope"] = self.slope_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["press sample slope"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["press sample slope"] = self.slope_plot.plot([], [], pen=pen)
         # Connect the x-axis of all plots for zooming and panning
         self.slope_plot.setXLink(self.pressure_plot)
 
@@ -89,16 +104,101 @@ class HistoryPlot(QWidget):
         self.switch_time_plot.showGrid(x=True, y=True)
         self.switch_time_plot.setMouseEnabled(x=True, y=False)
         self.switch_time_plot.setTitle("Switch Time", color=text_color, size="14pt")
-        self.switch_time_plot.setLabel('left', 'Time (ms)', **style)
-        self.switch_time_plot.setLabel('bottom', 'Time (s)', **style)
+        self.switch_time_plot.setLabel('left', 'Time (ms)', **text_style)
+        self.switch_time_plot.setLabel('bottom', 'Time (s)', **text_style)
         #self.switch_time_plot.setYRange(0, 48)
         self.switch_time_plot.hideButtons() # Remove autoScale button
-        self.lines["depress origin switch"] = self.switch_time_plot.plot([], [], pen=self.PENS["depress origin switch"])
-        self.lines["depress sample switch"] = self.switch_time_plot.plot([], [], pen=self.PENS["depress sample switch"])
-        self.lines["press origin switch"] = self.switch_time_plot.plot([], [], pen=self.PENS["press origin switch"])
-        self.lines["press sample switch"] = self.switch_time_plot.plot([], [], pen=self.PENS["press sample switch"])
+        style = self.LINE_STYLES["depress origin switch"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["depress origin switch"] = self.switch_time_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["depress sample switch"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["depress sample switch"] = self.switch_time_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["press origin switch"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["press origin switch"] = self.switch_time_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["press sample switch"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["press sample switch"] = self.switch_time_plot.plot([], [], pen=pen)
         # Connect the x-axis of all plots for zooming and panning
         self.switch_time_plot.setXLink(self.pressure_plot)
+
+        # Statistics labels
+        size = 12
+        # Pressure plot
+        self.last_pressure_display = QLabel("0.000")
+        self.avg_pressure_display = QLabel("0.000")
+        last_pressure_label = QLabel("Last:")
+        avg_pressure_label = QLabel("Avg:")
+        color = self.LINE_STYLES["origin pressure"][0]
+        self.last_pressure_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_pressure_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        last_pressure_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        avg_pressure_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        pressure_labels = QGridLayout()
+        pressure_labels.setContentsMargins(0, 35, 5, 0)
+        pressure_labels.addWidget(last_pressure_label, 0, 0)
+        pressure_labels.addWidget(avg_pressure_label, 1, 0)
+        pressure_labels.addWidget(self.last_pressure_display, 0, 1)
+        pressure_labels.addWidget(self.avg_pressure_display, 1, 1)
+        # Slope plot
+        self.last_press_slope_display = QLabel("0.00")
+        self.avg_press_slope_display = QLabel("0.00")
+        last_press_slope_label = QLabel("Last:")
+        avg_press_slope_label = QLabel("Avg:")
+        color = self.LINE_STYLES["press origin slope"][0]
+        self.last_press_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_press_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        last_press_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        avg_press_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.last_depress_slope_display = QLabel("0.00")
+        self.avg_depress_slope_display = QLabel("0.00")
+        last_depress_slope_label = QLabel("Last:")
+        avg_depress_slope_label = QLabel("Avg:")
+        color = self.LINE_STYLES["depress origin slope"][0]
+        self.last_depress_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_depress_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        last_depress_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        avg_depress_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        slope_labels = QGridLayout()
+        slope_labels.setContentsMargins(0, 35, 5, 0)
+        slope_labels.addWidget(last_press_slope_label, 0, 0)
+        slope_labels.addWidget(avg_press_slope_label, 1, 0)
+        slope_labels.addWidget(self.last_press_slope_display, 0, 1)
+        slope_labels.addWidget(self.avg_press_slope_display, 1, 1)
+        slope_labels.addWidget(last_depress_slope_label, 2, 0)
+        slope_labels.addWidget(avg_depress_slope_label, 3, 0)
+        slope_labels.addWidget(self.last_depress_slope_display, 2, 1)
+        slope_labels.addWidget(self.avg_depress_slope_display, 3, 1)
+        #Switch Time Plot
+        self.last_press_switch_display = QLabel("0.00")
+        self.avg_press_switch_display = QLabel("0.00")
+        last_press_switch_label = QLabel("Last:")
+        avg_press_switch_label = QLabel("Avg:")
+        color = self.LINE_STYLES["press origin switch"][0]
+        self.last_press_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_press_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        last_press_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        avg_press_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.last_depress_switch_display = QLabel("0.00")
+        self.avg_depress_switch_display = QLabel("0.00")
+        last_depress_switch_label = QLabel("Last:")
+        avg_depress_switch_label = QLabel("Avg:")
+        color = self.LINE_STYLES["depress origin switch"][0]
+        self.last_depress_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_depress_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        last_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        avg_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        switch_labels = QGridLayout()
+        switch_labels.setContentsMargins(0, 35, 5, 0)
+        switch_labels.addWidget(last_press_switch_label, 0, 0)
+        switch_labels.addWidget(avg_press_switch_label, 1, 0)
+        switch_labels.addWidget(self.last_press_switch_display, 0, 1)
+        switch_labels.addWidget(self.avg_press_switch_display, 1, 1)
+        switch_labels.addWidget(last_depress_switch_label, 2, 0)
+        switch_labels.addWidget(avg_depress_switch_label, 3, 0)
+        switch_labels.addWidget(self.last_depress_switch_display, 2, 1)
+        switch_labels.addWidget(self.avg_depress_switch_display, 3, 1)
 
         # Lines for displaying log view time
         self.press_time_press = None
@@ -109,10 +209,13 @@ class HistoryPlot(QWidget):
         self.depress_time_switch = None
 
         # Set layout
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.pressure_plot)
-        self.layout.addWidget(self.slope_plot)
-        self.layout.addWidget(self.switch_time_plot)
+        self.layout = QGridLayout()
+        self.layout.addWidget(self.pressure_plot, 0, 0)
+        self.layout.addLayout(pressure_labels, 0, 0, Qt.AlignRight | Qt.AlignTop)
+        self.layout.addWidget(self.slope_plot, 1, 0)
+        self.layout.addLayout(slope_labels, 1, 0, Qt.AlignRight | Qt.AlignTop)
+        self.layout.addWidget(self.switch_time_plot, 2, 0)
+        self.layout.addLayout(switch_labels, 2, 0, Qt.AlignRight | Qt.AlignTop)
         self.setLayout(self.layout)
 
         self.reset_history()
@@ -145,6 +248,17 @@ class HistoryPlot(QWidget):
         self.pressure_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
         self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
         self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
+
+        self.last_pressure_display.setText("0.000")
+        self.avg_pressure_display.setText("0.000")
+        self.last_press_slope_display.setText("0.00")
+        self.avg_press_slope_display.setText("0.00")
+        self.last_depress_slope_display.setText("0.00")
+        self.avg_depress_slope_display.setText("0.00")
+        self.last_press_switch_display.setText("0.00")
+        self.avg_press_switch_display.setText("0.00")
+        self.last_depress_switch_display.setText("0.00")
+        self.avg_depress_switch_display.setText("0.00")
 
         # Lines for displaying log view time
         self.pressure_plot.removeItem(self.press_time_press)
@@ -203,6 +317,7 @@ class HistoryPlot(QWidget):
         self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
         # Only need to do pressure plot since plot x ranges are linked
         self.pressure_plot.setXRange(self.limits[0], self.limits[1])
+        self.set_text()
 
 
     def process_data(self, event):
@@ -215,6 +330,32 @@ class HistoryPlot(QWidget):
         for update in self.EVENT_LINES[event.event_type]:
             # Add event to data dict
             self.data[update].append(event.get_event_info(update) * self.coefficients[update])
+
+
+    # Sets all text to the data in view
+    def set_text(self):
+        range = self.pressure_plot.viewRange()[0]
+        press_range = (
+            bisect_left(self.data["time"][Event.PRESSURIZE], range[0]),
+            bisect_right(self.data["time"][Event.PRESSURIZE], range[1]) - 1
+        )
+        depress_range = (
+            bisect_left(self.data["time"][Event.DEPRESSURIZE], range[0]),
+            bisect_right(self.data["time"][Event.DEPRESSURIZE], range[1]) - 1
+        )
+
+        if depress_range[1] - depress_range[0] > 0:
+            self.last_pressure_display.setText(f"{self.data['origin pressure'][depress_range[1]]:.3f}")
+            self.avg_pressure_display.setText(f"{np.mean(self.data['origin pressure'][depress_range[0]:depress_range[1]]):.3f}")
+            self.last_depress_slope_display.setText(f"{self.data['depress origin slope'][depress_range[1]]:.2f}")
+            self.avg_depress_slope_display.setText(f"{np.mean(self.data['depress origin slope'][depress_range[0]:depress_range[1]]):.2f}")
+            self.last_depress_switch_display.setText(f"{self.data['depress origin switch'][depress_range[1]]:.2f}")
+            self.avg_depress_switch_display.setText(f"{np.mean(self.data['depress origin switch'][depress_range[0]:depress_range[1]]):.2f}")
+        if press_range[1] - press_range[0] > 0:
+            self.last_press_slope_display.setText(f"{self.data['press origin slope'][press_range[1]]:.2f}")
+            self.avg_press_slope_display.setText(f"{np.mean(self.data['press origin slope'][press_range[0]:press_range[1]]):.2f}")
+            self.last_press_switch_display.setText(f"{self.data['press origin switch'][press_range[1]]:.2f}")
+            self.avg_press_switch_display.setText(f"{np.mean(self.data['press origin switch'][press_range[0]:press_range[1]]):.2f}")
 
 
     def update_settings(self, key):
@@ -243,9 +384,11 @@ class HistoryPlot(QWidget):
 
         if event is not None:
             time = event.event_time - self.initial_time
-            self.press_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["press origin slope"])
-            self.press_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["press origin slope"])
-            self.press_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["press origin slope"])
+            style = self.LINE_STYLES["press origin slope"]
+            pen = pg.mkPen(color=style[0], style=style[1])
+            self.press_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
+            self.press_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
+            self.press_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
             self.pressure_plot.addItem(self.press_time_press)
             self.slope_plot.addItem(self.press_time_slope)
             self.switch_time_plot.addItem(self.press_time_switch)
@@ -259,9 +402,11 @@ class HistoryPlot(QWidget):
 
         if event is not None:
             time = event.event_time - self.initial_time
-            self.depress_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["depress origin slope"])
-            self.depress_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["depress origin slope"])
-            self.depress_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["depress origin slope"])
+            style = self.LINE_STYLES["depress origin slope"]
+            pen = pg.mkPen(color=style[0], style=style[1])
+            self.depress_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
+            self.depress_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
+            self.depress_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
             self.pressure_plot.addItem(self.depress_time_press)
             self.slope_plot.addItem(self.depress_time_slope)
             self.switch_time_plot.addItem(self.depress_time_switch)
