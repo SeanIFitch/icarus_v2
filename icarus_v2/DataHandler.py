@@ -120,3 +120,4 @@ class DataHandler(QThread):
             self.loader.wait()
 
         super().quit()
+        self.wait()
