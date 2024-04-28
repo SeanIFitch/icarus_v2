@@ -1,12 +1,24 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
+from LogReader import LogReader
+from Event import Event, Channel
 
 
 # Seed for reproducibility
 np.random.seed(0)
 
-# Generate data
+# Get data
+reader = LogReader()
+reader.read_events("logs/example1.xz")
+for e in reader.events:
+    if e.event_type == Event.PRESSURIZE:
+        event = e
+        break
+
+data = 
+
+
 x = np.linspace(0, 10, 1000)
 y = np.concatenate([np.ones(200) * 5, np.linspace(5, 20, 50), np.ones(750) * 20])
 y += np.random.normal(scale=0.1, size=y.size)

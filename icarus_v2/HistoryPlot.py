@@ -2,8 +2,7 @@ from PySide6.QtGui import QPalette
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 import pyqtgraph as pg
-from Event import Event
-from Channel import Channel
+from Event import Event, Channel
 
 
 class HistoryPlot(QWidget):

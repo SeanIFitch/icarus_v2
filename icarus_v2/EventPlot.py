@@ -2,8 +2,7 @@ from PySide6.QtGui import QPalette
 from PySide6.QtCore import Qt
 import pyqtgraph as pg
 import numpy as np
-from Channel import Channel, get_channel
-from Event import Event
+from Event import Event, Channel, get_channel
 from PySide6.QtWidgets import QLabel, QGridLayout, QWidget
 
 

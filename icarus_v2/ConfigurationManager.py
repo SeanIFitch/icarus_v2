@@ -1,7 +1,7 @@
 import json
 from copy import deepcopy
 from PySide6.QtCore import Signal, QObject
-from Channel import Channel
+from Event import Channel
 
 
 # Responsible for loading and saving settings

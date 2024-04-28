@@ -1,7 +1,6 @@
 from EventHandler import EventHandler
 import numpy as np
-from Channel import Channel, get_channel
-from Event import Event
+from Event import Event, Channel, get_channel
 
 
 # Detects a pressurize event and transmits data to plot

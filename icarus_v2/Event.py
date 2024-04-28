@@ -1,6 +1,34 @@
 from time import time
 import numpy as np
-from Channel import Channel, get_channel
+from enum import Enum
+
+
+class Channel(Enum):
+    TARGET = 0          # Analog CH0: target pressure 
+    DEPRE_LOW = 1       # Analog CH1: depressurization valve lower sensor
+    DEPRE_UP = 2        # Analog CH2: depressurization valve upper sensor
+    PRE_LOW = 3         # Analog CH3: pressurization valve lower sensor
+    PRE_UP = 4          # Analog CH4: pressurization valve upper sensor
+    HI_PRE_ORIG = 5     # Analog CH5: high pressure transducer at the origin
+    HI_PRE_SAMPLE = 6   # Analog CH6: high pressure transducer at the sample
+    PUMP = 7            # Digital CH0: high pressure pump (Active low / pumping on False)
+    DEPRE_VALVE = 8     # Digital CH1: depressurize valve (Active low / open on False)
+    PRE_VALVE = 9       # Digital CH2: pressurize valve (Active low / open on False)
+    LOG = 10            # Digital CH4: log (Active low / logging on False)
+
+
+# Returns a view of the selected channel
+# Can be used on data that has not been wrapped in an event
+def get_channel(data, channel):
+    if isinstance(data, Event):
+        data = data.data
+    if channel.value <= 6:
+        return data[:,channel.value]
+    else:
+        digital = 7
+        bit = 1 << (channel.value - 7)
+        channel_data = data[:,digital] & bit
+        return channel_data.astype(np.bool_)
 
 
 # Represents an event
@@ -90,7 +118,7 @@ class Event():
         if self.event_type != self.PRESSURE:
             raise RuntimeError("Cannot call get_sample_pressure() on event type " + self.event_type) 
 
-        sample_pressure = np.average(get_channel(self.data, Channel.HI_PRE_SAMPLE))
+        sample_pressure = np.average(get_channel(self, Channel.HI_PRE_SAMPLE))
         return sample_pressure
 
 
@@ -99,7 +127,7 @@ class Event():
         if self.event_type != self.PRESSURE:
             raise RuntimeError("Cannot call get_target_pressure() on event type " + self.event_type) 
 
-        target_pressure = np.average(get_channel(self.data, Channel.TARGET))
+        target_pressure = np.average(get_channel(self, Channel.TARGET))
         return target_pressure
 
 
@@ -113,9 +141,9 @@ class Event():
             raise RuntimeError("Cannot call get_valve_open_time() on event type " + self.event_type)
 
         # find duration of event
-        duration = np.argmax(get_channel(self.data, valve)[self.event_index:])
+        duration = np.argmax(get_channel(self, valve)[self.event_index:])
         # Case where the end of the event is not in the reported data
-        if get_channel(self.data, valve)[self.event_index + duration] == False:
+        if get_channel(self, valve)[self.event_index + duration] == False:
             duration = len(self.data) - self.event_index
         return duration
 
@@ -136,7 +164,7 @@ class Event():
             raise RuntimeError("Cannot call get_delay_width() on event type " + self.event_type) 
 
         # Find length of delay
-        delay = np.argmin(get_channel(self.data, Channel.PRE_VALVE)[self.event_index:])
+        delay = np.argmin(get_channel(self, Channel.PRE_VALVE)[self.event_index:])
         return delay
 
 
@@ -145,7 +173,7 @@ class Event():
         if self.event_type != self.DEPRESSURIZE:
             raise RuntimeError("Cannot call get_initial_sample() on event type " + self.event_type)
 
-        sample_pressure = np.average(get_channel(self.data, Channel.HI_PRE_SAMPLE)[:self.event_index])
+        sample_pressure = np.average(get_channel(self, Channel.HI_PRE_SAMPLE)[:self.event_index])
         return sample_pressure
 
 
@@ -154,7 +182,7 @@ class Event():
         if self.event_type != self.DEPRESSURIZE:
             raise RuntimeError("Cannot call get_initial_origin() on event type " + self.event_type)
 
-        sample_pressure = np.average(get_channel(self.data, Channel.HI_PRE_ORIG)[:self.event_index])
+        sample_pressure = np.average(get_channel(self, Channel.HI_PRE_ORIG)[:self.event_index])
         return sample_pressure
 
 
@@ -163,7 +191,7 @@ class Event():
         if self.event_type != self.DEPRESSURIZE and self.event_type != self.PRESSURIZE:
             raise RuntimeError("Cannot call get_origin_slope() on event type " + self.event_type)
 
-        data = get_channel(self.data, Channel.HI_PRE_ORIG)
+        data = get_channel(self, Channel.HI_PRE_ORIG)
         minimum = np.min(data)
         data_range = np.max(data) - minimum
         half_max = minimum + (data_range / 2)
@@ -177,7 +205,7 @@ class Event():
         if self.event_type != self.DEPRESSURIZE and self.event_type != self.PRESSURIZE:
             raise RuntimeError("Cannot call get_origin_slope() on event type " + self.event_type)
 
-        data = get_channel(self.data, Channel.HI_PRE_SAMPLE)
+        data = get_channel(self, Channel.HI_PRE_SAMPLE)
         minimum = np.min(data)
         data_range = np.max(data) - minimum
         half_max = minimum + (data_range / 2)
@@ -195,5 +223,8 @@ class Event():
     def get_sample_slope(self):
         if self.event_type != self.DEPRESSURIZE and self.event_type != self.PRESSURIZE:
             raise RuntimeError("Cannot call get_sample_slope() on event type " + self.event_type)
+
+        data = get_channel(self, Channel.HI_PRE_SAMPLE)
+
 
         return np.random.randint(-5, 5)
