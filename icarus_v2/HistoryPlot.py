@@ -240,13 +240,14 @@ class HistoryPlot(QWidget):
         self.slope_plot.removeItem(self.press_time_slope)
         self.switch_time_plot.removeItem(self.press_time_switch)
 
-        time = event.event_time - self.initial_time
-        self.press_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["press origin slope"])
-        self.press_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["press origin slope"])
-        self.press_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["press origin slope"])
-        self.pressure_plot.addItem(self.press_time_press)
-        self.slope_plot.addItem(self.press_time_slope)
-        self.switch_time_plot.addItem(self.press_time_switch)
+        if event is not None:
+            time = event.event_time - self.initial_time
+            self.press_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["press origin slope"])
+            self.press_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["press origin slope"])
+            self.press_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["press origin slope"])
+            self.pressure_plot.addItem(self.press_time_press)
+            self.slope_plot.addItem(self.press_time_slope)
+            self.switch_time_plot.addItem(self.press_time_switch)
 
 
     def render_depressurize_time(self, event):
@@ -255,10 +256,11 @@ class HistoryPlot(QWidget):
         self.slope_plot.removeItem(self.depress_time_slope)
         self.switch_time_plot.removeItem(self.depress_time_switch )
 
-        time = event.event_time - self.initial_time
-        self.depress_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["depress origin slope"])
-        self.depress_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["depress origin slope"])
-        self.depress_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["depress origin slope"])
-        self.pressure_plot.addItem(self.depress_time_press)
-        self.slope_plot.addItem(self.depress_time_slope)
-        self.switch_time_plot.addItem(self.depress_time_switch)
+        if event is not None:
+            time = event.event_time - self.initial_time
+            self.depress_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["depress origin slope"])
+            self.depress_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["depress origin slope"])
+            self.depress_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["depress origin slope"])
+            self.pressure_plot.addItem(self.depress_time_press)
+            self.slope_plot.addItem(self.depress_time_slope)
+            self.switch_time_plot.addItem(self.depress_time_switch)

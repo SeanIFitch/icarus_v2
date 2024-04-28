@@ -16,7 +16,6 @@ from PressureDisplay import PressureDisplay
 from ToolBar import ToolBar
 
 from Event import Event
-from LogReader import LogReader
 
 
 # Can be either in log reading or device mode.
@@ -27,7 +26,6 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
 
         self.config_manager = config_manager
-        self.log_reader = LogReader()
         self.data_handler = None
 
         # Window settings
@@ -50,11 +48,17 @@ class MainWindow(QMainWindow):
         self.log_control_panel.depressurize_event_signal.connect(self.depressurize_plot.update_data)
         self.log_control_panel.depressurize_event_signal.connect(self.history_plot.render_depressurize_time)
         self.log_control_panel.period_event_signal.connect(self.period_plot.update_data)
+        self.log_control_panel.event_list_signal.connect(self.history_plot.load_event_list)
+        self.log_control_panel.reset_history_signal.connect(self.history_plot.reset_history)
+        self.log_control_panel.reset_history_signal.connect(self.pressurize_plot.reset_history)
+        self.log_control_panel.reset_history_signal.connect(self.depressurize_plot.reset_history)
+        self.log_control_panel.reset_history_signal.connect(self.period_plot.reset_history)
 
         # ToolBar
-        self.toolbar = ToolBar(config_manager, self.log_reader, self.history_plot)
+        self.toolbar = ToolBar(config_manager)
         self.addToolBar(Qt.BottomToolBarArea, self.toolbar)
         self.toolbar.set_mode_signal.connect(self.set_mode)
+        self.toolbar.history_reset_action.triggered.connect(self.history_plot.reset_history)
 
         # Control and value layout
         # Show bounding box even when no controls are displayed
@@ -126,9 +130,6 @@ class MainWindow(QMainWindow):
             self.pressurize_plot.reset_history()
             self.depressurize_plot.reset_history()
             self.period_plot.reset_history()
-            # Load history
-            self.history_plot.load_event_list(self.log_reader.events)
-            self.log_control_panel.load_new_file(self.log_reader)
 
             self.mode = "log"
 

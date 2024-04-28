@@ -8,11 +8,10 @@ class ToolBar(QToolBar):
     set_mode_signal = Signal(str)
 
 
-    def __init__(self, config_manager, log_reader, history_plot, parent=None):
+    def __init__(self, config_manager, parent=None):
         super().__init__(parent=parent)
 
         self.config_manager = config_manager
-        self.log_reader = log_reader
         self.setMovable(False)
 
         # Settings button
@@ -22,7 +21,6 @@ class ToolBar(QToolBar):
 
         # History reset button
         self.history_reset_action = QAction(QIcon(), "Reset History", self)
-        self.history_reset_action.triggered.connect(history_plot.reset_history)
         self.addAction(self.history_reset_action)
 
         # Log Loader mode button
@@ -39,15 +37,9 @@ class ToolBar(QToolBar):
 
     def change_log_mode(self):
         if self.change_mode_action.text() == "Load Log":
-            file = QFileDialog.getOpenFileName(self, "Open Log", "logs", "Log Files (*.xz)")[0]
-            # No file selected
-            if file == "":
-                return
-
-            self.log_reader.read_events(file)
-            self.change_mode_action.setText("Close Log")
+            self.change_mode_action.setText("Close Logs")
             self.set_mode_signal.emit("log")
 
-        elif self.change_mode_action.text() == "Close Log":
+        elif self.change_mode_action.text() == "Close Logs":
             self.change_mode_action.setText("Load Log")
             self.set_mode_signal.emit("device")
