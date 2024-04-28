@@ -134,9 +134,10 @@ class HistoryPlot(QWidget):
             line.setData([], [])
 
         self.limits = (0,1)
-        self.pressure_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1])
-        self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1])
-        self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1])
+        self.min_zoom = 1
+        self.pressure_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
+        self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
+        self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
 
         self.pressure_plot.setXRange(self.limits[0], self.limits[1])
 
@@ -155,9 +156,10 @@ class HistoryPlot(QWidget):
         # Update limits to fit new point
         max_view = max(event.event_time - self.initial_time, self.pressure_plot.viewRange()[0][1])
         self.limits = (0, max_view)
-        self.pressure_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1])
-        self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1])
-        self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1])
+        self.pressure_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
+        self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
+        self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
+        if self.min_zoom < 10 and max_view >= 10: self.min_zoom = 10
         # Update view range iff was already zoomed out
         if currently_zoomed_out:
             # Only need to do pressure plot since plot x ranges are linked
@@ -176,9 +178,9 @@ class HistoryPlot(QWidget):
             self.lines[update].setData(self.data["time"][Event.PRESSURIZE], self.data[update])
 
         self.limits = (0, list[-1].event_time - self.initial_time)
-        self.pressure_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1])
-        self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1])
-        self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1])
+        self.pressure_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
+        self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
+        self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
         # Only need to do pressure plot since plot x ranges are linked
         self.pressure_plot.setXRange(self.limits[0], self.limits[1])
 
