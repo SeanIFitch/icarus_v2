@@ -1,4 +1,4 @@
-from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import QThread
 import traceback
 from Event import Event
 

@@ -51,6 +51,8 @@ class DataHandler(QThread):
                 sleep(0.1)
         if self.device is not None:
             self.start_data_collection()
+            # Start event loop so that signals sent to this thread may be processed
+            self.exec()
 
 
     def start_data_collection(self):
