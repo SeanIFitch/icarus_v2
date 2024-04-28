@@ -11,10 +11,11 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QDoubleValidator, QIntValidator
 from ErrorDialog import open_error_dialog
+from PySide6.QtCore import QPoint
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, config_manager):
+    def __init__(self, config_manager, parent=None):
         super().__init__()
 
         self.config_manager = config_manager
@@ -127,6 +128,10 @@ class SettingsDialog(QDialog):
         main_layout.addWidget(preferences_group)
         main_layout.addWidget(hardware_group)
         main_layout.addWidget(button_box)
+
+        # Center dialog
+        if parent is not None:
+            self.move(parent.geometry().center() - QPoint(self.width() / 2, self.height()))
 
         # Default selection
         button_box.button(QDialogButtonBox.Apply).setFocus()

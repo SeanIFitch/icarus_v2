@@ -6,6 +6,7 @@ from Channel import Channel
 
 # Responsible for loading and saving settings
 class ConfigurationManager(QObject):
+    # Signal to let subscribers know that settings[key] was changed
     settings_updated = Signal(str)
 
     def __init__(self, filename = "settings.json") -> None:

@@ -5,17 +5,15 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QWidget,
     QPushButton,
-    QFileDialog,
-    QToolBar
+    QFileDialog
 )
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon, QAction
 from EventPlot import EventPlot
 from HistoryPlot import HistoryPlot
 from ControlPanel import ControlPanel
 from CounterDisplay import CounterDisplay
 from PressureDisplay import PressureDisplay
-from SettingsDialog import SettingsDialog
+from ToolBar import ToolBar
 
 from Event import Event
 from LogReader import LogReader
@@ -35,30 +33,16 @@ class MainWindow(QMainWindow):
         self.showMaximized()
         self.setMinimumSize(QSize(800, 600))
 
-        # Setup the toolbar
-        self.toolbar = QToolBar()
-        self.addToolBar(Qt.BottomToolBarArea, self.toolbar)
-        self.toolbar.setMovable(False)
-        # Add a settings button
-        settings_action = QAction(QIcon(), "Settings", self)
-        settings_action.triggered.connect(self.open_settings)
-        self.toolbar.addAction(settings_action)
-        # Add a history reset button
-        self.history_reset_action = QAction(QIcon(), "Reset History", self)
-        self.toolbar.addAction(self.history_reset_action)
-
         # Initialize all widgets
 
         # Pressure event plots
         self.pressure_event_display_range = (-10,140) # How much data to view around pressurize events
-        sample_rate = 4000
         self.pressurize_plot = EventPlot(Event.PRESSURIZE, self.config_manager)
         self.depressurize_plot = EventPlot(Event.DEPRESSURIZE, self.config_manager)
         self.period_plot = EventPlot(Event.PERIOD, self.config_manager)
 
         # History plots
-        self.history_plot = HistoryPlot(sample_rate, config_manager)
-        self.history_reset_action.triggered.connect(self.history_plot.reset_history)
+        self.history_plot = HistoryPlot(config_manager)
 
         # Logging
         self.file_button = QPushButton("Choose File")
@@ -75,6 +59,10 @@ class MainWindow(QMainWindow):
         # Info displays
         self.counter_display = CounterDisplay(config_manager)
         self.pressure_display = PressureDisplay()
+
+        # ToolBar
+        self.toolbar = ToolBar(config_manager, self.history_plot)
+        self.addToolBar(Qt.BottomToolBarArea, self.toolbar)
 
         # Set main layout
         main_layout = QGridLayout()
@@ -146,9 +134,3 @@ class MainWindow(QMainWindow):
 
         if self.data_handler is not None:
             self.data_handler.quit()
-
-
-    def open_settings(self):
-        # Open the settings dialog
-        dialog = SettingsDialog(self.config_manager)
-        dialog.exec()

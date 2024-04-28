@@ -22,10 +22,9 @@ class HistoryPlot(QWidget):
     }
 
 
-    def __init__(self, sample_rate, config_manager):
+    def __init__(self, config_manager):
         super().__init__()
 
-        self.sample_rate = sample_rate
         self.config_manager = config_manager
         self.update_settings("plotting_coefficients")
         self.config_manager.settings_updated.connect(self.update_settings)

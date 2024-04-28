@@ -1,14 +1,14 @@
 {
     "timing_settings": {
-        "pressurize_width": 10.0,
-        "depressurize_width": 10.0,
-        "period_width": 5.0,
-        "delay_width": 2.0
+        "pressurize_width": 8.0,
+        "depressurize_width": 8.0,
+        "period_width": 3.0,
+        "delay_width": 1.0
     },
     "counter_settings": {
-        "pump_count": 10,
-        "pressurize_count": 632,
-        "depressurize_count": 661
+        "pump_count": 12,
+        "pressurize_count": 747,
+        "depressurize_count": 777
     },
     "plotting_coefficients": {
         "0": 0.00044262005,

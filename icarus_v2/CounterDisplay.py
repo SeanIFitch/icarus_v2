@@ -67,4 +67,6 @@ class CounterDisplay(QGroupBox):
     def update_settings(self, key):
         if key == 'counter_settings':
             self.counts = self.config_manager.get_settings(key)
-            self.increment_count(None)
+            self.pump_counter.setText(str(self.counts['pump_count']))
+            self.pressurize_counter.setText(str(self.counts['pressurize_count']))
+            self.depressurize_counter.setText(str(self.counts['depressurize_count']))
