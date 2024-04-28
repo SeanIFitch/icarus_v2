@@ -32,6 +32,7 @@ class PressureDisplay(QGroupBox):
         layout.addWidget(self.target_display, 1, 1)
         layout.addWidget(self.sample_display, 2, 1)
 
+        self.setFixedWidth(194)
         layout.setAlignment(Qt.AlignTop)
         self.setLayout(layout)
 

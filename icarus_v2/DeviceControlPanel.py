@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
     QRadioButton,
     QVBoxLayout,
     QLabel,
+    QWidget
 )
 from ToggleButton import ToggleButton
 from TogglePictureButton import TogglePictureButton
@@ -35,25 +36,28 @@ class DeviceControlPanel(QGroupBox):
         self.depressurize_button = ToggleButton("Depressurize open", "Depressurize close")
         self.pulse_button = ToggleButton("Start pulsing", "Stop pulsing")
 
-        # Set button layout
-        self.button_layout = QVBoxLayout()
+        # Set layouts
+        button_layout = QVBoxLayout()
+        button_layout.addWidget(self.pump_button)
+        button_layout.addWidget(self.pressurize_button)
+        button_layout.addWidget(self.depressurize_button)
+        button_layout.addWidget(self.pulse_button)
+        self.button_widget = QWidget()
+        self.button_widget.setLayout(button_layout)
 
-        # Set layout
         mode_layout = QHBoxLayout()
         mode_layout.addWidget(self.console_button)
         mode_layout.addWidget(self.manual_button)
+
         layout = QVBoxLayout()
         layout.addWidget(self.shutdown_button, alignment=Qt.AlignHCenter)
         layout.addWidget(QLabel("Change Mode:"))
         layout.addLayout(mode_layout)
-        layout.addLayout(self.button_layout)
+        layout.addWidget(self.button_widget)
+
+        self.setFixedSize(194, 321)
         layout.setAlignment(Qt.AlignTop)
         self.setLayout(layout)
-
-        self.button_layout.addWidget(self.pump_button)
-        self.button_layout.addWidget(self.pressurize_button)
-        self.button_layout.addWidget(self.depressurize_button)
-        self.button_layout.addWidget(self.pulse_button)
 
 
     def change_to_console(self):
@@ -61,14 +65,10 @@ class DeviceControlPanel(QGroupBox):
         # Only follow through if enabling mode not disabling
         if sender.isChecked():
             # Remove all buttons from the layout
-            for i in reversed(range(self.button_layout.count())):
-                widget = self.button_layout.itemAt(i).widget()
-                if widget is not None:
-                    widget.setParent(None)
+            self.button_widget.hide()
 
+            # Set pulser off, pump on, valves closed
             self.pulse_button.setChecked(False)
-
-            # Set pump on, valves closed
             self.pump_button.setChecked(True)
             self.pressurize_button.setChecked(True)
             self.depressurize_button.setChecked(True)
@@ -78,11 +78,7 @@ class DeviceControlPanel(QGroupBox):
         sender = self.sender()
         # Only follow through if enabling mode not disabling
         if sender.isChecked():
-            self.button_layout.addWidget(self.pump_button)
-            self.button_layout.addWidget(self.pressurize_button)
-            self.button_layout.addWidget(self.depressurize_button)
-            self.button_layout.addWidget(self.pulse_button)
-            self.button_layout.addWidget(self.timing_settings_button)
+            self.button_widget.show()
 
 
     # Connect buttons to the pulse generator

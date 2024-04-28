@@ -1,21 +1,17 @@
 import lzma
 import pickle
 from Event import Event
-from PySide6.QtCore import Signal, QObject
 
 # Load events from logs
-class LogReader(QObject):
-    pressurize_event_signal = Signal(Event)
-    depressurize_event_signal = Signal(Event)
-    period_event_signal = Signal(Event)
-
-    def __init__(self):
-        super().__init__()
+class LogReader:
+    def __init__(self) -> None:
+        self.events = None
+        self.filename = None
 
 
     def read_events(self, filename):
         self.events = []
-        self.index = 0
+        self.filename = filename
         file = lzma.open(filename, "rb")  # Open file in read binary mode
         try:
             while True:
@@ -31,31 +27,3 @@ class LogReader(QObject):
                 self.events.append(event)
         except EOFError:
             pass  # End of file reached
-
-
-    def emit_next_event(self):
-        event = self.events[self.index]
-        if event.event_type == Event.DEPRESSURIZE:
-            self.depressurize_event_signal.emit(event)
-        elif event.event_type == Event.PRESSURIZE:
-            self.pressurize_event_signal.emit(event)
-        elif event.event_type == Event.PERIOD:
-            self.period_event_signal.emit(event)
-        if self.index < len(self.events):
-            self.index += 1
-
-
-    def emit_last_event(self):
-        if self.index > 0:
-            self.index -= 1
-        event = self.events[self.index]
-        if event.event_type == Event.DEPRESSURIZE:
-            self.depressurize_event_signal.emit(event)
-        elif event.event_type == Event.PRESSURIZE:
-            self.pressurize_event_signal.emit(event)
-        elif event.event_type == Event.PERIOD:
-            self.period_event_signal.emit(event)
-
-
-    def close(self):
-        self.file.close()

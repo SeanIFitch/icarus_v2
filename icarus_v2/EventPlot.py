@@ -106,6 +106,10 @@ class EventPlot(QWidget):
 
 
     def update_data(self, event):
+        if event is None:
+            self.reset_history()
+            return
+
         data = event.data
         # Calculate times based on event.data_end_time and event_index
         time_before_event = - event.data_end_time * event.event_index / (len(data) - event.event_index)
@@ -133,3 +137,8 @@ class EventPlot(QWidget):
     def update_settings(self, key):
         if key == "plotting_coefficients":
             self.coefficients = self.config_manager.get_settings(key)
+
+
+    def reset_history(self):
+        for line_reference in self.line_references.values():
+            line_reference.setData([], [])

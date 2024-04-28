@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
 )
 from Event import Event
 from PySide6.QtCore import QCoreApplication
+from PySide6.QtCore import Qt
 
 
 # Panel for counts of valves and such
@@ -40,6 +41,8 @@ class CounterDisplay(QGroupBox):
         layout.addWidget(self.depressurize_counter, 2, 1)
         layout.addWidget(self.stroke_display, 3, 1)
 
+        self.setFixedWidth(194)
+        layout.setAlignment(Qt.AlignTop)
         self.setLayout(layout)
 
 

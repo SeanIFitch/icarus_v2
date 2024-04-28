@@ -73,10 +73,10 @@ class DataHandler(QThread):
         self.pressure_handler = PressureHandler(self.loader, self.pressure_event_signal, sample_rate, pressure_update_hz)
 
         # Logger
-        self.logger = Logger()
+        '''self.logger = Logger()
         self.pressurize_event_signal.connect(self.logger.log_event)
         self.depressurize_event_signal.connect(self.logger.log_event)
-        self.period_event_signal.connect(self.logger.log_event)
+        self.period_event_signal.connect(self.logger.log_event)'''
 
         # Start threads
         self.loader.start()

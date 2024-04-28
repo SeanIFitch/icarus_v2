@@ -101,6 +101,14 @@ class HistoryPlot(QWidget):
         # Connect the x-axis of all plots for zooming and panning
         self.switch_time_plot.setXLink(self.pressure_plot)
 
+        # Lines for displaying log view time
+        self.press_time_press = None
+        self.press_time_slope = None
+        self.press_time_switch = None
+        self.depress_time_press = None
+        self.depress_time_slope = None
+        self.depress_time_switch = None
+
         # Set layout
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.pressure_plot)
@@ -139,6 +147,14 @@ class HistoryPlot(QWidget):
         self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
         self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
 
+        # Lines for displaying log view time
+        self.pressure_plot.removeItem(self.press_time_press)
+        self.slope_plot.removeItem(self.press_time_slope)
+        self.switch_time_plot.removeItem(self.press_time_switch)
+        self.pressure_plot.removeItem(self.depress_time_press)
+        self.slope_plot.removeItem(self.depress_time_slope)
+        self.switch_time_plot.removeItem(self.depress_time_switch)
+
         self.pressure_plot.setXRange(self.limits[0], self.limits[1])
 
 
@@ -168,6 +184,9 @@ class HistoryPlot(QWidget):
 
     # Assumes list is sorted by time
     def load_event_list(self, list):
+        if len(list) == 0:
+            return
+
         for event in list:
             if event.event_type == Event.PRESSURIZE or event.event_type == Event.DEPRESSURIZE:
                 self.process_data(event)
@@ -213,3 +232,33 @@ class HistoryPlot(QWidget):
                 "press origin switch": 0.25,    # ms per index
                 "press sample switch": 0.25,    # ms per index
             }
+
+
+    def render_pressurize_time(self, event):
+        # Remove old time
+        self.pressure_plot.removeItem(self.press_time_press)
+        self.slope_plot.removeItem(self.press_time_slope)
+        self.switch_time_plot.removeItem(self.press_time_switch)
+
+        time = event.event_time - self.initial_time
+        self.press_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["press origin slope"])
+        self.press_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["press origin slope"])
+        self.press_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["press origin slope"])
+        self.pressure_plot.addItem(self.press_time_press)
+        self.slope_plot.addItem(self.press_time_slope)
+        self.switch_time_plot.addItem(self.press_time_switch)
+
+
+    def render_depressurize_time(self, event):
+        # Remove old time
+        self.pressure_plot.removeItem(self.depress_time_press)
+        self.slope_plot.removeItem(self.depress_time_slope)
+        self.switch_time_plot.removeItem(self.depress_time_switch )
+
+        time = event.event_time - self.initial_time
+        self.depress_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["depress origin slope"])
+        self.depress_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["depress origin slope"])
+        self.depress_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=self.PENS["depress origin slope"])
+        self.pressure_plot.addItem(self.depress_time_press)
+        self.slope_plot.addItem(self.depress_time_slope)
+        self.switch_time_plot.addItem(self.depress_time_switch)
