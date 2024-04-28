@@ -9,6 +9,7 @@ from PySide6.QtCore import Qt
 from EventPlot import EventPlot
 from HistoryPlot import HistoryPlot
 from DeviceControlPanel import DeviceControlPanel
+from LogControlPanel import LogControlPanel
 from CounterDisplay import CounterDisplay
 from PressureDisplay import PressureDisplay
 from ToolBar import ToolBar
@@ -28,8 +29,6 @@ class MainWindow(QMainWindow):
         self.log_reader = LogReader()
         self.data_handler = None
 
-        self.mode = "device"
-
         # Window settings
         self.setWindowTitle("Icarus NMR")
         self.setMinimumSize(QSize(800, 600))
@@ -41,7 +40,7 @@ class MainWindow(QMainWindow):
         self.period_plot = EventPlot(Event.PERIOD, self.config_manager)
         self.history_plot = HistoryPlot(config_manager)
         self.device_control_panel = DeviceControlPanel()
-        self.control_panel = self.device_control_panel
+        self.log_control_panel = LogControlPanel()
         self.counter_display = CounterDisplay(config_manager)
         self.pressure_display = PressureDisplay()
 
@@ -51,25 +50,31 @@ class MainWindow(QMainWindow):
         self.toolbar.set_mode_signal.connect(self.set_mode)
 
         # Set main layout
-        main_layout = QGridLayout()
-        main_layout.addWidget(self.pressurize_plot, 0, 0)
-        main_layout.addWidget(self.depressurize_plot, 1, 0)
-        main_layout.addWidget(self.period_plot, 2, 0)
-        main_layout.addWidget(self.history_plot, 0, 1, 3, 1)
-        main_layout.addWidget(self.pressure_display, 0, 2)
-        main_layout.addWidget(self.control_panel, 1, 2)
-        main_layout.addWidget(self.counter_display, 2, 2)
+        self.layout = QGridLayout()
+        self.layout.addWidget(self.pressurize_plot, 0, 0)
+        self.layout.addWidget(self.depressurize_plot, 1, 0)
+        self.layout.addWidget(self.period_plot, 2, 0)
+        self.layout.addWidget(self.history_plot, 0, 1, 3, 1)
+        self.layout.addWidget(self.pressure_display, 0, 2)
+        self.layout.addWidget(self.device_control_panel, 1, 2)
+        self.layout.addWidget(self.log_control_panel, 1, 2)
+        self.layout.addWidget(self.counter_display, 2, 2)
 
         # Add layout to dummy widget and apply to main window
         widget = QWidget()
-        widget.setLayout(main_layout)
+        widget.setLayout(self.layout)
         self.setCentralWidget(widget)
+
+        # Default to device mode
+        self.mode = "device"
+        self.log_control_panel.hide()
+
 
 
     # Connects widgets to backend
     def set_device(self, data_handler):
         self.data_handler = data_handler
-        self.control_panel.set_pulse_generator(data_handler.pulse_generator)
+        self.device_control_panel.set_pulse_generator(data_handler.pulse_generator)
 
         # Connections that are never disconnected
         self.data_handler.pressure_event_signal.connect(self.pressure_display.update_pressure)
@@ -83,10 +88,10 @@ class MainWindow(QMainWindow):
 
     def set_mode(self, mode):
         if mode == "log":
-            self.mode = "log"
-
-            # Clear plots
-            self.history_plot.reset_history()
+            if self.mode != 'log':
+                self.mode = "log"
+                self.device_control_panel.hide()
+                self.log_control_panel.show()
 
             # Disconnect device signals from gui elements (excludes pressure display and counter display)
             self.data_handler.pressurize_event_signal.disconnect(self.pressurize_plot.update_data)
@@ -100,14 +105,16 @@ class MainWindow(QMainWindow):
             #self.loader.depressurize_event_signal.connect(self.depressurize_plot.update_data)
             #self.loader.period_event_signal.connect(self.period_plot.update_data)
 
-            # load history
+            # Clear plots
+            self.history_plot.reset_history()
+            # Load history
             self.history_plot.load_event_list(self.log_reader.events)
 
         elif mode == "device":
-            self.mode = "device"
-
-            # Clear plots
-            self.history_plot.reset_history()
+            if self.mode != 'device':
+                self.mode = "device"
+                self.log_control_panel.hide()
+                self.device_control_panel.show()
 
             # Connect device event signals to GUI elements
             self.data_handler.pressurize_event_signal.connect(self.pressurize_plot.update_data)
@@ -116,6 +123,8 @@ class MainWindow(QMainWindow):
             self.data_handler.pressurize_event_signal.connect(self.history_plot.add_event)
             self.data_handler.depressurize_event_signal.connect(self.history_plot.add_event)
 
+            # Clear plots
+            self.history_plot.reset_history()
 
         else:
             raise RuntimeError(f"Unknown mode: {mode}")

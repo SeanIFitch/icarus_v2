@@ -118,3 +118,5 @@ class DataHandler(QThread):
         if self.loader is not None:
             self.loader.quit()
             self.loader.wait()
+
+        super().quit()

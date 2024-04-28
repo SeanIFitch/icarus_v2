@@ -49,5 +49,5 @@ class ToolBar(QToolBar):
             self.set_mode_signal.emit("log")
 
         elif self.change_mode_action.text() == "Close Log":
-            self.change_mode_action.setText("Open Log")
+            self.change_mode_action.setText("Load Log")
             self.set_mode_signal.emit("device")
