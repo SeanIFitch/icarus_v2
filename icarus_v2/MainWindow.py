@@ -110,12 +110,9 @@ class MainWindow(QMainWindow):
     def set_mode(self, mode):
         self.mode = mode
         if mode == "log":
-            if self.connected:
-                self.device_control_panel.hide()
-                self.log_control_panel.show()
-            else:
-                self.bounding_box.hide()
-                self.log_control_panel.show()
+            self.device_control_panel.hide()
+            self.bounding_box.hide()
+            self.log_control_panel.show()
 
             # Disconnect device signals from gui elements (excludes pressure display and counter display)
             if self.data_handler is not None:
@@ -135,9 +132,11 @@ class MainWindow(QMainWindow):
         elif mode == "device":
             if self.connected:
                 self.log_control_panel.hide()
+                self.bounding_box.hide()
                 self.device_control_panel.show()
             else:
                 self.log_control_panel.hide()
+                self.device_control_panel.hide()
                 self.bounding_box.show()
 
             # Connect device event signals to GUI elements
@@ -157,9 +156,9 @@ class MainWindow(QMainWindow):
 
     # Set control panel, clear pressure
     def set_connected(self, connected):
-        print("Connected", connected)
         self.connected = connected
         if connected:
+            self.device_control_panel.reset()
             if self.mode == "device":
                 self.bounding_box.hide()
                 self.device_control_panel.show()

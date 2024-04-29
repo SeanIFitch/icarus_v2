@@ -138,6 +138,27 @@ class DeviceControlPanel(QGroupBox):
         self.pulse_generator.start()
 
 
+    def reset(self):
+        # Enable buttons
+        self.on_restart()
+
+        # Reset buttons to initial states without triggering their slots
+        self.shutdown_button.set_checked(False)
+        self.pump_button.set_checked(False)
+        self.pressurize_button.set_checked(False)
+        self.depressurize_button.set_checked(False)
+        self.pulse_button.set_checked(False)
+
+        # Change to manual mode
+        self.button_widget.show()
+        self.console_button.blockSignals(True)
+        self.console_button.setChecked(False)
+        self.console_button.blockSignals(False)
+        self.manual_button.blockSignals(True)
+        self.manual_button.setChecked(True)
+        self.manual_button.blockSignals(False)
+
+
     # Make sure no buttons are clicked until pulsing is fully done
     def on_quit_pulsing(self):
         self.pulse_generator.quit()
