@@ -1,3 +1,5 @@
 # Ignore Python bytecode files
 __pycache__/
-logs/
+# Ignore log files
+logs/temp/
+logs/experiment/
