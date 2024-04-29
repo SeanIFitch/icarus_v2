@@ -87,10 +87,8 @@ class MainWindow(QMainWindow):
         widget.setLayout(self.main_layout)
         self.setCentralWidget(widget)
 
-        self.mode = "device"
         self.connected = False
-        self.set_mode(self.mode)
-        self.set_connected(self.connected)
+        self.set_mode("device")
 
 
     # Connects widgets to backend
@@ -102,7 +100,7 @@ class MainWindow(QMainWindow):
         data_handler.pressure_event_signal.connect(self.pressure_display.update_pressure)
         data_handler.pressurize_event_signal.connect(self.counter_display.increment_count)
         data_handler.depressurize_event_signal.connect(self.counter_display.increment_count)
-        data_handler.acquisition_started_signal.connect(lambda x: self.set_connected(x))
+        data_handler.acquiring_signal.connect(lambda x: self.set_connected(x))
 
         # Connect plot signals
         self.set_mode(self.mode)
@@ -159,6 +157,7 @@ class MainWindow(QMainWindow):
 
     # Set control panel, clear pressure
     def set_connected(self, connected):
+        print("Connected", connected)
         self.connected = connected
         if connected:
             if self.mode == "device":

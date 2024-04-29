@@ -41,7 +41,7 @@ class SPMCRingBufferReader:
 
 
     # Returns view of range of data without advancing read_index
-    def retrieve_range(self, start, end, timeout=None):
+    def retrieve_range(self, start, end, timeout=2):
         cap = self.buffer.capacity
 
         if end - start > cap:
@@ -69,7 +69,7 @@ class SPMCRingBufferReader:
 
     # Read block of size size starting at the last index read by this reader
     # Returns a view of that data and the starting index of it
-    def read(self, size, timeout=None):
+    def read(self, size, timeout=2):
         end = self.read_index + size
         data = self.retrieve_range(self.read_index, end, timeout=timeout)
 

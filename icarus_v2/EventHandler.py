@@ -17,10 +17,15 @@ class EventHandler(QThread):
         self.running = True
         while(self.running):
             data_to_get = int(self.sample_rate / self.update_rate)
-            data, buffer_index = self.reader.read(size=data_to_get, timeout=2)
+            try:
+                data, buffer_index = self.reader.read(size=data_to_get, timeout=1)
+            except TimeoutError:
+                self.running = False
+                break
             try:
                 event, chunk_index = self.detect_event(data)
             except RuntimeWarning:
+                # Case where 2 events occur in same chunk
                 traceback.print_exc()
                 event, chunk_index = False, -1
 

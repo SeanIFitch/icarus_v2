@@ -15,7 +15,11 @@ class PressureHandler(EventHandler):
         self.running = True
         while(self.running):
             data_to_get = int(self.sample_rate / self.update_rate)
-            data, buffer_index = self.reader.read(size=data_to_get, timeout=2)
+            try:
+                data, buffer_index = self.reader.read(size=data_to_get, timeout=1)
+            except TimeoutError:
+                self.running = False
+                break
 
             # Transmit data to plot
             new_event = Event(self.event_type, data)

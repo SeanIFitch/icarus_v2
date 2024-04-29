@@ -1,25 +1,36 @@
 from PySide6.QtCore import QThread, Signal
 from SPMCRingBuffer import SPMCRingBuffer, SPMCRingBufferReader
 import numpy as np
+import usb.core
 
 
 # This class is responsible for creating a buffer, reading from the device, processing the data, and putting it into the buffer.
 class BufferLoader(QThread):
+    device_disconnected = Signal()
 
-    def __init__(self, device, buffer_seconds=120) -> None:
+    def __init__(self, buffer_seconds=120) -> None:
         super().__init__()
-        self.device = device
-
-        num_channels = self.device.channels_to_read
-        buffer_capacity = int(buffer_seconds * self.device.sample_rate)
+        num_channels = 8
+        buffer_capacity = int(buffer_seconds * 4000)
         self.buffer = SPMCRingBuffer((buffer_capacity, num_channels), np.int16)
+
+
+    def set_device(self, device):
+        self.device = device
 
 
     def run(self):
         self.device.start_scan()
 
         while self.device.acquiring:
-            data = self.device.read_data()
+            try:
+                data = self.device.read_data()
+            except usb.core.USBError:
+                # Device disconnected
+                self.device.acquiring = False
+                self.device_disconnected.emit()
+                return
+
             processed_data = self.process_data(data)
             self.buffer.enqueue(processed_data)
 
@@ -45,5 +56,6 @@ class BufferLoader(QThread):
 
 
     def quit(self):
-        self.device.stop()
-        self.device.close_device()
+        if self.device.acquiring:
+            self.device.stop()
+            self.device.close_device()
