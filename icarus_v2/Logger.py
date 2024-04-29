@@ -4,11 +4,23 @@ import os
 from datetime import datetime
 
 
+# Logs files to logs/temp or logs/experiment depending on bit 4.
+# Files are deleted if no events are logged.
 class Logger:
-    def __init__(self, path="logs"):
+    def __init__(self) -> None:
+        self.file = None
+
+
+    def new_log_file(self, temporary):
+        self.close()
+
+        path = "logs/temp" if temporary else "logs/experiment"
+        if not os.path.exists(path):
+            os.makedirs(path)
+
         current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        filename = f"{path}/log_{current_datetime}.xz"
-        self.file = lzma.open(filename, "ab")  # Opening file in append binary mode with LZMA compression
+        self.filename = f"{path}/log_{current_datetime}.xz"
+        self.file = lzma.open(self.filename, "ab")  # Opening file in append binary mode with LZMA compression
         self.event_count = 0
 
 
@@ -22,9 +34,11 @@ class Logger:
             'step_time': event.step_time
         }
         pickle.dump(event_dict, self.file, protocol=pickle.HIGHEST_PROTOCOL)
+        self.file.flush()
 
 
     def close(self):
-        self.file.close()
-        if self.event_count == 0:
-            os.remove(self.filename)
+        if self.file is not None:
+            self.file.close()
+            if self.event_count == 0:
+                os.remove(self.filename)

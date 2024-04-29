@@ -13,17 +13,22 @@ from PressurizeHandler import PressurizeHandler
 from DepressurizeHandler import DepressurizeHandler
 from PeriodHandler import PeriodHandler
 from PressureHandler import PressureHandler
+from LogHandler import LogHandler
 
 
 # Define the DataHandler class
 class DataHandler(QThread):
+    # Send events to gui
     pressurize_event_signal = Signal(Event)
     depressurize_event_signal = Signal(Event)
     period_event_signal = Signal(Event)
     pressure_event_signal = Signal(Event)
-    update_counts_signal = Signal(dict)
+    # Tell gui when device is connected
     acquiring_signal = Signal(bool)
+    # display error dialog
     display_error = Signal(str)
+    # Start new log file
+    log_signal = Signal(bool)
 
 
     def __init__(self, config_manager):
@@ -48,9 +53,14 @@ class DataHandler(QThread):
         self.depressurize_handler = DepressurizeHandler(self.loader, self.depressurize_event_signal, sample_rate, event_update_hz, event_display_bounds)
         self.period_handler = PeriodHandler(self.loader, self.period_event_signal, sample_rate, event_update_hz, event_display_bounds)
         self.pressure_handler = PressureHandler(self.loader, self.pressure_event_signal, sample_rate, pressure_update_hz)
+        self.log_handler = LogHandler(self.loader, self.log_signal, sample_rate, pressure_update_hz)
 
-        # Start threads
-
+        # Logger
+        self.logger = Logger()
+        self.pressurize_event_signal.connect(self.logger.log_event)
+        self.depressurize_event_signal.connect(self.logger.log_event)
+        self.period_event_signal.connect(self.logger.log_event)
+        self.log_signal.connect(self.logger.new_log_file)
 
         # Prevents another thread from quitting this while it is initializing the device.
         # Without this, the cleanup code would run and then the QThreads would be initialized.
@@ -80,6 +90,7 @@ class DataHandler(QThread):
             self.depressurize_handler.start()
             self.period_handler.start()
             self.pressure_handler.start()
+            self.log_handler.start()
             self.loader.start()
 
             self.acquiring_signal.emit(True)
@@ -88,12 +99,6 @@ class DataHandler(QThread):
 
         # Start event loop so that signals sent to this thread may be processed
         self.exec()
-
-        '''# Logger
-        self.logger = Logger()
-        self.pressurize_event_signal.connect(self.logger.log_event)
-        self.depressurize_event_signal.connect(self.logger.log_event)
-        self.period_event_signal.connect(self.logger.log_event)'''
 
 
     def device_disconnected(self):
@@ -116,6 +121,7 @@ class DataHandler(QThread):
         self.depressurize_handler.quit()
         self.period_handler.quit()
         self.pressure_handler.quit()
+        self.log_handler.quit()
         self.pulse_generator.quit()
         self.loader.quit()
 
@@ -123,6 +129,7 @@ class DataHandler(QThread):
         self.depressurize_handler.wait()
         self.period_handler.wait()
         self.pressure_handler.wait()
+        self.log_handler.wait()
         self.pulse_generator.wait()
         self.loader.wait()
 

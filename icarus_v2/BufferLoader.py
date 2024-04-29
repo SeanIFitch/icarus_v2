@@ -13,13 +13,16 @@ class BufferLoader(QThread):
         num_channels = 8
         buffer_capacity = int(buffer_seconds * 4000)
         self.buffer = SPMCRingBuffer((buffer_capacity, num_channels), np.int16)
+        self.may_start = False
 
 
     def set_device(self, device):
         self.device = device
+        self.may_start = True
 
 
     def run(self):
+        if not self.may_start: return
         self.device.start_scan()
 
         while self.device.acquiring:
@@ -56,6 +59,7 @@ class BufferLoader(QThread):
 
 
     def quit(self):
+        self.may_start = False
         if self.device.acquiring:
             self.device.stop()
             self.device.close_device()

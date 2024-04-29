@@ -27,3 +27,4 @@ class LogReader:
                 self.events.append(event)
         except EOFError:
             pass  # End of file reached
+        file.close()
