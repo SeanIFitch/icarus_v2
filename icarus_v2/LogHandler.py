@@ -19,6 +19,7 @@ class LogHandler(EventHandler):
                 data, buffer_index = self.reader.read(size=data_to_get, timeout=1)
             except TimeoutError:
                 self.running = False
+                self.last_log_bit = None
                 break
 
             # use XOR with offset array to find indeces where there is a state change
@@ -39,3 +40,9 @@ class LogHandler(EventHandler):
                 self.signal.emit(log_data[index])
 
             self.last_log_bit = log_data[-1]
+
+
+    # Setting last_log_bit ensures that a new log file is started when device is reconnected
+    def quit(self):
+        self.running = False
+        self.last_log_bit = None

@@ -45,5 +45,6 @@ class Logger:
     def close(self):
         if self.file is not None:
             self.file.close()
+            self.file = None
             if self.event_count == 0:
                 os.remove(self.filename)
