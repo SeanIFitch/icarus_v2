@@ -216,6 +216,7 @@ class HistoryPlot(QWidget):
         self.layout.addLayout(slope_labels, 1, 0, Qt.AlignRight | Qt.AlignTop)
         self.layout.addWidget(self.switch_time_plot, 2, 0)
         self.layout.addLayout(switch_labels, 2, 0, Qt.AlignRight | Qt.AlignTop)
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout)
 
         self.reset_history()

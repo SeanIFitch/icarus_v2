@@ -2,6 +2,8 @@
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import (
     QMainWindow,
+    QVBoxLayout,
+    QHBoxLayout,
     QGridLayout,
     QWidget,
     QGroupBox, 
@@ -67,20 +69,22 @@ class MainWindow(QMainWindow):
         self.bounding_box.setFixedSize(194, 321)
         control_layout = QGridLayout()
         control_layout.addWidget(self.pressure_display, 0,0)
-        control_layout.addWidget(self.device_control_panel, 2, 0)
-        control_layout.addWidget(self.log_control_panel, 2, 0)
-        control_layout.addWidget(self.bounding_box, 2, 0)
-        control_layout.addWidget(self.counter_display, 1, 0)
+        control_layout.addWidget(self.device_control_panel, 1, 0)
+        control_layout.addWidget(self.log_control_panel, 1, 0)
+        control_layout.addWidget(self.bounding_box, 1, 0)
+        control_layout.addWidget(self.counter_display, 2, 0)
 
-        # Set main layout
-        self.main_layout = QGridLayout()
-        self.main_layout.addWidget(self.pressurize_plot, 0, 0)
-        self.main_layout.addWidget(self.depressurize_plot, 1, 0)
-        self.main_layout.addWidget(self.period_plot, 2, 0)
-        self.main_layout.addWidget(self.history_plot, 0, 1, 3, 1)
-        self.main_layout.addLayout(control_layout, 0, 2, 2, 2)
-        # Make event plots keep same height
-        self.period_plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        # Event plot layout
+        event_layout = QVBoxLayout()
+        event_layout.addWidget(self.pressurize_plot)
+        event_layout.addWidget(self.depressurize_plot)
+        event_layout.addWidget(self.period_plot)
+
+        # Set layout
+        self.main_layout = QHBoxLayout()
+        self.main_layout.addLayout(event_layout)
+        self.main_layout.addWidget(self.history_plot)
+        self.main_layout.addLayout(control_layout)
 
         # Add layout to dummy widget and apply to main window
         widget = QWidget()

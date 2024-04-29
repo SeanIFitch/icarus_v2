@@ -69,6 +69,7 @@ class EventPlot(QWidget):
         layout = QGridLayout()
         layout.addWidget(self.plot, 0, 0)
         layout.addLayout(labels, 0, 0, Qt.AlignRight | Qt.AlignTop)
+        layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
 
