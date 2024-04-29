@@ -45,3 +45,8 @@ class PressureDisplay(QGroupBox):
         sample_pressure = event.get_sample_pressure()
         self.target_display.setText(f"{target_pressure:.3f}")
         self.sample_display.setText(f"{sample_pressure:.3f}")
+
+
+    def reset(self):
+        self.target_display.setText("0.000")
+        self.sample_display.setText("0.000")

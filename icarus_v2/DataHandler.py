@@ -2,6 +2,7 @@
 from Logger import Logger
 from PySide6.QtCore import Signal, QThread
 from time import sleep
+from threading import Lock
 # Data collection & Device imports
 from Di4108USB import Di4108USB
 from BufferLoader import BufferLoader
@@ -39,20 +40,32 @@ class DataHandler(QThread):
         self.period_handler = None
         self.pressure_handler = None
 
+        # Prevents another thread from quitting this while it is initializing the device.
+        # Without this, the cleanup code would run and then the QThreads would be initialized.
+        self.quit_lock = Lock()
+
+
 
     # Connect to a device
     def run(self):
         self.connecting = True
+        self.quit_lock.acquire(timeout=1)
         while self.connecting:
+            print(self.connecting)
             try:
                 self.device = Di4108USB()
                 self.connecting = False
             except:
+                self.quit_lock.release()
                 sleep(0.1)
+                self.quit_lock.acquire(timeout=1)
+
         if self.device is not None:
             self.start_data_collection()
-            # Start event loop so that signals sent to this thread may be processed
-            self.exec()
+        self.quit_lock.release()
+
+        # Start event loop so that signals sent to this thread may be processed
+        self.exec()
 
 
     def start_data_collection(self):
@@ -90,6 +103,7 @@ class DataHandler(QThread):
 
     def quit(self):
         self.connecting = False
+        self.quit_lock.acquire(timeout=10)
 
         if self.logger is not None:
             self.logger.close()

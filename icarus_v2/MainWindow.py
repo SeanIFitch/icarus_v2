@@ -87,9 +87,10 @@ class MainWindow(QMainWindow):
         widget.setLayout(self.main_layout)
         self.setCentralWidget(widget)
 
-        self.mode = "connecting"
-        self.log_control_panel.hide()
-        self.device_control_panel.hide()
+        self.mode = "device"
+        self.connected = False
+        self.set_mode(self.mode)
+        self.set_connected(self.connected)
 
 
     # Connects widgets to backend
@@ -101,52 +102,53 @@ class MainWindow(QMainWindow):
         data_handler.pressure_event_signal.connect(self.pressure_display.update_pressure)
         data_handler.pressurize_event_signal.connect(self.counter_display.increment_count)
         data_handler.depressurize_event_signal.connect(self.counter_display.increment_count)
-        data_handler.acquisition_started_signal.connect(self.on_acquisition_start)
+        data_handler.acquisition_started_signal.connect(lambda x: self.set_connected(x))
+
+        # Connect plot signals
+        self.set_mode(self.mode)
 
 
-    def on_acquisition_start(self, start):
-        if self.mode == "connecting":
-            self.set_mode("device")
-
-
+    # Set device signal connections, clear history, set control panel
     def set_mode(self, mode):
+        self.mode = mode
         if mode == "log":
-            self.bounding_box.hide()
-            self.device_control_panel.hide()
-            self.log_control_panel.show()
+            if self.connected:
+                self.device_control_panel.hide()
+                self.log_control_panel.show()
+            else:
+                self.bounding_box.hide()
+                self.log_control_panel.show()
 
-            if self.mode == "device":
-                # Disconnect device signals from gui elements (excludes pressure display and counter display)
+            # Disconnect device signals from gui elements (excludes pressure display and counter display)
+            if self.data_handler is not None:
                 self.data_handler.pressurize_event_signal.disconnect(self.pressurize_plot.update_data)
                 self.data_handler.depressurize_event_signal.disconnect(self.depressurize_plot.update_data)
                 self.data_handler.period_event_signal.disconnect(self.period_plot.update_data)
                 self.data_handler.pressurize_event_signal.disconnect(self.history_plot.add_event)
                 self.data_handler.depressurize_event_signal.disconnect(self.history_plot.add_event)
 
-            # Connect loader signals to event plots
-            #self.loader.pressurize_event_signal.connect(self.pressurize_plot.update_data)
-            #self.loader.depressurize_event_signal.connect(self.depressurize_plot.update_data)
-            #self.loader.period_event_signal.connect(self.period_plot.update_data)
-
             # Clear plots
             self.history_plot.reset_history()
             self.pressurize_plot.reset_history()
             self.depressurize_plot.reset_history()
             self.period_plot.reset_history()
 
-            self.mode = "log"
 
         elif mode == "device":
-            self.bounding_box.hide()
-            self.log_control_panel.hide()
-            self.device_control_panel.show()
+            if self.connected:
+                self.log_control_panel.hide()
+                self.device_control_panel.show()
+            else:
+                self.log_control_panel.hide()
+                self.bounding_box.show()
 
             # Connect device event signals to GUI elements
-            self.data_handler.pressurize_event_signal.connect(self.pressurize_plot.update_data)
-            self.data_handler.depressurize_event_signal.connect(self.depressurize_plot.update_data)
-            self.data_handler.period_event_signal.connect(self.period_plot.update_data)
-            self.data_handler.pressurize_event_signal.connect(self.history_plot.add_event)
-            self.data_handler.depressurize_event_signal.connect(self.history_plot.add_event)
+            if self.data_handler is not None:
+                self.data_handler.pressurize_event_signal.connect(self.pressurize_plot.update_data)
+                self.data_handler.depressurize_event_signal.connect(self.depressurize_plot.update_data)
+                self.data_handler.period_event_signal.connect(self.period_plot.update_data)
+                self.data_handler.pressurize_event_signal.connect(self.history_plot.add_event)
+                self.data_handler.depressurize_event_signal.connect(self.history_plot.add_event)
 
             # Clear plots
             self.history_plot.reset_history()
@@ -154,10 +156,19 @@ class MainWindow(QMainWindow):
             self.depressurize_plot.reset_history()
             self.period_plot.reset_history()
 
-            self.mode = "device"
 
+    # Set control panel, clear pressure
+    def set_connected(self, connected):
+        self.connected = connected
+        if connected:
+            if self.mode == "device":
+                self.bounding_box.hide()
+                self.device_control_panel.show()
         else:
-            raise RuntimeError(f"Unknown mode: {mode}")
+            self.pressure_display.reset()
+            if self.mode == "device":
+                self.bounding_box.show()
+                self.device_control_panel.hide()
 
 
     # Runs on quitting the application
