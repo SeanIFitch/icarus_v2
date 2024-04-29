@@ -71,7 +71,10 @@ class EventHandler(QThread):
             start = int(end - 0.9 * self.reader.buffer.capacity)
 
         # Get data
-        data = self.reader.retrieve_range(start, end, timeout=2)
+        try:
+            data = self.reader.retrieve_range(start, end, timeout=2)
+        except TimeoutError:
+            return None
 
         return data
 

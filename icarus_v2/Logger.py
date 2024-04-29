@@ -15,6 +15,7 @@ class Logger:
         self.close()
 
         path = "logs/temp" if temporary else "logs/experiment"
+        path = os.path.abspath(path)
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -32,9 +33,13 @@ class Logger:
             'event_time': event.event_time,
             'event_index': event.event_index,
             'step_time': event.step_time
-        }
+        }   
         pickle.dump(event_dict, self.file, protocol=pickle.HIGHEST_PROTOCOL)
-        self.file.flush()
+
+
+    def flush(self):
+        self.file.close()
+        self.file = lzma.open(self.filename, "ab")
 
 
     def close(self):

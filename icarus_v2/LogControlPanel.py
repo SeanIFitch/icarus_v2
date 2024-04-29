@@ -6,10 +6,10 @@ from PySide6.QtWidgets import (
     QPushButton,
     QLineEdit,
     QInputDialog,
-    QFileDialog
+    QFileDialog,
 )
 import os
-from PySide6.QtGui import QDoubleValidator, QFont
+from PySide6.QtGui import QDoubleValidator, QFont, QFontMetrics
 from PySide6.QtCore import Qt, Signal
 from ErrorDialog import open_error_dialog
 from bisect import bisect_right
@@ -94,8 +94,15 @@ class LogControlPanel(QGroupBox):
         self.press_index = -1
         self.depress_index = -1
         self.period_index = -1
+
         self.filename = self.log_reader.filename
         self.filename_label.setText(os.path.basename(self.filename))
+        # Adjust font size to fit in the view
+        for i in range(15, 8, -1):
+            self.filename_label.setStyleSheet(f"font-size: {i}px")
+            if QFontMetrics(self.filename_label.font()).boundingRect(os.path.basename(self.filename)).width() < self.width() - 25:
+                break
+
         if len(self.log_reader.events) > 0:
             upper_bound = self.log_reader.events[-1].event_time - self.log_reader.events[0].event_time
         else:
@@ -105,17 +112,31 @@ class LogControlPanel(QGroupBox):
 
 
     def rename_file(self):
-        new_name, ok = QInputDialog.getText(self, "Rename File", "Enter new filename:")
-        if ok and new_name:
-            # Construct the new filename with the directory path
-            new_filename = os.path.join(os.path.dirname(self.filename), new_name)
-            
-            try:
-                os.rename(self.filename, new_filename)  # Rename the file
-                self.filename = new_filename  # Update the filename attribute
-                self.filename_label.setText(os.path.basename(new_filename))  # Update the label
-            except OSError as e:
-                open_error_dialog(e)
+        current_filename = os.path.basename(self.filename)
+        # Create a QInputDialog
+        dialog = QInputDialog(self)
+        dialog.setWindowTitle("Rename File")
+        dialog.setLabelText("Enter new filename:")
+        dialog.setTextValue(current_filename)
+        dialog.resize(400, 100)  # Adjust the width and height of the dialog
+        
+        # Execute the dialog and check the response
+        if dialog.exec_() == QInputDialog.Accepted:
+            new_name = dialog.textValue()
+            if new_name:
+                # Construct the new filename with the directory path and extension
+                new_filename = os.path.join(os.path.dirname(self.filename), new_name)
+                
+                try:
+                    os.rename(self.filename, new_filename)  # Rename the file
+                    self.filename = new_filename  # Update the filename attribute
+                    # Update logger filename if this is the currently written log
+                    if self.log_reader.logger is not None:
+                        if current_filename == self.log_reader.logger.filename:
+                            self.log_reader.logger.filename = new_filename 
+                    self.filename_label.setText(os.path.basename(new_filename))  # Update the label
+                except OSError as e:
+                    open_error_dialog(e)
 
 
     def select_time(self):

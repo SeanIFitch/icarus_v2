@@ -7,11 +7,21 @@ class LogReader:
     def __init__(self) -> None:
         self.events = None
         self.filename = None
+        self.logger = None
+
+
+    def set_logger(self, logger):
+        self.logger = logger
 
 
     def read_events(self, filename):
         self.events = []
         self.filename = filename
+
+        # If reading current log file, write to disk first
+        if self.logger is not None and self.filename == self.logger.filename:
+            self.logger.flush()
+
         file = lzma.open(filename, "rb")  # Open file in read binary mode
         try:
             while True:

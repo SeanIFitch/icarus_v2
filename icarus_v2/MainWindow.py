@@ -95,6 +95,7 @@ class MainWindow(QMainWindow):
     def set_device(self, data_handler):
         self.data_handler = data_handler
         self.device_control_panel.set_pulse_generator(data_handler.pulse_generator)
+        self.log_control_panel.log_reader.set_logger(data_handler.logger)
 
         # Connections that are never disconnected
         data_handler.pressure_event_signal.connect(self.pressure_display.update_pressure)
