@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
         self.history_plot = HistoryPlot(config_manager)
         self.device_control_panel = DeviceControlPanel()
         self.counter_display = CounterDisplay(config_manager)
-        self.pressure_display = PressureDisplay()
+        self.pressure_display = PressureDisplay(config_manager)
 
         self.log_control_panel = LogControlPanel()
         self.log_control_panel.pressurize_event_signal.connect(self.pressurize_plot.update_data)

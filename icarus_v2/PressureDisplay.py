@@ -4,16 +4,21 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QLabel
 )
+from Event import Channel
 
 
 # Panel for pressure
 class PressureDisplay(QGroupBox):
-    def __init__(self):
+    def __init__(self, config_manager):
         super().__init__()
 
+        self.config_manager = config_manager
+        self.coefficients = self.config_manager.get_settings("plotting_coefficients")
+        self.config_manager.settings_updated.connect(self.update_settings)
+
         # Displays
-        self.target_display = QLabel("0")
-        self.sample_display = QLabel("0")
+        self.target_display = QLabel("0.00")
+        self.sample_display = QLabel("0.00")
 
         # Labels
         main_label = QLabel("Pressure(kbar):")
@@ -41,8 +46,8 @@ class PressureDisplay(QGroupBox):
 
 
     def update_pressure(self, event):
-        target_pressure = event.get_target_pressure()
-        sample_pressure = event.get_sample_pressure()
+        target_pressure = event.get_target_pressure() * self.coefficients[Channel.TARGET]
+        sample_pressure = event.get_sample_pressure() * self.coefficients[Channel.HI_PRE_ORIG]
         self.target_display.setText(f"{target_pressure:.3f}")
         self.sample_display.setText(f"{sample_pressure:.3f}")
 
@@ -50,3 +55,7 @@ class PressureDisplay(QGroupBox):
     def reset(self):
         self.target_display.setText("0.000")
         self.sample_display.setText("0.000")
+
+    def update_settings(self, key):
+        if key == "plotting_coefficients":
+            self.coefficients = self.config_manager.get_settings(key)
