@@ -34,6 +34,16 @@ class ToggleButton(QPushButton):
             self.unchecked.emit()
 
 
+    def set_checked(self, checked):
+        self.blockSignals(True)
+        self.setChecked(checked)
+        if checked:
+            self.setText(self.uncheck_text)
+        else:
+            self.setText(self.check_text)
+        self.blockSignals(False)
+
+
     def set_check_function(self, check_func):
         self.check_func = check_func
 

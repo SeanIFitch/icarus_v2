@@ -18,11 +18,14 @@ class TogglePictureButton(QAbstractButton):
         self.setChecked(False)  # Initializes the button as unchecked by default
         self.toggled.connect(self._on_toggled)
 
+
     def set_check_function(self, func):
         self.check_func = func
 
+
     def set_uncheck_function(self, func):
         self.uncheck_func = func
+
 
     def _on_toggled(self, checked):
         if checked:
@@ -34,6 +37,14 @@ class TogglePictureButton(QAbstractButton):
                 self.uncheck_func()
             self.unchecked.emit()
         self.update()
+
+
+    def set_checked(self, checked):
+        self.blockSignals(True)
+        self.setChecked(checked)
+        self.update()
+        self.blockSignals(False)
+
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -71,6 +82,7 @@ class TogglePictureButton(QAbstractButton):
 
     def sizeHint(self):
         return self._size
+
 
     def set_size(self, x, y):
         self._size = QSize(x, y)

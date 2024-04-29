@@ -61,17 +61,16 @@ class DataHandler(QThread):
 
     # Connect to a device
     def run(self):
-        print("Run")
         self.connecting = True
-        self.quit_lock.acquire(timeout=1)
+        self.quit_lock.acquire()
         while self.connecting:
             try:
                 self.device = Di4108USB()
                 self.connecting = False
-            except:
+            except Exception:
                 self.quit_lock.release()
                 sleep(0.1)
-                self.quit_lock.acquire(timeout=1)
+                self.quit_lock.acquire()
 
         if self.device is not None:
             self.loader.set_device(self.device)
