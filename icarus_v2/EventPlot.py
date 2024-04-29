@@ -110,9 +110,10 @@ class EventPlot(QWidget):
             return
 
         data = event.data
-        # Calculate times based on event.data_end_time and event_index
-        time_before_event = - event.data_end_time * event.event_index / (len(data) - event.event_index)
-        times = np.linspace(time_before_event, event.data_end_time, len(data))
+        # Calculate times based on event.step_time and event_index
+        time_before_event = - event.event_index * event.step_time
+        time_after_event = (len(event.data)  - event.event_index - 1) * event.step_time
+        times = np.linspace(time_before_event, time_after_event, len(data))
         if self.x_unit == "s":
             times /= 1000
 

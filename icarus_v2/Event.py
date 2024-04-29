@@ -50,7 +50,7 @@ class Event():
     PRESSURE = 3
     PUMP = 4
 
-    def __init__(self, event_type, data, event_index = None, event_time=None, data_end_time = None) -> None:
+    def __init__(self, event_type, data, event_index = None, event_time=None, step_time = None) -> None:
         if type(event_type) == int and event_type <=4 and event_type >=0:
             self.event_type = event_type
         else:
@@ -64,14 +64,15 @@ class Event():
 
         # Required for some math
         self.event_index = event_index # index where the actual event occured uint8
-        if data_end_time is None and event_index is not None:
-            self.data_end_time = (len(data) - self.event_index) / 4 # time in ms from event_index to end. Assumes srate = 4000
+        if step_time is None and event_index is not None:
+            self.step_time = 1 / 4 # Assumes srate = 4000. step_time is in ms.
         else:
-            self.data_end_time = data_end_time
+            self.step_time = step_time
 
         # Period events can be long. Therefore only take 600 data points to log and plot. (same as pressurize and depressurize plots)
         # No statistical analysis of period events is necessary, so this loss of data is fine.
-        if self.event_type == self.PERIOD and data_end_time is None:
+        # If initialized with a step time, this means the data has already been compressed.
+        if self.event_type == self.PERIOD and step_time is None:
             self.data = self.compress_data(data, 600)
         else:
             self.data = data # np.ndarray (?,8) np.int16
@@ -107,8 +108,12 @@ class Event():
             return data
         else:
             step = len(data) / num_points
+            self.step_time = self.step_time * step
             indices = np.round(np.arange(0, num_points) * step).astype(int)
             compressed_data = np.copy(data[indices])
+
+            # Change where event occured
+            self.event_index = np.round(self.event_index / step).astype(int)
 
             # Recover lost valve events so they are plotted
             depressurize_indeces = np.argmin(get_channel(data, Channel.DEPRE_VALVE))

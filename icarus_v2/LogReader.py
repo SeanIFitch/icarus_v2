@@ -22,7 +22,7 @@ class LogReader:
                     event_dict['data'],
                     event_dict['event_index'],
                     event_dict['event_time'],
-                    event_dict['data_end_time']
+                    event_dict['step_time']
                 )
                 self.events.append(event)
         except EOFError:
