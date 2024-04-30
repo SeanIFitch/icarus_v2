@@ -83,6 +83,7 @@ class DataHandler(QThread):
             except Exception:
                 self.quit_lock.release()
                 sleep(0.1)
+                if not self.connecting: return
                 self.quit_lock.acquire()
 
         if self.device is not None:
@@ -114,7 +115,7 @@ class DataHandler(QThread):
 
     def quit(self):
         self.connecting = False
-        self.quit_lock.acquire(timeout=10)
+        acquired = self.quit_lock.acquire(timeout=10)
 
         if self.logger is not None:
             self.logger.close()
@@ -141,4 +142,4 @@ class DataHandler(QThread):
 
         super().quit()
         self.wait()
-        self.quit_lock.release()
+        if acquired: self.quit_lock.release()
