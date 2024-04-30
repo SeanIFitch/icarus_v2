@@ -129,11 +129,11 @@ class Event():
 
 
     # Average of entire event
-    def get_sample_pressure(self):
+    def get_origin_pressure(self):
         if self.event_type != self.PRESSURE:
-            raise RuntimeError("Cannot call get_sample_pressure() on event type " + self.event_type) 
+            raise RuntimeError("Cannot call get_origin_pressure() on event type " + self.event_type) 
 
-        sample_pressure = np.average(get_channel(self, Channel.HI_PRE_SAMPLE))
+        sample_pressure = np.average(get_channel(self, Channel.HI_PRE_ORIG))
         return sample_pressure
 
 

@@ -18,27 +18,27 @@ class PressureDisplay(QGroupBox):
 
         # Displays
         self.target_display = QLabel("0.000")
-        self.sample_display = QLabel("0.000")
+        self.origin_display = QLabel("0.000")
 
         # Labels
         main_label = QLabel("Pressure(kbar):")
         target_label = QLabel("Target:")
-        sample_label = QLabel("Sample:")
+        origin_label = QLabel("Origin:")
 
         # Font size
         main_label.setStyleSheet("font-size: 24px;")
         target_label.setStyleSheet("font-size: 20px;")
-        sample_label.setStyleSheet("font-size: 20px;")
+        origin_label.setStyleSheet("font-size: 20px;")
         self.target_display.setStyleSheet("font-size: 36px;")
-        self.sample_display.setStyleSheet("font-size: 36px;")
+        self.origin_display.setStyleSheet("font-size: 36px;")
 
         # Set main layout
         layout = QGridLayout()
         layout.addWidget(main_label, 0, 0, 1, 0)
         layout.addWidget(target_label, 1, 0)
-        layout.addWidget(sample_label, 2, 0)
+        layout.addWidget(origin_label, 2, 0)
         layout.addWidget(self.target_display, 1, 1)
-        layout.addWidget(self.sample_display, 2, 1)
+        layout.addWidget(self.origin_display, 2, 1)
 
         self.setFixedWidth(194)
         layout.setAlignment(Qt.AlignTop)
@@ -47,14 +47,14 @@ class PressureDisplay(QGroupBox):
 
     def update_pressure(self, event):
         target_pressure = event.get_target_pressure() * self.coefficients[Channel.TARGET]
-        sample_pressure = event.get_sample_pressure() * self.coefficients[Channel.HI_PRE_ORIG]
+        origin_pressure = event.get_origin_pressure() * self.coefficients[Channel.HI_PRE_ORIG]
         self.target_display.setText(f"{target_pressure:.3f}")
-        self.sample_display.setText(f"{sample_pressure:.3f}")
+        self.origin_display.setText(f"{origin_pressure:.3f}")
 
 
     def reset(self):
         self.target_display.setText("0.000")
-        self.sample_display.setText("0.000")
+        self.origin_display.setText("0.000")
 
     def update_settings(self, key):
         if key == "plotting_coefficients":

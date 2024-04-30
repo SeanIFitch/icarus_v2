@@ -44,13 +44,13 @@ if __name__ == "__main__":
     # High pressure sensor: psi = volts / 10000
     # kBar: kbar = psi / 14503.7738
     coefficients = {
-        TARGET:         10 * 14503.7738 / (32768 * 10000),
+        TARGET:         10 * 14503.7738 / (32768 * 10000 * 2),
         DEPRE_LOW:      0.00015,      # Arbitrary for visibility
         DEPRE_UP:       0.00015,      # Arbitrary for visibility
         PRE_LOW:        0.00015,      # Arbitrary for visibility
         PRE_UP:         0.00015,      # Arbitrary for visibility
-        HI_PRE_ORIG:    10 * 14503.7738 / (32768 * 10000),
-        HI_PRE_SAMPLE:  10 * 14503.7738 / (32768 * 10000),
+        HI_PRE_ORIG:    10 * 14503.7738 / (32768 * 10000 * 2),
+        HI_PRE_SAMPLE:  10 * 14503.7738 / (32768 * 10000 * 2),
         DEPRE_VALVE:    2.8,    # Arbitrary for visibility
         PRE_VALVE:      2.85,    # Arbitrary for visibility
     }
