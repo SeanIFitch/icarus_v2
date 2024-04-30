@@ -77,10 +77,12 @@ class DataHandler(QThread):
         self.connecting = True
         self.quit_lock.acquire()
         while self.connecting:
+            print("connect")
             try:
                 self.device = Di4108USB()
                 self.connecting = False
-            except Exception:
+            except Exception as e:
+                print(e)
                 self.quit_lock.release()
                 sleep(0.1)
                 if not self.connecting: return
