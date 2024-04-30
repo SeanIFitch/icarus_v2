@@ -73,3 +73,10 @@ class CounterDisplay(QGroupBox):
             self.pump_counter.setText(str(self.counts['pump_count']))
             self.pressurize_counter.setText(str(self.counts['pressurize_count']))
             self.depressurize_counter.setText(str(self.counts['depressurize_count']))
+
+
+    def increment_pump_count(self):
+        self.counts["pump_count"] += 1
+        self.pump_counter.setText(str(self.counts['pump_count']))
+        if sum(self.counts.values()) % 100 == 0:
+            self.save_settings()

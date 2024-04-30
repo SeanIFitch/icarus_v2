@@ -13,6 +13,7 @@ from PressurizeHandler import PressurizeHandler
 from DepressurizeHandler import DepressurizeHandler
 from PeriodHandler import PeriodHandler
 from PressureHandler import PressureHandler
+from PumpHandler import PumpHandler
 from LogHandler import LogHandler
 
 
@@ -23,6 +24,7 @@ class DataHandler(QThread):
     depressurize_event_signal = Signal(Event)
     period_event_signal = Signal(Event)
     pressure_event_signal = Signal(Event)
+    pump_increment_signal = Signal()
     # Tell gui when device is connected
     acquiring_signal = Signal(bool)
     # display error dialog
@@ -53,6 +55,7 @@ class DataHandler(QThread):
         self.depressurize_handler = DepressurizeHandler(self.loader, self.depressurize_event_signal, sample_rate, event_update_hz, event_display_bounds)
         self.period_handler = PeriodHandler(self.loader, self.period_event_signal, sample_rate, event_update_hz, event_display_bounds)
         self.pressure_handler = PressureHandler(self.loader, self.pressure_event_signal, sample_rate, pressure_update_hz)
+        self.pump_handler = PumpHandler(self.loader, self.pump_increment_signal, sample_rate)
         self.log_handler = LogHandler(self.loader, self.log_signal, sample_rate, pressure_update_hz)
 
         # Logger
@@ -90,6 +93,7 @@ class DataHandler(QThread):
             self.depressurize_handler.start()
             self.period_handler.start()
             self.pressure_handler.start()
+            self.pump_handler.start()
             self.log_handler.start()
             self.loader.start()
 
@@ -121,6 +125,7 @@ class DataHandler(QThread):
         self.depressurize_handler.quit()
         self.period_handler.quit()
         self.pressure_handler.quit()
+        self.pump_handler.quit()
         self.log_handler.quit()
         self.pulse_generator.quit()
         self.loader.quit()
@@ -129,6 +134,7 @@ class DataHandler(QThread):
         self.depressurize_handler.wait()
         self.period_handler.wait()
         self.pressure_handler.wait()
+        self.pump_handler.wait()
         self.log_handler.wait()
         self.pulse_generator.wait()
         self.loader.wait()
