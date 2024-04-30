@@ -164,7 +164,7 @@ class Di4108USB():
         # Start reading
         self.acquiring = True
 
-        self.send_cmd('start')
+        self.send_cmd('start', check_echo=False)
 
 
     def end_scan(self):

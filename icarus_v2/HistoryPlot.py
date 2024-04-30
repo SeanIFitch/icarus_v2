@@ -5,6 +5,7 @@ import pyqtgraph as pg
 from Event import Event, Channel
 from bisect import bisect_right, bisect_left
 import numpy as np
+from copy import deepcopy
 
 
 class HistoryPlot(QWidget):

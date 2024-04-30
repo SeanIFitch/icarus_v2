@@ -17,6 +17,7 @@ from LogControlPanel import LogControlPanel
 from CounterDisplay import CounterDisplay
 from PressureDisplay import PressureDisplay
 from ToolBar import ToolBar
+from LogReader import LogReader
 
 from Event import Event
 
@@ -100,6 +101,7 @@ class MainWindow(QMainWindow):
         self.data_handler = data_handler
         self.device_control_panel.set_pulse_generator(data_handler.pulse_generator)
         self.log_control_panel.log_reader.set_logger(data_handler.logger)
+        self.toolbar.set_pressure_signal(data_handler.pressure_event_signal)
 
         # Connections that are never disconnected
         data_handler.pressure_event_signal.connect(self.pressure_display.update_pressure)
@@ -158,10 +160,33 @@ class MainWindow(QMainWindow):
             self.depressurize_plot.reset_history()
             self.period_plot.reset_history()
 
+            # restore history
+            if self.connected:
+                current_log_file = self.data_handler.logger.filename
+                self.data_handler.logger.flush()
+                reader = LogReader()
+                reader.read_events(current_log_file)
+                self.history_plot.load_event_list(reader.events)
+                press = None
+                depress = None
+                per = None
+                for event in reader.events[::-1]:
+                    if press is None and event.event_type == Event.PRESSURIZE:
+                        press = event
+                    elif depress is None and event.event_type == Event.DEPRESSURIZE:
+                        depress = event
+                    elif per is None and event.event_type == Event.PERIOD:
+                        per = event
+                    if press is not None and depress is not None and per is not None: break
+                self.pressurize_plot.update_data(press)
+                self.depressurize_plot.update_data(depress)
+                self.period_plot.update_data(per)
+
 
     # Set control panel, clear pressure
     def set_connected(self, connected):
         self.connected = connected
+        self.toolbar.set_connected(connected)
         if connected:
             self.device_control_panel.reset()
             if self.mode == "device":

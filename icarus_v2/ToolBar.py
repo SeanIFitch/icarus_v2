@@ -15,9 +15,12 @@ class ToolBar(QToolBar):
         self.setMovable(False)
 
         # Settings button
+        self.connected = False
+        self.pressure_signal = None
         settings_action = QAction(QIcon(), "Settings", self)
         settings_action.triggered.connect(self.open_settings)
         self.addAction(settings_action)
+        self.settings_dialog = None
 
         # History reset button
         self.history_reset_action = QAction(QIcon(), "Reset History", self)
@@ -31,8 +34,9 @@ class ToolBar(QToolBar):
 
     def open_settings(self):
         # Open the settings dialog
-        dialog = SettingsDialog(self.config_manager, self.parent())
-        dialog.exec()
+        self.settings_dialog = SettingsDialog(self.config_manager, self.connected, self.pressure_signal, self.parent())
+        self.settings_dialog.exec()
+        self.settings_dialog = None
 
 
     def change_log_mode(self):
@@ -43,3 +47,14 @@ class ToolBar(QToolBar):
         elif self.change_mode_action.text() == "Close Logs":
             self.change_mode_action.setText("Open Logs")
             self.set_mode_signal.emit("device")
+
+
+    def set_pressure_signal(self, pressure_signal):
+        self.pressure_signal = pressure_signal
+        if self.settings_dialog is not None:
+            self.settings_dialog.set_pressure_signal(pressure_signal)
+
+    def set_connected(self, connected):
+        self.connected = connected
+        if self.settings_dialog is not None:
+            self.settings_dialog.set_connected(connected)
