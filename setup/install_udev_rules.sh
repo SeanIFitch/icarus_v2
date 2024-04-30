@@ -47,4 +47,4 @@ else
     sudo udevadm control --reload-rules && sudo udevadm trigger || display_error_and_exit "Failed to reload UDEV rules."
 fi
 
-echo "Installation complete. Please reconnect your USB device."
+echo "Installation complete. Please restart your device."

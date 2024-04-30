@@ -17,8 +17,8 @@ class PressureDisplay(QGroupBox):
         self.config_manager.settings_updated.connect(self.update_settings)
 
         # Displays
-        self.target_display = QLabel("0.00")
-        self.sample_display = QLabel("0.00")
+        self.target_display = QLabel("0.000")
+        self.sample_display = QLabel("0.000")
 
         # Labels
         main_label = QLabel("Pressure(kbar):")
