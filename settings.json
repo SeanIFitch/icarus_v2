@@ -7,8 +7,8 @@
     },
     "counter_settings": {
         "pump_count": 0,
-        "pressurize_count": 2,
-        "depressurize_count": 4
+        "pressurize_count": 6,
+        "depressurize_count": 8
     },
     "plotting_coefficients": {
         "0": 0.00044262005004882816,

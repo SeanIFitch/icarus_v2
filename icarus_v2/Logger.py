@@ -9,6 +9,7 @@ from datetime import datetime
 class Logger:
     def __init__(self) -> None:
         self.file = None
+        self.filename = None
 
 
     def new_log_file(self, temporary):
@@ -48,3 +49,4 @@ class Logger:
             self.file = None
             if self.event_count == 0:
                 os.remove(self.filename)
+            self.filename = None

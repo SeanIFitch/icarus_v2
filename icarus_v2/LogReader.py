@@ -19,7 +19,7 @@ class LogReader:
         self.filename = filename
 
         # If reading current log file, write to disk first
-        if self.logger is not None and self.filename == self.logger.filename:
+        if self.logger is not None and self.logger.filename is not None and self.filename == self.logger.filename:
             self.logger.flush()
 
         file = lzma.open(filename, "rb")  # Open file in read binary mode
