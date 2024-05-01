@@ -49,7 +49,7 @@ class DataHandler(QThread):
         # Event handlers
         sample_rate = 4000
         event_update_hz = 30
-        pressure_update_hz = 3
+        pressure_update_hz = 5
         event_display_bounds = (-10,140)
         self.pressurize_handler = PressurizeHandler(self.loader, self.pressurize_event_signal, sample_rate, event_update_hz, event_display_bounds)
         self.depressurize_handler = DepressurizeHandler(self.loader, self.depressurize_event_signal, sample_rate, event_update_hz, event_display_bounds)

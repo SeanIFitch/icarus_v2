@@ -6,9 +6,9 @@
         "delay_width": 2.0
     },
     "counter_settings": {
-        "pump_count": 1,
-        "pressurize_count": 110,
-        "depressurize_count": 110
+        "pump_count": 0,
+        "pressurize_count": 0,
+        "depressurize_count": 0
     },
     "plotting_coefficients": {
         "0": 0.0001651526430069147,

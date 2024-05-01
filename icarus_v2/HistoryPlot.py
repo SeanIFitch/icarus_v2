@@ -1,11 +1,10 @@
 from PySide6.QtGui import QPalette
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QGridLayout
+from PySide6.QtWidgets import QWidget, QLabel, QGridLayout
 import pyqtgraph as pg
 from Event import Event, Channel
 from bisect import bisect_right, bisect_left
 import numpy as np
-from copy import deepcopy
 
 
 class HistoryPlot(QWidget):
@@ -125,7 +124,7 @@ class HistoryPlot(QWidget):
         self.switch_time_plot.setXLink(self.pressure_plot)
 
         # Statistics labels
-        size = 12
+        size = 14
         # Pressure plot
         self.last_pressure_display = QLabel("0.000")
         self.avg_pressure_display = QLabel("0.000")

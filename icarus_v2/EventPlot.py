@@ -47,7 +47,7 @@ class EventPlot(QWidget):
 
         self.plot = pg.PlotWidget(background= self.palette().color(QPalette.Window))
         self.plot.showGrid(x=True, y=True)
-        #self.setYRange(0, 3)
+        self.plot.setYRange(0, 3)
         self.plot.setMouseEnabled(x=False, y=False) # Prevent zooming
         self.plot.hideButtons() # Remove autoScale button
         # Labels
@@ -77,7 +77,7 @@ class EventPlot(QWidget):
         layout = QGridLayout()
         press_color = self.LINE_STYLES[Channel.PRE_VALVE][0]
         depress_color = self.LINE_STYLES[Channel.DEPRE_VALVE][0]
-        size = 12
+        size = 14
         if self.event_type == Event.PRESSURIZE or self.event_type == Event.DEPRESSURIZE:
             color = press_color if self.event_type == Event.PRESSURIZE else depress_color
             self.width_display = QLabel("0.00")

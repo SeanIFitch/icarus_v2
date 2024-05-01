@@ -73,7 +73,7 @@ class SettingsDialog(QDialog):
 
         # Preferences section
         self.theme_combo = QComboBox()
-        self.theme_combo.addItems(["Light", "Dark", "System Default"])
+        self.theme_combo.addItems(["System Default", "Light", "Dark"])
         self.theme_combo.setFixedWidth(edit_width)
         self.theme = self.config_manager.get_settings('theme')
         self.theme_combo.setCurrentText(self.theme)
@@ -90,9 +90,7 @@ class SettingsDialog(QDialog):
         self.pressurize_count_edit = QLineEdit()
         self.depressurize_count_edit = QLineEdit()
         self.tube_length_edit = QLineEdit()
-        self.calibrate_button = QPushButton("Calibrate Origin")
-        self.equilibrate_button = QPushButton("Equilibrate to Origin")
-        self.calibrate_button.setEnabled(connected)
+        self.equilibrate_button = QPushButton("Equilibrate")
         self.equilibrate_button.setEnabled(connected)
         self.pump_count_edit.setFixedWidth(edit_width)
         self.pressurize_count_edit.setFixedWidth(edit_width)
@@ -112,23 +110,19 @@ class SettingsDialog(QDialog):
         self.pressurize_count_edit.textChanged.connect(self.set_pressurize_count)
         self.depressurize_count_edit.textChanged.connect(self.set_depressurize_count)
         self.tube_length_edit.textChanged.connect(self.set_tube_length)
-        self.calibrate_button.clicked.connect(self.get_calibration)
         self.equilibrate_button.clicked.connect(self.get_equilibration)
-
-        sensor_layout = QHBoxLayout()
-        sensor_layout.addWidget(self.calibrate_button)
-        sensor_layout.addWidget(self.equilibrate_button)
 
         hardware_layout = QGridLayout()
         hardware_layout.addWidget(QLabel("Pump Count:"), 0, 0)
         hardware_layout.addWidget(QLabel("Pressurize Count:"), 1, 0)
         hardware_layout.addWidget(QLabel("Depressurize Count"), 2, 0)
         hardware_layout.addWidget(QLabel("Tube Length:"), 3, 0)
+        hardware_layout.addWidget(QLabel("Equilibrate sensors:"), 4, 0)
         hardware_layout.addWidget(self.pump_count_edit, 0, 1)
         hardware_layout.addWidget(self.pressurize_count_edit, 1, 1)
         hardware_layout.addWidget(self.depressurize_count_edit, 2, 1)
         hardware_layout.addWidget(self.tube_length_edit, 3, 1)
-        hardware_layout.addLayout(sensor_layout, 4, 0, 5, 2)
+        hardware_layout.addWidget(self.equilibrate_button, 4, 1)
         hardware_group = QGroupBox("Hardware")
         hardware_group.setLayout(hardware_layout)
 
@@ -247,37 +241,25 @@ class SettingsDialog(QDialog):
             return
         self.tube_length = tube_length
 
-    def get_calibration(self):
-        pressure, ok = QInputDialog.getDouble(self, "Calibrate Origin", "Enter pressure (kBar):")
-        if ok:
-            self.entered_pressure = pressure
-            self.pressure_signal.connect(self.calibrate_origin, type=Qt.SingleShotConnection)
-
-    # Make origin match pressure
-    def calibrate_origin(self, event):
-        origin_avg = np.mean(get_channel(event, Channel.HI_PRE_ORIG))
-
-        coefficient = self.entered_pressure / origin_avg
-        self.coefficients[Channel.HI_PRE_ORIG] = coefficient
-
-    def get_equilibration(self):
-        self.pressure_signal.connect(self.equilibrate_origin, type=Qt.SingleShotConnection)
-
     # Make target and sample match origin
-    def equilibrate_origin(self, event):
-        origin_avg = np.mean(get_channel(event, Channel.HI_PRE_ORIG))
-        sample_avg = np.mean(get_channel(event, Channel.HI_PRE_SAMPLE))
-        target_avg = np.mean(get_channel(event, Channel.TARGET))
+    def get_equilibration(self):
 
-        origin_pressure = origin_avg * self.coefficients[Channel.HI_PRE_ORIG]
-        sample_coefficient = origin_pressure / sample_avg
-        target_coefficient = origin_pressure / target_avg
+        def equilibrate(self, event):
+            origin_avg = np.mean(get_channel(event, Channel.HI_PRE_ORIG))
+            sample_avg = np.mean(get_channel(event, Channel.HI_PRE_SAMPLE))
+            target_avg = np.mean(get_channel(event, Channel.TARGET))
 
-        self.coefficients[Channel.HI_PRE_SAMPLE] = sample_coefficient
-        self.coefficients[Channel.TARGET] = target_coefficient
+            origin_pressure = origin_avg * self.coefficients[Channel.HI_PRE_ORIG]
+            sample_coefficient = origin_pressure / sample_avg
+            target_coefficient = origin_pressure / target_avg
+
+            self.coefficients[Channel.HI_PRE_SAMPLE] = sample_coefficient
+            self.coefficients[Channel.TARGET] = target_coefficient
+
+        # Send pressure readings to above func exactly once
+        self.pressure_signal.connect(equilibrate, type=Qt.SingleShotConnection)
 
     def set_connected(self, connected):
-        self.calibrate_button.setEnabled(connected)
         self.equilibrate_button.setEnabled(connected)
 
     def set_pressure_signal(self, pressure_signal):

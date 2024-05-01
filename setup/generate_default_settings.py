@@ -39,24 +39,53 @@ if __name__ == "__main__":
         "delay_width": 2.0
     }
 
+    '''
     # Dataq: volts = value_read * range / 32768     # range = 10
-    # Low pressure sensor: psi = volts / 20
-    # High pressure sensor: psi = volts / 10000
+    # Low pressure sensor: psi = volts * 20
+    # High pressure sensor: psi = volts * 10000
     # kBar: kbar = psi / 14503.7738
+    # Target: multiply by 400
+
+    v: volts, p: psi, k: kBar
+    v = a * 10 / 32768
+    k = p / 14503
+
+    High pressure
+    p = v * 10000
+    v = p / 10000
+    p / 10000 = a * 10 / 32768
+    p = a * 10 * 10000 / 32768
+    p = k * 14503.7738
+    k * 14503.7738 = a * 10 * 10000 / 32768
+    k = a * 10 * 10000 / (32768 * 14503.7738)
+
+    Target
+    p = v * 20
+    v = p / 20
+    p / 20 = a * 10 / 32768
+    p = a * 10 * 20 / 32768
+    p = k * 14503.7738
+    k * 14503.7738 = a * 10 * 20 / 32768
+    k = a * 10 * 20 / (32768 * 14503.7738)
+    target = 400 * k
+    target / 400 = k
+    target / 400 = a * 10 * 20 / (32768 * 14503.7738)
+    target = a * 10 * 20 * 400 / (32768 * 14503.7738)
+    '''
     coefficients = {
-        TARGET:         10 * 14503.7738 / (32768 * 10000 * 2),
+        TARGET:         10 * 20 * 400 / (32768 * 14503.7738),
         DEPRE_LOW:      0.00015,      # Arbitrary for visibility
         DEPRE_UP:       0.00015,      # Arbitrary for visibility
         PRE_LOW:        0.00015,      # Arbitrary for visibility
         PRE_UP:         0.00015,      # Arbitrary for visibility
-        HI_PRE_ORIG:    10 * 14503.7738 / (32768 * 10000 * 2),
-        HI_PRE_SAMPLE:  10 * 14503.7738 / (32768 * 10000 * 2),
+        HI_PRE_ORIG:    10 * 10000 / (32768 * 14503.7738),
+        HI_PRE_SAMPLE:  10 * 10000 / (32768 * 14503.7738),
         DEPRE_VALVE:    2.8,    # Arbitrary for visibility
         PRE_VALVE:      2.85,    # Arbitrary for visibility
     }
 
     tube = 100.0
-    theme = "Dark"
+    theme = "System Default"
 
     settings = {
         "timing_settings": timing_settings,
