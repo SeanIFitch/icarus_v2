@@ -63,7 +63,7 @@ class HistoryPlot(QWidget):
         self.pressure_plot.setTitle("Pressure", color=text_color, size="14pt")
         self.pressure_plot.setLabel('left', 'Pressure (kBar)', **text_style)
         self.pressure_plot.setLabel('bottom', 'Time (s)', **text_style)
-        #self.pressure_plot.setYRange(0, 3)
+        self.pressure_plot.setYRange(0, 3)
         self.pressure_plot.hideButtons() # Remove autoScale button
         style = self.LINE_STYLES["origin pressure"]
         pen = pg.mkPen(color=style[0], style=style[1])
@@ -81,7 +81,7 @@ class HistoryPlot(QWidget):
         self.slope_plot.setTitle("Pressure Change Slope", color=text_color, size="14pt")
         self.slope_plot.setLabel('left', 'Slope (kBar/ms)', **text_style)
         self.slope_plot.setLabel('bottom', 'Time (s)', **text_style)
-        #self.slope_plot.setYRange(-5, 5)
+        self.slope_plot.setYRange(-1.1, 1.1)
         self.slope_plot.hideButtons() # Remove autoScale button
         style = self.LINE_STYLES["depress origin slope"]
         pen = pg.mkPen(color=style[0], style=style[1])
@@ -106,7 +106,7 @@ class HistoryPlot(QWidget):
         self.switch_time_plot.setTitle("Switch Time", color=text_color, size="14pt")
         self.switch_time_plot.setLabel('left', 'Time (ms)', **text_style)
         self.switch_time_plot.setLabel('bottom', 'Time (s)', **text_style)
-        #self.switch_time_plot.setYRange(0, 48)
+        self.switch_time_plot.setYRange(0, 45)
         self.switch_time_plot.hideButtons() # Remove autoScale button
         style = self.LINE_STYLES["depress origin switch"]
         pen = pg.mkPen(color=style[0], style=style[1])

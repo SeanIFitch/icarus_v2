@@ -10,7 +10,6 @@ from PySide6.QtWidgets import (
     QComboBox,
     QPushButton,
     QHBoxLayout,
-    QInputDialog
 )
 from PySide6.QtGui import QDoubleValidator, QIntValidator
 from ErrorDialog import open_error_dialog
@@ -134,6 +133,7 @@ class SettingsDialog(QDialog):
         # Dialog configuration
         self.setWindowTitle("Settings")
         self.resize(400, 300)
+        self.setWindowModality(Qt.ApplicationModal)
 
         # Main layout for the dialog
         main_layout = QVBoxLayout(self)
