@@ -117,8 +117,7 @@ class DataHandler(QThread):
         self.connecting = False
         acquired = self.quit_lock.acquire(timeout=10)
 
-        if self.logger is not None:
-            self.logger.close()
+        self.logger.close()
 
         self.acquiring_signal.emit(False)
         # Cleanup QThreads

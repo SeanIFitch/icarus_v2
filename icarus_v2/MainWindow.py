@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
 
         # Window settings
         self.setWindowTitle("Icarus NMR")
-        self.setMinimumSize(QSize(800, 600))
+        self.setMinimumSize(QSize(1000, 700))
         self.setStyleSheet("font-size: 17pt;")
 
         # Initialize all widgets
@@ -196,6 +196,7 @@ class MainWindow(QMainWindow):
     def set_connected(self, connected):
         self.connected = connected
         self.toolbar.set_connected(connected)
+        self.log_control_panel.set_logging(connected)
         if connected:
             self.device_control_panel.reset()
             if self.mode == "device":

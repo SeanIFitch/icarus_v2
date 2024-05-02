@@ -50,9 +50,12 @@ class LogControlPanel(QGroupBox):
         # File control
         open_button = QPushButton("Open File")
         self.current_button = QPushButton("Open Current")
+        self.new_log_button = QPushButton("Start New Log")
         self.edit_button = QPushButton("Edit File")
-        open_button.clicked.connect(self.open_log)
+        open_button.clicked.connect(self.choose_log)
+        self.current_button.clicked.connect(self.open_current)
         self.edit_button.clicked.connect(self.edit_file)
+        self.new_log_button.clicked.connect(self.new_log)
 
         # Prefer height of buttons on device control panel
         self.last_button.setMaximumHeight(74)
@@ -60,11 +63,13 @@ class LogControlPanel(QGroupBox):
         self.current_button.setMaximumHeight(74)
         open_button.setMaximumHeight(74)
         self.edit_button.setMaximumHeight(74)
+        self.new_log_button.setMaximumHeight(74)
         self.last_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.next_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.current_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         open_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.edit_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.new_log_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # Set layout
         time_layout = QHBoxLayout()
@@ -84,16 +89,29 @@ class LogControlPanel(QGroupBox):
         layout.addItem(QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)) # Spacer to separate sections
         layout.addWidget(self.current_button)
         layout.addWidget(open_button)
+        layout.addWidget(self.new_log_button)
         layout.addWidget(self.edit_button)
 
+        self.set_logging(False)
         self.setFixedWidth(287) # Width of device control panel
 
 
-    def open_log(self):
+    def open_current(self):
+        if not self.currently_logging:
+            return
+        filename = self.log_reader.logger.filename
+        self.open_log(filename)
+
+
+    def choose_log(self):
         file = QFileDialog.getOpenFileName(self, "Open File", "logs", "Log Files (*.xz)")[0]
         # No file selected
         if file == "":
             return
+        self.open_log(file)
+
+
+    def open_log(self, file):
         self.reset_history_signal.emit()
         self.log_reader.read_events(file)
 
@@ -145,7 +163,8 @@ class LogControlPanel(QGroupBox):
         self.edit_dialog.setFixedSize(500, 200)
         self.edit_dialog.setLayout(layout)
         self.edit_dialog.exec_()
-        
+
+
     def rename_file(self):
         new_name = self.name_edit.text()
         if new_name:
@@ -154,7 +173,7 @@ class LogControlPanel(QGroupBox):
                 os.rename(self.filename, new_filename)  
 
                 # Update logger filename if this is the currently written log
-                if self.log_reader.logger is not None:
+                if self.currently_logging:
                     if self.filename == self.log_reader.logger.filename:
                         self.log_reader.logger.filename = new_filename 
                 self.filename_label.setText(os.path.basename(new_filename))  # Update the label
@@ -163,17 +182,26 @@ class LogControlPanel(QGroupBox):
                 open_error_dialog(e)
         self.edit_dialog.close()
 
+
     def delete_file(self):
         confirm_dialog = QMessageBox.question(self, "Are you sure?", "This action cannot be undone.", QMessageBox.Yes | QMessageBox.Cancel)
         if confirm_dialog == QMessageBox.Yes:
-            try:
-                os.remove(self.filename)
-                self.filename_label.setText(" ")
-                self.next_button.setEnabled(False)
-                self.last_button.setEnabled(False)
-                self.event_list_signal.emit([])
-            except OSError as e:
-                open_error_dialog(e)
+            # Start new log if this is the currently written log
+            if self.currently_logging:
+                if self.filename == self.log_reader.logger.filename:
+                    self.log_reader.logger.new_log_file(self.log_reader.logger.current_path)
+
+                if os.path.exists(self.filename):
+                    try:
+                        os.remove(self.filename)
+                    except OSError as e:
+                        open_error_dialog(e)
+                        return
+
+            self.filename_label.setText(" ")
+            self.next_button.setEnabled(False)
+            self.last_button.setEnabled(False)
+            self.reset_history_signal.emit()
         self.edit_dialog.close()
 
 
@@ -290,3 +318,14 @@ class LogControlPanel(QGroupBox):
         self.next_button.setEnabled(False)
         self.last_button.setEnabled(False)
         self.edit_button.setEnabled(False)
+
+
+    def set_logging(self, connected):
+        self.currently_logging = connected
+        self.current_button.setEnabled(connected)
+        self.new_log_button.setEnabled(connected)
+
+
+    def new_log(self):
+        if self.currently_logging:
+            self.log_reader.logger.new_log_file(self.log_reader.logger.current_path)

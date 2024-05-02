@@ -120,7 +120,6 @@ class DeviceControlPanel(QGroupBox):
         # Revert to manual mode
         self.console_button.setChecked(False)
         self.manual_button.setChecked(True)
-        print(self.pump_button.height())
 
 
     # Enable buttons

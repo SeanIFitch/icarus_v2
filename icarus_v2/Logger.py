@@ -10,10 +10,13 @@ class Logger:
     def __init__(self) -> None:
         self.file = None
         self.filename = None
+        self.current_path = None
 
 
-    def new_log_file(self, temporary):
+    def new_log_file(self, temporary = True):
         self.close()
+
+        self.current_path = temporary
 
         path = "logs/temp" if temporary else "logs/experiment"
         path = os.path.abspath(path)
