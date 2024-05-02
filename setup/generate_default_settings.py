@@ -85,14 +85,16 @@ if __name__ == "__main__":
     }
 
     tube = 100.0
-    theme = "System Default"
+
+    # Legacy
+    #theme = "System Default"
 
     settings = {
         "timing_settings": timing_settings,
         "counter_settings": counter,
         "plotting_coefficients": coefficients,
         "tube_length": tube,
-        "theme": theme
+        #"theme": theme
     }
 
 

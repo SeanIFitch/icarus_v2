@@ -5,7 +5,10 @@ from PySide6.QtWidgets import (
     QRadioButton,
     QVBoxLayout,
     QLabel,
-    QWidget
+    QWidget,
+    QSizePolicy,
+    QSpacerItem,
+    QGridLayout
 )
 from ToggleButton import ToggleButton
 from TogglePictureButton import TogglePictureButton
@@ -29,12 +32,19 @@ class DeviceControlPanel(QGroupBox):
 
         # Initialize buttons
         self.shutdown_button = TogglePictureButton("icons/shutdown.svg", "Shutdown", "Restart")
-        self.shutdown_button.set_size(100,100)
+        self.shutdown_button.set_size(150,150)
 
         self.pump_button = ToggleButton("Pump on", "Pump off")
         self.pressurize_button = ToggleButton("Pressurize open", "Pressurize close")
         self.depressurize_button = ToggleButton("Depressurize open", "Depressurize close")
         self.pulse_button = ToggleButton("Start pulsing", "Stop pulsing")
+        self.pump_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.pressurize_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.depressurize_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.pulse_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+
+        # Spacer for when buttons are hidden
+        self.spacer = QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)
 
         # Set layouts
         button_layout = QVBoxLayout()
@@ -45,19 +55,16 @@ class DeviceControlPanel(QGroupBox):
         self.button_widget = QWidget()
         self.button_widget.setLayout(button_layout)
 
-        mode_layout = QHBoxLayout()
-        mode_layout.addWidget(self.console_button)
-        mode_layout.addWidget(self.manual_button)
+        layout = QGridLayout(self)
+        layout.addWidget(self.shutdown_button, 0, 0, 1, 2, alignment=Qt.AlignHCenter)
+        layout.addWidget(QLabel("Change Mode:"), 1, 0, 1, 2)
+        layout.addWidget(self.console_button, 2, 0)
+        layout.addWidget(self.manual_button, 2, 1)
+        layout.addWidget(self.button_widget, 3, 0, 1, 2)
+        layout.addItem(self.spacer, 3, 0)
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.shutdown_button, alignment=Qt.AlignHCenter)
-        layout.addWidget(QLabel("Change Mode:"))
-        layout.addLayout(mode_layout)
-        layout.addWidget(self.button_widget)
-
-        self.setFixedSize(194, 321)
-        layout.setAlignment(Qt.AlignTop)
-        self.setLayout(layout)
+        self.setMinimumWidth(287) # Width of depressurize button.Without this the panel shrinks when buttons are hidden
+        self.setStyleSheet("font-size: 21pt;")
 
 
     def change_to_console(self):
@@ -113,6 +120,7 @@ class DeviceControlPanel(QGroupBox):
         # Revert to manual mode
         self.console_button.setChecked(False)
         self.manual_button.setChecked(True)
+        print(self.pump_button.height())
 
 
     # Enable buttons

@@ -70,20 +70,6 @@ class SettingsDialog(QDialog):
         timings_group = QGroupBox("Pulse Timings")
         timings_group.setLayout(timings_layout)
 
-        # Preferences section
-        self.theme_combo = QComboBox()
-        self.theme_combo.addItems(["System Default", "Light", "Dark"])
-        self.theme_combo.setFixedWidth(edit_width)
-        self.theme = self.config_manager.get_settings('theme')
-        self.theme_combo.setCurrentText(self.theme)
-        self.theme_combo.currentTextChanged.connect(self.set_theme)
-
-        preferences_layout = QHBoxLayout()
-        preferences_layout.addWidget(QLabel("Theme:"))
-        preferences_layout.addWidget(self.theme_combo)
-        preferences_group = QGroupBox("Preferences")
-        preferences_group.setLayout(preferences_layout)
-
         # Hardware section
         self.pump_count_edit = QLineEdit()
         self.pressurize_count_edit = QLineEdit()
@@ -138,14 +124,8 @@ class SettingsDialog(QDialog):
         # Main layout for the dialog
         main_layout = QVBoxLayout(self)
         main_layout.addWidget(timings_group)
-        main_layout.addWidget(preferences_group)
         main_layout.addWidget(hardware_group)
         main_layout.addWidget(button_box)
-
-        # Center dialog
-        if parent is not None:
-            print(parent.geometry().center())
-            self.move(parent.geometry().center() - QPoint(self.width() / 2, self.height()))
 
         # Default selection
         button_box.button(QDialogButtonBox.Apply).setFocus()
@@ -179,7 +159,6 @@ class SettingsDialog(QDialog):
         self.config_manager.save_settings("timing_settings", self.timing_settings)
         self.config_manager.save_settings("counter_settings", self.counter_settings)
         self.config_manager.save_settings("tube_length", self.tube_length)
-        self.config_manager.save_settings("theme", self.theme)
         self.close()
 
 
@@ -210,9 +189,6 @@ class SettingsDialog(QDialog):
         except:
             return
         self.timing_settings['delay_width'] = delay_width
-
-    def set_theme(self, theme):
-        self.theme = theme
 
     def set_pressurize_count(self, pressurize_count):
         try:

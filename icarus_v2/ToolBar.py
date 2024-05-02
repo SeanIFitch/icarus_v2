@@ -13,7 +13,6 @@ class ToolBar(QToolBar):
 
         self.config_manager = config_manager
         self.setMovable(False)
-        self.setStyleSheet("font-size: 17pt;")
 
         # Settings button
         self.connected = False

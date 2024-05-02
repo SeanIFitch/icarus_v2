@@ -2,7 +2,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QGridLayout,
     QGroupBox,
-    QLabel
+    QLabel,
+    QSizePolicy
 )
 from Event import Channel
 
@@ -25,13 +26,6 @@ class PressureDisplay(QGroupBox):
         target_label = QLabel("Target:")
         origin_label = QLabel("Origin:")
 
-        # Font size
-        main_label.setStyleSheet("font-size: 24px;")
-        target_label.setStyleSheet("font-size: 20px;")
-        origin_label.setStyleSheet("font-size: 20px;")
-        self.target_display.setStyleSheet("font-size: 36px;")
-        self.origin_display.setStyleSheet("font-size: 36px;")
-
         # Set main layout
         layout = QGridLayout()
         layout.addWidget(main_label, 0, 0, 1, 0)
@@ -40,8 +34,8 @@ class PressureDisplay(QGroupBox):
         layout.addWidget(self.target_display, 1, 1)
         layout.addWidget(self.origin_display, 2, 1)
 
-        self.setFixedWidth(194)
-        layout.setAlignment(Qt.AlignTop)
+        self.setStyleSheet("font-size: 28pt;")
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         self.setLayout(layout)
 
 

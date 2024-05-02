@@ -52,7 +52,7 @@ class EventPlot(QWidget):
         self.plot.hideButtons() # Remove autoScale button
         # Labels
         text_color = self.palette().color(QPalette.WindowText)
-        self.plot.setTitle(title, color=text_color, size="14pt")
+        self.plot.setTitle(title, color=text_color, size="17pt")
         self.plot.setLabel('left', 'Pressure (kbar)', **{'color':text_color})
         self.plot.setLabel('bottom', f'Time ({self.x_unit})', **{'color':text_color})
 

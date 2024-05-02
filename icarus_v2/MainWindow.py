@@ -6,7 +6,9 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QGridLayout,
     QWidget,
-    QGroupBox, 
+    QGroupBox,
+    QSizePolicy,
+    QSpacerItem
 )
 from PySide6.QtCore import Qt
 from EventPlot import EventPlot
@@ -34,6 +36,7 @@ class MainWindow(QMainWindow):
         # Window settings
         self.setWindowTitle("Icarus NMR")
         self.setMinimumSize(QSize(800, 600))
+        self.setStyleSheet("font-size: 17pt;")
 
         # Initialize all widgets
         self.pressure_event_display_range = (-10,140) # How much data to view around pressurize events
@@ -59,16 +62,22 @@ class MainWindow(QMainWindow):
 
         # ToolBar
         self.toolbar = ToolBar(config_manager)
-        self.addToolBar(Qt.BottomToolBarArea, self.toolbar)
+        self.addToolBar(self.toolbar)
         self.toolbar.set_mode_signal.connect(self.set_mode)
         self.toolbar.history_reset_action.triggered.connect(self.history_plot.reset_history)
 
         # Control and value layout
         # Show bounding box even when no controls are displayed
         self.bounding_box = QGroupBox()
-        self.bounding_box.setFixedSize(194, 321)
+        spacer = QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)
+        box_layout = QVBoxLayout()
+        box_layout.addItem(spacer)
+        self.bounding_box.setLayout(box_layout)
+        self.bounding_box.setMinimumWidth(287) # Width of DeviceControlPanel
+
+
         control_layout = QGridLayout()
-        control_layout.addWidget(self.pressure_display, 0,0)
+        control_layout.addWidget(self.pressure_display, 0, 0)
         control_layout.addWidget(self.device_control_panel, 1, 0)
         control_layout.addWidget(self.log_control_panel, 1, 0)
         control_layout.addWidget(self.bounding_box, 1, 0)

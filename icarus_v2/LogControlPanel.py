@@ -1,15 +1,18 @@
 from PySide6.QtWidgets import (
     QGroupBox,
-    QGridLayout,
+    QHBoxLayout,
     QVBoxLayout,
     QLabel,
     QPushButton,
     QLineEdit,
-    QInputDialog,
+    QDialog,
     QFileDialog,
+    QSizePolicy,
+    QSpacerItem,
+    QMessageBox
 )
 import os
-from PySide6.QtGui import QDoubleValidator, QFont, QFontMetrics
+from PySide6.QtGui import QDoubleValidator, QFontMetrics
 from PySide6.QtCore import Qt, Signal
 from ErrorDialog import open_error_dialog
 from bisect import bisect_right
@@ -33,53 +36,61 @@ class LogControlPanel(QGroupBox):
 
         # Title
         title = QLabel("Viewing Log")
-        font = QFont()
-        font.setPointSize(21)
-        title.setFont(font)
-        self.filename_label = QLabel("")
+        title.setStyleSheet("font-size: 28pt;")
+        self.filename_label = QLabel(" ")
 
         # Time controls
         self.time_edit = QLineEdit(self)
-        self.last_button = QPushButton("Last Event")
-        self.next_button = QPushButton("Next Event")
+        self.last_button = QPushButton("Previous")
+        self.next_button = QPushButton("Next")
         self.time_edit.editingFinished.connect(self.select_time)
         self.last_button.pressed.connect(self.emit_last_event)
         self.next_button.pressed.connect(self.emit_next_event)
 
         # File control
         open_button = QPushButton("Open File")
-        self.rename_button = QPushButton("Rename")
+        self.current_button = QPushButton("Open Current")
+        self.edit_button = QPushButton("Edit File")
         open_button.clicked.connect(self.open_log)
-        self.rename_button.clicked.connect(self.rename_file)
+        self.edit_button.clicked.connect(self.edit_file)
 
-        # Set layouts
-        title_layout = QVBoxLayout()
-        title_layout.addWidget(title)
-        title_layout.addWidget(self.filename_label)
-        title_layout.setAlignment(title, Qt.AlignHCenter)
-        control_layout = QGridLayout()
-        control_layout.addWidget(QLabel("Time (s):"), 0, 0)
-        control_layout.addWidget(self.time_edit, 0, 1)
-        control_layout.addWidget(self.last_button, 1, 0)
-        control_layout.addWidget(self.next_button, 1, 1)
-        file_layout = QVBoxLayout()
-        file_layout.addWidget(open_button)
-        file_layout.addWidget(self.rename_button)
+        # Prefer height of buttons on device control panel
+        self.last_button.setMaximumHeight(74)
+        self.next_button.setMaximumHeight(74)
+        self.current_button.setMaximumHeight(74)
+        open_button.setMaximumHeight(74)
+        self.edit_button.setMaximumHeight(74)
+        self.last_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.next_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.current_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        open_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.edit_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        # Set layout
+        time_layout = QHBoxLayout()
+        time_layout.addWidget(QLabel("Time (s):"))
+        time_layout.addWidget(self.time_edit)
+
+        step_layout = QHBoxLayout()
+        step_layout.addWidget(self.last_button)
+        step_layout.addWidget(self.next_button)
 
         layout = QVBoxLayout(self)
-        layout.addLayout(title_layout)
-        layout.addLayout(control_layout)
-        layout.addLayout(file_layout)
-        layout.setAlignment(title_layout, Qt.AlignTop)
-        layout.setAlignment(control_layout, Qt.AlignCenter)
-        layout.setAlignment(file_layout, Qt.AlignBottom)
+        layout.addWidget(title, alignment=Qt.AlignHCenter)
+        layout.addWidget(self.filename_label)
+        layout.addItem(QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)) # Spacer to separate sections
+        layout.addLayout(time_layout)
+        layout.addLayout(step_layout)
+        layout.addItem(QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)) # Spacer to separate sections
+        layout.addWidget(self.current_button)
+        layout.addWidget(open_button)
+        layout.addWidget(self.edit_button)
 
-        self.setFixedSize(194, 321)
-        self.setLayout(layout)
+        self.setFixedWidth(287) # Width of device control panel
 
 
     def open_log(self):
-        file = QFileDialog.getOpenFileName(self, "Open Log", "logs", "Log Files (*.xz)")[0]
+        file = QFileDialog.getOpenFileName(self, "Open File", "logs", "Log Files (*.xz)")[0]
         # No file selected
         if file == "":
             return
@@ -89,7 +100,7 @@ class LogControlPanel(QGroupBox):
         self.time_edit.setText("")
         self.next_button.setEnabled(True)
         self.last_button.setEnabled(True)
-        self.rename_button.setEnabled(True)
+        self.edit_button.setEnabled(True)
 
         self.press_index = -1
         self.depress_index = -1
@@ -98,7 +109,7 @@ class LogControlPanel(QGroupBox):
         self.filename = self.log_reader.filename
         self.filename_label.setText(os.path.basename(self.filename))
         # Adjust font size to fit in the view
-        for i in range(15, 8, -1):
+        for i in range(17, 8, -1):
             self.filename_label.setStyleSheet(f"font-size: {i}px")
             if QFontMetrics(self.filename_label.font()).boundingRect(os.path.basename(self.filename)).width() < self.width() - 25:
                 break
@@ -111,32 +122,59 @@ class LogControlPanel(QGroupBox):
         self.event_list_signal.emit(self.log_reader.events)
 
 
-    def rename_file(self):
-        current_filename = os.path.basename(self.filename)
-        # Create a QInputDialog
-        dialog = QInputDialog(self)
-        dialog.setWindowTitle("Rename File")
-        dialog.setLabelText("Enter new filename:")
-        dialog.setTextValue(current_filename)
-        dialog.resize(400, 100)  # Adjust the width and height of the dialog
+    def edit_file(self):
+        self.edit_dialog = QDialog(self)
+
+        self.name_edit = QLineEdit()
+        basename = os.path.basename(self.filename)
+        self.name_edit.setText(basename)
+        extension_length = len(basename.split('.')[-1]) + 1
+        self.name_edit.setSelection(0, len(basename) - extension_length)
+
+        button_rename = QPushButton("Rename File")
+        button_delete = QPushButton("Delete File")
+        button_rename.clicked.connect(self.rename_file)
+        button_delete.clicked.connect(self.delete_file)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.name_edit)
+        layout.addWidget(button_rename)
+        layout.addWidget(button_delete)
+
+        self.edit_dialog.setWindowTitle("Edit File")
+        self.edit_dialog.setFixedSize(500, 200)
+        self.edit_dialog.setLayout(layout)
+        self.edit_dialog.exec_()
         
-        # Execute the dialog and check the response
-        if dialog.exec_() == QInputDialog.Accepted:
-            new_name = dialog.textValue()
-            if new_name:
-                # Construct the new filename with the directory path and extension
-                new_filename = os.path.join(os.path.dirname(self.filename), new_name)
-                
-                try:
-                    os.rename(self.filename, new_filename)  # Rename the file
-                    self.filename = new_filename  # Update the filename attribute
-                    # Update logger filename if this is the currently written log
-                    if self.log_reader.logger is not None:
-                        if current_filename == self.log_reader.logger.filename:
-                            self.log_reader.logger.filename = new_filename 
-                    self.filename_label.setText(os.path.basename(new_filename))  # Update the label
-                except OSError as e:
-                    open_error_dialog(e)
+    def rename_file(self):
+        new_name = self.name_edit.text()
+        if new_name:
+            new_filename = os.path.join(os.path.dirname(self.filename), new_name)
+            try:
+                os.rename(self.filename, new_filename)  
+
+                # Update logger filename if this is the currently written log
+                if self.log_reader.logger is not None:
+                    if self.filename == self.log_reader.logger.filename:
+                        self.log_reader.logger.filename = new_filename 
+                self.filename_label.setText(os.path.basename(new_filename))  # Update the label
+                self.filename = new_filename
+            except OSError as e:
+                open_error_dialog(e)
+        self.edit_dialog.close()
+
+    def delete_file(self):
+        confirm_dialog = QMessageBox.question(self, "Are you sure?", "This action cannot be undone.", QMessageBox.Yes | QMessageBox.Cancel)
+        if confirm_dialog == QMessageBox.Yes:
+            try:
+                os.remove(self.filename)
+                self.filename_label.setText(" ")
+                self.next_button.setEnabled(False)
+                self.last_button.setEnabled(False)
+                self.event_list_signal.emit([])
+            except OSError as e:
+                open_error_dialog(e)
+        self.edit_dialog.close()
 
 
     def select_time(self):
@@ -189,7 +227,7 @@ class LogControlPanel(QGroupBox):
             # Also emit matching PERIOD
             if index + 1 < len(self.log_reader.events):
                 n_event = self.log_reader.events[index + 1]
-                if n_event.event_type == Event.PERIOD and abs(n_event.event_time - event.event_time) < 1:
+                if n_event.event_type == Event.PERIOD and abs(n_event.event_time - event.event_time) < 2:
                     self.period_index = index + 1
                     self.period_event_signal.emit(n_event)
 
@@ -199,7 +237,7 @@ class LogControlPanel(QGroupBox):
             # Also emit matching DEPRESSURIZE
             if index + 1 < len(self.log_reader.events):
                 n_event = self.log_reader.events[index + 1]
-                if n_event.event_type == Event.DEPRESSURIZE and abs(n_event.event_time - event.event_time) < 1:
+                if n_event.event_type == Event.DEPRESSURIZE and abs(n_event.event_time - event.event_time) < 2:
                     self.depress_index = index + 1
                     self.depressurize_event_signal.emit(n_event)
 
@@ -224,8 +262,8 @@ class LogControlPanel(QGroupBox):
             # Also emit matching PERIOD
             if index - 1 >= 0:
                 n_event = self.log_reader.events[index - 1]
-                if n_event.event_type == Event.PERIOD and abs(n_event.event_time - event.event_time) < 1:
-                    self.period_index = index + 1
+                if n_event.event_type == Event.PERIOD and abs(n_event.event_time - event.event_time) < 2:
+                    self.period_index = index - 1
                     self.period_event_signal.emit(n_event)
 
         elif event.event_type == Event.PERIOD:
@@ -251,4 +289,4 @@ class LogControlPanel(QGroupBox):
 
         self.next_button.setEnabled(False)
         self.last_button.setEnabled(False)
-        self.rename_button.setEnabled(False)
+        self.edit_button.setEnabled(False)
