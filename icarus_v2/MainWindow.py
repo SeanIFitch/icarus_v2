@@ -7,7 +7,6 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QWidget,
     QGroupBox, 
-    QSizePolicy
 )
 from PySide6.QtCore import Qt
 from EventPlot import EventPlot

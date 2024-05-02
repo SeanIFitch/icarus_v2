@@ -32,7 +32,7 @@ class SettingsDialog(QDialog):
         positive_float.setBottom(0)
         positive_int.setBottom(0)
         # Width of edit boxes
-        edit_width = 130
+        edit_width = 190
 
         # Pulse timings section
         self.pressurize_width_edit = QLineEdit()
@@ -132,8 +132,8 @@ class SettingsDialog(QDialog):
 
         # Dialog configuration
         self.setWindowTitle("Settings")
-        self.resize(400, 300)
         self.setWindowModality(Qt.ApplicationModal)
+        self.setStyleSheet("font-size: 17pt;")
 
         # Main layout for the dialog
         main_layout = QVBoxLayout(self)
@@ -144,6 +144,7 @@ class SettingsDialog(QDialog):
 
         # Center dialog
         if parent is not None:
+            print(parent.geometry().center())
             self.move(parent.geometry().center() - QPoint(self.width() / 2, self.height()))
 
         # Default selection
