@@ -109,12 +109,9 @@ class Event():
         else:
             step = len(data) / num_points
             self.step_time = self.step_time * step
-            indices = np.round(np.arange(0, num_points + 1) * step).astype(int)
+            indices = np.round(np.arange(0, num_points) * step).astype(int)
 
-            # Take average between the indeces
-            step_sums = np.add.reduceat(data, indices)
-            step_lengths = np.diff(indices)
-            compressed_data = step_sums / step_lengths
+            compressed_data = data[indices]
 
             # Change where event occured
             self.event_index = np.round(self.event_index / step).astype(int)
