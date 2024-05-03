@@ -109,8 +109,12 @@ class Event():
         else:
             step = len(data) / num_points
             self.step_time = self.step_time * step
-            indices = np.round(np.arange(0, num_points) * step).astype(int)
-            compressed_data = np.copy(data[indices])
+            indices = np.round(np.arange(0, num_points + 1) * step).astype(int)
+
+            # Take average between the indeces
+            step_sums = np.add.reduceat(data, indices)
+            step_lengths = np.diff(indices)
+            compressed_data = step_sums / step_lengths
 
             # Change where event occured
             self.event_index = np.round(self.event_index / step).astype(int)
@@ -237,31 +241,15 @@ class Event():
         return self.get_slope(Channel.HI_PRE_SAMPLE)
 
 
-    # Returns slope of pressurization or depressurization
+    # Returns max slope of pressurization or depressurization
     def get_slope(self, channel):
         if self.event_type != self.DEPRESSURIZE and self.event_type != self.PRESSURIZE:
             raise RuntimeError(f"Cannot call get_slope() on event type {self.event_type}")
 
         y = get_channel(self, channel)
-        x = range(len(y))
 
         # Calculate the first derivative of the data
-        dy = np.diff(y) / np.diff(x)
+        dy = np.diff(y)
         dy_smoothed = gaussian_filter(dy, 5, 5)
 
-        # Find the start and end of the ramp
-        if self.event_type == Event.PRESSURIZE:
-            threshold = 0.4 * max(dy_smoothed)
-            indeces = np.where(dy_smoothed > threshold)
-        elif self.event_type == Event.DEPRESSURIZE:
-            threshold = 0.4 * min(dy_smoothed)
-            indeces = np.where(dy_smoothed < threshold)
-
-        if len(indeces[0]) == 0:
-            return 0
-        ramp_start = indeces[0][0] + 1  # +1 to correct index after diff
-        ramp_end = indeces[0][-1] + 1
-        slope = (y[ramp_end] - y[ramp_start]) / (ramp_end - ramp_start)
-        return slope
-
-
+        return max(dy_smoothed)

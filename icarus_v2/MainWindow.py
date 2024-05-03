@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
 
         # Window settings
         self.setWindowTitle("Icarus NMR")
-        self.setMinimumSize(QSize(1000, 700))
+        self.setMinimumSize(QSize(1000, 760))
         self.setStyleSheet("font-size: 17pt;")
 
         # Initialize all widgets

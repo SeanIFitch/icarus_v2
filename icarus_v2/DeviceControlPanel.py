@@ -1,7 +1,6 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QGroupBox,
-    QHBoxLayout,
     QRadioButton,
     QVBoxLayout,
     QLabel,
@@ -32,19 +31,19 @@ class DeviceControlPanel(QGroupBox):
 
         # Initialize buttons
         self.shutdown_button = TogglePictureButton("icons/shutdown.svg", "Shutdown", "Restart")
-        self.shutdown_button.set_size(150,150)
-
         self.pump_button = ToggleButton("Pump on", "Pump off")
         self.pressurize_button = ToggleButton("Pressurize open", "Pressurize close")
         self.depressurize_button = ToggleButton("Depressurize open", "Depressurize close")
         self.pulse_button = ToggleButton("Start pulsing", "Stop pulsing")
-        self.pump_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        self.pressurize_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        self.depressurize_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        self.pulse_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.shutdown_button.setFixedSize(150,150)
+        policy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.pump_button.setSizePolicy(policy)
+        self.pressurize_button.setSizePolicy(policy)
+        self.depressurize_button.setSizePolicy(policy)
+        self.pulse_button.setSizePolicy(policy)
 
         # Spacer for when buttons are hidden
-        self.spacer = QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)
+        #self.spacer = QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)
 
         # Set layouts
         button_layout = QVBoxLayout()
@@ -61,7 +60,7 @@ class DeviceControlPanel(QGroupBox):
         layout.addWidget(self.console_button, 2, 0)
         layout.addWidget(self.manual_button, 2, 1)
         layout.addWidget(self.button_widget, 3, 0, 1, 2)
-        layout.addItem(self.spacer, 3, 0)
+        #layout.addItem(self.spacer, 3, 0)
 
         self.setMinimumWidth(287) # Width of depressurize button.Without this the panel shrinks when buttons are hidden
         self.setStyleSheet("font-size: 21pt;")
