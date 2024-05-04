@@ -115,7 +115,7 @@ class MainWindow(QMainWindow):
         data_handler.pressure_event_signal.connect(self.pressure_display.update_pressure)
         data_handler.pressurize_event_signal.connect(self.counter_display.increment_count)
         data_handler.depressurize_event_signal.connect(self.counter_display.increment_count)
-        data_handler.pump_increment_signal.connect(self.counter_display.increment_pump_count)
+        data_handler.pump_event_signal.connect(self.counter_display.increment_count)
         data_handler.acquiring_signal.connect(lambda x: self.set_connected(x))
 
         # Connect plot signals

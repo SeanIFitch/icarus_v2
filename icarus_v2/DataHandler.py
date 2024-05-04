@@ -24,7 +24,7 @@ class DataHandler(QThread):
     depressurize_event_signal = Signal(Event)
     period_event_signal = Signal(Event)
     pressure_event_signal = Signal(Event)
-    pump_increment_signal = Signal()
+    pump_event_signal = Signal(Event)
     # Tell gui when device is connected
     acquiring_signal = Signal(bool)
     # display error dialog
@@ -55,7 +55,7 @@ class DataHandler(QThread):
         self.depressurize_handler = DepressurizeHandler(self.loader, self.depressurize_event_signal, sample_rate, event_update_hz, event_display_bounds)
         self.period_handler = PeriodHandler(self.loader, self.period_event_signal, sample_rate, event_update_hz, event_display_bounds)
         self.pressure_handler = PressureHandler(self.loader, self.pressure_event_signal, sample_rate, pressure_update_hz)
-        self.pump_handler = PumpHandler(self.loader, self.pump_increment_signal, sample_rate)
+        self.pump_handler = PumpHandler(self.loader, self.pump_event_signal, sample_rate)
         self.log_handler = LogHandler(self.loader, self.log_signal, sample_rate, pressure_update_hz)
 
         # Logger

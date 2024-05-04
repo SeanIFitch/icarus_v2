@@ -18,11 +18,13 @@ class CounterDisplay(QGroupBox):
         self.counts = config_manager.get_settings("counter_settings")
         QCoreApplication.instance().aboutToQuit.connect(self.save_settings)
 
+        self.pump_times = []
+
         # Counters
         self.pump_counter = QLabel(str(self.counts["pump_count"]))
         self.pressurize_counter = QLabel(str(self.counts["pressurize_count"]))
         self.depressurize_counter = QLabel(str(self.counts["depressurize_count"]))
-        self.stroke_display = QLabel("0")
+        self.stroke_display = QLabel("0.00")
 
         # Labels
         pump_count_label = QLabel("Pump Count:")
@@ -50,6 +52,16 @@ class CounterDisplay(QGroupBox):
         if event.event_type == Event.PUMP:
             self.counts["pump_count"] += 1
             self.pump_counter.setText(str(self.counts['pump_count']))
+
+            # update pump strokes/hr
+            self.pump_times.append(event.event_time)
+            if len(self.pump_times) >= 3:
+                last_interval = self.pump_times[-1] - self.pump_times[-2]
+                prev_interval = self.pump_times[-2] - self.pump_times[-3]
+                avg = (last_interval + prev_interval) / 2
+                strokes_per_hour = 2 * 3600 / avg
+                self.stroke_display.setText(f"{strokes_per_hour:.2f}")
+
         elif event.event_type == Event.PRESSURIZE:
             self.counts["pressurize_count"] += 1
             self.pressurize_counter.setText(str(self.counts['pressurize_count']))
@@ -73,10 +85,3 @@ class CounterDisplay(QGroupBox):
             self.pump_counter.setText(str(self.counts['pump_count']))
             self.pressurize_counter.setText(str(self.counts['pressurize_count']))
             self.depressurize_counter.setText(str(self.counts['depressurize_count']))
-
-
-    def increment_pump_count(self):
-        self.counts["pump_count"] += 1
-        self.pump_counter.setText(str(self.counts['pump_count']))
-        if sum(self.counts.values()) % 100 == 0:
-            self.save_settings()

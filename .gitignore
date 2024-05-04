@@ -3,3 +3,4 @@ __pycache__/
 # Ignore log files
 logs/temp/
 logs/experiment/
+logs/recently_deleted
