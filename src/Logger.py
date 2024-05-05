@@ -17,14 +17,15 @@ class Logger:
         self.close()
 
         self.current_path = temporary
+        log_path = "logs/temp" if temporary else "logs/experiment"
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        log_path = os.path.join(base_dir, "..", log_path)
 
-        path = "logs/temp" if temporary else "logs/experiment"
-        path = os.path.abspath(path)
-        if not os.path.exists(path):
-            os.makedirs(path)
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
 
         current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        self.filename = f"{path}/log_{current_datetime}.xz"
+        self.filename = f"{log_path}/log_{current_datetime}.xz"
         self.file = lzma.open(self.filename, "ab")  # Opening file in append binary mode with LZMA compression
         self.event_count = 0
 

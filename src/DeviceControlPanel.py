@@ -6,12 +6,12 @@ from PySide6.QtWidgets import (
     QLabel,
     QWidget,
     QSizePolicy,
-    QSpacerItem,
     QGridLayout
 )
 from ToggleButton import ToggleButton
 from TogglePictureButton import TogglePictureButton
 from time import sleep
+import os
 
 
 # Control panel for manual and console operation
@@ -30,7 +30,10 @@ class DeviceControlPanel(QGroupBox):
         self.manual_button.toggled.connect(self.change_to_manual)
 
         # Initialize buttons
-        self.shutdown_button = TogglePictureButton("icons/shutdown.svg", "Shutdown", "Restart")
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        shutdown_path = os.path.join(base_dir, "..", "icons/shutdown.svg")
+        self.shutdown_button = TogglePictureButton(shutdown_path, "Shutdown", "Restart")
+
         self.pump_button = ToggleButton("Pump on", "Pump off")
         self.pressurize_button = ToggleButton("Pressurize open", "Pressurize close")
         self.depressurize_button = ToggleButton("Depressurize open", "Depressurize close")

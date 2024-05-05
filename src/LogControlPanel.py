@@ -104,7 +104,10 @@ class LogControlPanel(QGroupBox):
 
 
     def choose_log(self):
-        file = QFileDialog.getOpenFileName(self, "Open File", "logs", "Log Files (*.xz)")[0]
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        log_path = os.path.join(base_dir, "..", "logs")
+
+        file = QFileDialog.getOpenFileName(self, "Open File", log_path, "Log Files (*.xz)")[0]
         # No file selected
         if file == "":
             return
