@@ -2,13 +2,3 @@ PySide6
 pyusb
 numpy
 pyqtgraph
-
-
-sudo apt update
-sudo apt upgrade
-sudo apt install python3-pip
-pip install PySide6
-pip install numpy
-pip install pyqtgraph
-pip install pyusb
-./setup/install_udev_rules.sh

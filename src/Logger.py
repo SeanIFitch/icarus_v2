@@ -2,6 +2,7 @@ import lzma
 import pickle
 import os
 from datetime import datetime
+from path_utils import get_base_directory
 
 
 # Logs files to logs/temp or logs/experiment depending on bit 4.
@@ -18,8 +19,8 @@ class Logger:
 
         self.current_path = temporary
         log_path = "logs/temp" if temporary else "logs/experiment"
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        log_path = os.path.join(base_dir, "..", log_path)
+        base_dir = get_base_directory()
+        log_path = os.path.join(base_dir, log_path)
 
         if not os.path.exists(log_path):
             os.makedirs(log_path)

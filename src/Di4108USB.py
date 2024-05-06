@@ -59,8 +59,7 @@ class Di4108USB():
                 return True
         except usb.core.USBError as e:
             if e.errno == 13:
-                raise  RuntimeError("""Insufficient permissions to access the USB device.
-                                    Please set up udev rules by runnning ../setup/install_udev_rules.sh.""")
+                raise  RuntimeError("Insufficient permissions to access the USB device. Please set up udev rules by runnning setup/install_udev_rules.sh.")
             else:
                 raise RuntimeError
 

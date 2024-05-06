@@ -3,19 +3,22 @@ from MainWindow import MainWindow
 from DataHandler import DataHandler
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
+from path_utils import get_base_directory
 import os
 
 
 # Application entry point
 def main():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    config_file_path = os.path.join(base_dir, "..", "settings.json")
-    icon_path = os.path.join(base_dir, '..', 'icons', 'wing.png')
+    base_dir = get_base_directory()
+    config_file_path = os.path.join(base_dir, "settings.json")
+    icon_path = os.path.join(base_dir, 'icons', 'wing.png')
 
     config_manager = ConfigurationManager(config_file_path)
 
     app = QApplication([])
     app.setWindowIcon(QIcon(icon_path))
+    app.setApplicationName("Icarus")
+
     window = MainWindow(config_manager)
     window.showMaximized()
 

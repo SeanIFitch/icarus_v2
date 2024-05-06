@@ -19,6 +19,7 @@ from bisect import bisect_right
 from Event import Event
 from LogReader import LogReader
 from math import ceil
+from path_utils import get_base_directory
 
 
 # Control panel for logs
@@ -104,8 +105,8 @@ class LogControlPanel(QGroupBox):
 
 
     def choose_log(self):
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        log_path = os.path.join(base_dir, "..", "logs")
+        base_dir = get_base_directory()
+        log_path = os.path.join(base_dir, "logs")
 
         file = QFileDialog.getOpenFileName(self, "Open File", log_path, "Log Files (*.xz)")[0]
         # No file selected

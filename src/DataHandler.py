@@ -3,6 +3,7 @@ from Logger import Logger
 from PySide6.QtCore import Signal, QThread
 from time import sleep
 from threading import Lock
+from path_utils import setup_udev_rules
 # Data collection & Device imports
 from Di4108USB import Di4108USB
 from BufferLoader import BufferLoader
@@ -81,10 +82,21 @@ class DataHandler(QThread):
                 self.device = Di4108USB()
                 self.connecting = False
             except Exception as e:
-                self.quit_lock.release()
-                sleep(0.1)
-                if not self.connecting: return
-                self.quit_lock.acquire()
+                # Continue connecting
+                if "USB device not found" in str(e):
+                    self.quit_lock.release()
+                    sleep(0.1)
+                    if not self.connecting: return
+                    self.quit_lock.acquire()
+                elif "Insufficient permissions to access the USB device" in str(e):
+                    try:
+                        setup_udev_rules()
+                    except:
+                        self.display_error.emit(str(e))
+                        break
+                else:
+                    self.display_error.emit(str(e))
+                    break
 
         if self.device is not None:
             self.loader.set_device(self.device)

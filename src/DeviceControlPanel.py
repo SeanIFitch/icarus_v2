@@ -12,6 +12,7 @@ from ToggleButton import ToggleButton
 from TogglePictureButton import TogglePictureButton
 from time import sleep
 import os
+from path_utils import get_base_directory
 
 
 # Control panel for manual and console operation
@@ -30,8 +31,8 @@ class DeviceControlPanel(QGroupBox):
         self.manual_button.toggled.connect(self.change_to_manual)
 
         # Initialize buttons
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        shutdown_path = os.path.join(base_dir, "..", "icons/shutdown.svg")
+        base_dir = get_base_directory()
+        shutdown_path = os.path.join(base_dir, "icons/shutdown.svg")
         self.shutdown_button = TogglePictureButton(shutdown_path, "Shutdown", "Restart")
 
         self.pump_button = ToggleButton("Pump on", "Pump off")

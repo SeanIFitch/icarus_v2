@@ -10,7 +10,6 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QSpacerItem
 )
-from PySide6.QtCore import Qt
 from EventPlot import EventPlot
 from HistoryPlot import HistoryPlot
 from DeviceControlPanel import DeviceControlPanel
@@ -19,8 +18,9 @@ from CounterDisplay import CounterDisplay
 from PressureDisplay import PressureDisplay
 from ToolBar import ToolBar
 from LogReader import LogReader
-
+from ErrorDialog import open_error_dialog
 from Event import Event
+from PySide6.QtCore import Qt
 
 
 # Can be either in log reading or device mode.
@@ -117,6 +117,7 @@ class MainWindow(QMainWindow):
         data_handler.depressurize_event_signal.connect(self.counter_display.increment_count)
         data_handler.pump_event_signal.connect(self.counter_display.increment_count)
         data_handler.acquiring_signal.connect(lambda x: self.set_connected(x))
+        data_handler.display_error.connect(open_error_dialog, type=Qt.BlockingQueuedConnection)
 
         # Connect plot signals
         self.set_mode(self.mode)
