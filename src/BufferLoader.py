@@ -2,6 +2,7 @@ from PySide6.QtCore import QThread, Signal
 from SPMCRingBuffer import SPMCRingBuffer, SPMCRingBufferReader
 import numpy as np
 import usb.core
+from Logger import Logger
 
 
 # This class is responsible for creating a buffer, reading from the device, processing the data, and putting it into the buffer.
@@ -22,6 +23,8 @@ class BufferLoader(QThread):
 
 
     def run(self):
+        self.raw_logger = Logger()
+
         if not self.may_start: return
         self.device.start_scan()
 
@@ -34,6 +37,7 @@ class BufferLoader(QThread):
                 self.device_disconnected.emit()
                 return
 
+            self.raw_logger.log_raw(data)
             processed_data = self.process_data(data)
             self.buffer.enqueue(processed_data)
 

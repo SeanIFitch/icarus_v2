@@ -14,11 +14,12 @@ class Logger:
         self.current_path = None
 
 
-    def new_log_file(self, temporary = True):
+    def new_log_file(self, temporary = True, raw = False):
         self.close()
 
         self.current_path = temporary
         log_path = "logs/temp" if temporary else "logs/experiment"
+        log_path = "logs/raw" if raw else log_path
         base_dir = get_base_directory()
         log_path = os.path.join(base_dir, log_path)
 
@@ -41,6 +42,11 @@ class Logger:
             'step_time': event.step_time
         }   
         pickle.dump(event_dict, self.file, protocol=pickle.HIGHEST_PROTOCOL)
+
+    
+    def log_raw(self, data):
+        self.event_count += 1
+        pickle.dump(data, self.file, protocol=pickle.HIGHEST_PROTOCOL)
 
 
     def flush(self):
