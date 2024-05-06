@@ -85,7 +85,10 @@ class DataHandler(QThread):
                 self.connecting = False
             except Exception as e:
                 # Continue connecting
-                if "USB device not found" in str(e):
+                if ("USB device not found" in str(e) or 
+                        "No such device (it may have been disconnected)" in str(e) or 
+                        "Operation timed out" in str(e)
+                        ):
                     self.quit_lock.release()
                     sleep(0.1)
                     if not self.connecting: return
@@ -97,10 +100,12 @@ class DataHandler(QThread):
                             udev_installed = True
                         sleep(1)
                     except Exception as err:
+                        print("THERE")
                         print(err)
                         self.display_error.emit(str(e))
                         break
                 else:
+                    print("HERE")
                     self.display_error.emit(str(e))
                     break
 
