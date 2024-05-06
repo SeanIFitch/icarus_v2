@@ -77,6 +77,8 @@ class DataHandler(QThread):
     def run(self):
         self.connecting = True
         self.quit_lock.acquire()
+        udev_installed = False
+
         while self.connecting:
             try:
                 self.device = Di4108USB()
@@ -90,8 +92,12 @@ class DataHandler(QThread):
                     self.quit_lock.acquire()
                 elif "Insufficient permissions to access the USB device" in str(e):
                     try:
-                        setup_udev_rules()
-                    except:
+                        if not udev_installed:
+                            setup_udev_rules()
+                            udev_installed = True
+                        sleep(1)
+                    except Exception as err:
+                        print(err)
                         self.display_error.emit(str(e))
                         break
                 else:
