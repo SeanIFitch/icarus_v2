@@ -249,4 +249,9 @@ class Event():
         dy = np.diff(y)
         dy_smoothed = gaussian_filter(dy, 5, 5)
 
-        return max(dy_smoothed)
+        if self.event_type == self.PRESSURIZE:
+            slope = max(dy_smoothed)
+        elif self.event_type == self.DEPRESSURIZE:
+            slope = min(dy_smoothed)
+
+        return slope

@@ -24,6 +24,7 @@ class BufferLoader(QThread):
 
     def run(self):
         self.raw_logger = Logger()
+        self.raw_logger.new_log_file(raw = True)
 
         if not self.may_start: return
         self.device.start_scan()
