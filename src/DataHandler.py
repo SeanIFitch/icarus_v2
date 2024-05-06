@@ -16,6 +16,7 @@ from PeriodHandler import PeriodHandler
 from PressureHandler import PressureHandler
 from PumpHandler import PumpHandler
 from LogHandler import LogHandler
+from Sentry import Sentry
 
 
 # Define the DataHandler class
@@ -65,6 +66,12 @@ class DataHandler(QThread):
         self.depressurize_event_signal.connect(self.logger.log_event)
         self.period_event_signal.connect(self.logger.log_event)
         self.log_signal.connect(self.logger.new_log_file)
+
+        # Sentry
+        self.sentry = Sentry()
+        self.pump_event_signal.connect(self.sentry.check_pump_rate)
+        self.pressurize_event_signal.connect(self.sentry.check_increasing_pressure)
+        self.sentry.warning_signal.connect(lambda x: self.display_error.emit(x))
 
         # Prevents another thread from quitting this while it is initializing the device.
         # Without this, the cleanup code would run and then the QThreads would be initialized.

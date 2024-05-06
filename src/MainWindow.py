@@ -117,7 +117,7 @@ class MainWindow(QMainWindow):
         data_handler.depressurize_event_signal.connect(self.counter_display.increment_count)
         data_handler.pump_event_signal.connect(self.counter_display.increment_count)
         data_handler.acquiring_signal.connect(lambda x: self.set_connected(x))
-        data_handler.display_error.connect(open_error_dialog, type=Qt.BlockingQueuedConnection)
+        data_handler.display_error.connect(open_error_dialog)
 
         # Connect plot signals
         self.set_mode(self.mode)
