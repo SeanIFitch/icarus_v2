@@ -129,8 +129,8 @@ class EventPlot(QWidget):
             self.width_display.setText(f"{width:.2f}")
 
         elif event.event_type == Event.PERIOD:
-            period_width = event.get_period_width()
-            delay_width = event.get_delay_width()
+            period_width = event.get_period_width() / 4000
+            delay_width = event.get_delay_width() / 4000
             self.period_display.setText(f"{period_width:.2f}")
             self.delay_display.setText(f"{delay_width:.2f}")
 

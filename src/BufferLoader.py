@@ -14,19 +14,24 @@ class BufferLoader(QThread):
         num_channels = 8
         buffer_capacity = int(buffer_seconds * 4000)
         self.buffer = SPMCRingBuffer((buffer_capacity, num_channels), np.int16)
-        self.may_start = False
+        self.device = None
+
+        # TESTING ONLY. logs all raw data.
+        self.log_raw = False
+        self.load_raw = False
 
 
     def set_device(self, device):
         self.device = device
-        self.may_start = True
 
 
     def run(self):
-        self.raw_logger = Logger()
-        self.raw_logger.new_log_file(raw = True)
+        if self.device is None: return
 
-        if not self.may_start: return
+        if self.log_raw:
+            self.raw_logger = Logger()
+            self.raw_logger.new_log_file(raw = True)
+
         self.device.start_scan()
 
         while self.device.acquiring:
@@ -38,7 +43,8 @@ class BufferLoader(QThread):
                 self.device_disconnected.emit()
                 return
 
-            self.raw_logger.log_raw(data)
+            if self.log_raw:
+                self.raw_logger.log_raw(data)
             processed_data = self.process_data(data)
             self.buffer.enqueue(processed_data)
 

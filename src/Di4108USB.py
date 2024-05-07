@@ -19,22 +19,6 @@ class Di4108USB():
         self.setup_device()
 
 
-    def __enter__(self):
-        """
-        Enters the context. Returns the device instance.
-        """
-        return self
-    
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        """
-        Exits the context. Closes the USB device.
-        """
-        self.end_scan()
-        self.stop()
-        self.close_device()
-
-
     def find_device(self):
         """
         Finds the usb device.
@@ -117,14 +101,14 @@ class Di4108USB():
         self.bytes_to_read = self.channels_to_read * 2 * self.points_to_read
 
 
-    def send_cmd(self, command, encoding='utf-8', check_echo = True):
+    def send_cmd(self, command, check_echo = True):
         """
         Sends a command to the USB device.
 
         :param command: The command to be sent.
         """
         try:
-            self.device.write(self.endpoint_out, (command+'\r').encode(encoding))
+            self.device.write(self.endpoint_out, (command+'\r').encode('utf-8'))
         except:
             raise RuntimeError("Device write failed.")
         
@@ -133,7 +117,7 @@ class Di4108USB():
         if not self.acquiring:
             response = self.read()
             if response is not None:
-                response = bytes(response).decode(encoding, errors='ignore').strip('\0')
+                response = bytes(response).decode('utf-8', errors='ignore').strip('\0')
             expected_response = command+'\r'
             if check_echo and response != expected_response:
                 print(f"Error sending command: Response \"{expected_response.strip()}\" expected but \"{response.strip()}\" received.")

@@ -25,6 +25,7 @@ class Sentry(QObject):
     # Too high indicates a leak
     # Takes pump events
     def check_pump_rate(self, event):
+        return
         # update pump strokes/hr
         self.pump_times.append(event.event_time)
         if len(self.pump_times) >= 5:
@@ -42,6 +43,7 @@ class Sentry(QObject):
     # Warn if pressure continues to increase after a valve event
     # Indicates leaky pressurize valve
     def check_increasing_pressure(self, event):
+        return
         y = get_channel(event, Channel.HI_PRE_ORIG)
         y = y[np.argmax(y) + 30:]
 

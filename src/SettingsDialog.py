@@ -6,14 +6,10 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QVBoxLayout,
     QGroupBox,
-    QHBoxLayout,
-    QComboBox,
     QPushButton,
-    QHBoxLayout,
 )
 from PySide6.QtGui import QDoubleValidator, QIntValidator
 from ErrorDialog import open_error_dialog
-from PySide6.QtCore import QPoint
 from Event import Channel, get_channel
 import numpy as np
 from PySide6.QtCore import Qt
@@ -75,8 +71,8 @@ class SettingsDialog(QDialog):
         self.pressurize_count_edit = QLineEdit()
         self.depressurize_count_edit = QLineEdit()
         self.tube_length_edit = QLineEdit()
-        self.equilibrate_button = QPushButton("Equilibrate")
-        self.equilibrate_button.setEnabled(connected)
+        self.recalibrate_button = QPushButton("Recalibrate")
+        self.recalibrate_button.setEnabled(connected)
         self.pump_count_edit.setFixedWidth(edit_width)
         self.pressurize_count_edit.setFixedWidth(edit_width)
         self.depressurize_count_edit.setFixedWidth(edit_width)
@@ -95,19 +91,19 @@ class SettingsDialog(QDialog):
         self.pressurize_count_edit.textChanged.connect(self.set_pressurize_count)
         self.depressurize_count_edit.textChanged.connect(self.set_depressurize_count)
         self.tube_length_edit.textChanged.connect(self.set_tube_length)
-        self.equilibrate_button.clicked.connect(self.get_equilibration)
+        self.recalibrate_button.clicked.connect(self.get_recalibration)
 
         hardware_layout = QGridLayout()
         hardware_layout.addWidget(QLabel("Pump Count:"), 0, 0)
         hardware_layout.addWidget(QLabel("Pressurize Count:"), 1, 0)
         hardware_layout.addWidget(QLabel("Depressurize Count"), 2, 0)
         hardware_layout.addWidget(QLabel("Tube Length:"), 3, 0)
-        hardware_layout.addWidget(QLabel("Equilibrate sensors:"), 4, 0)
+        hardware_layout.addWidget(QLabel("Recalibrate sensors:"), 4, 0)
         hardware_layout.addWidget(self.pump_count_edit, 0, 1)
         hardware_layout.addWidget(self.pressurize_count_edit, 1, 1)
         hardware_layout.addWidget(self.depressurize_count_edit, 2, 1)
         hardware_layout.addWidget(self.tube_length_edit, 3, 1)
-        hardware_layout.addWidget(self.equilibrate_button, 4, 1)
+        hardware_layout.addWidget(self.recalibrate_button, 4, 1)
         hardware_group = QGroupBox("Hardware")
         hardware_group.setLayout(hardware_layout)
 
@@ -219,9 +215,8 @@ class SettingsDialog(QDialog):
         self.tube_length = tube_length
 
     # Make target and sample match origin
-    def get_equilibration(self):
-
-        def equilibrate(self, event):
+    def get_recalibration(self):
+        def recalibrate(event):
             origin_avg = np.mean(get_channel(event, Channel.HI_PRE_ORIG))
             sample_avg = np.mean(get_channel(event, Channel.HI_PRE_SAMPLE))
             target_avg = np.mean(get_channel(event, Channel.TARGET))
@@ -233,11 +228,12 @@ class SettingsDialog(QDialog):
             self.coefficients[Channel.HI_PRE_SAMPLE] = sample_coefficient
             self.coefficients[Channel.TARGET] = target_coefficient
 
-        # Send pressure readings to above func exactly once
-        self.pressure_signal.connect(equilibrate, type=Qt.SingleShotConnection)
+        # Send pressure readings exactly once
+        self.pressure_signal.connect(recalibrate, type=Qt.SingleShotConnection)
+
 
     def set_connected(self, connected):
-        self.equilibrate_button.setEnabled(connected)
+        self.recalibrate_button.setEnabled(connected)
 
     def set_pressure_signal(self, pressure_signal):
         self.pressure_signal = pressure_signal

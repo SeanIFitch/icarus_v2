@@ -43,7 +43,7 @@ class Logger:
         }   
         pickle.dump(event_dict, self.file, protocol=pickle.HIGHEST_PROTOCOL)
 
-    
+
     def log_raw(self, data):
         self.event_count += 1
         pickle.dump(data, self.file, protocol=pickle.HIGHEST_PROTOCOL)

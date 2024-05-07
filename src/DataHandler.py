@@ -4,6 +4,7 @@ from PySide6.QtCore import Signal, QThread
 from time import sleep
 from threading import Lock
 from path_utils import setup_udev_rules
+from RawLogReader import RawLogReader
 # Data collection & Device imports
 from Di4108USB import Di4108USB
 from BufferLoader import BufferLoader
@@ -44,6 +45,10 @@ class DataHandler(QThread):
         self.device = None
         self.logger = None
 
+        # TESTING ONLY. reads a raw data file instead of connecting to a device
+        self.load_raw = False
+        self.raw_file = "/home/seanf/Icarus_v2/logs/raw/2.1_to_1.5kBar.xz"
+
         # Loads data from device into buffer
         self.loader = BufferLoader()
         self.loader.device_disconnected.connect(self.device_disconnected)
@@ -61,11 +66,12 @@ class DataHandler(QThread):
         self.log_handler = LogHandler(self.loader, self.log_signal, sample_rate, pressure_update_hz)
 
         # Logger
-        self.logger = Logger()
-        self.pressurize_event_signal.connect(self.logger.log_event)
-        self.depressurize_event_signal.connect(self.logger.log_event)
-        self.period_event_signal.connect(self.logger.log_event)
-        self.log_signal.connect(self.logger.new_log_file)
+        if not self.load_raw:
+            self.logger = Logger()
+            self.pressurize_event_signal.connect(self.logger.log_event)
+            self.depressurize_event_signal.connect(self.logger.log_event)
+            self.period_event_signal.connect(self.logger.log_event)
+            self.log_signal.connect(self.logger.new_log_file)
 
         # Sentry
         self.sentry = Sentry()
@@ -87,6 +93,13 @@ class DataHandler(QThread):
         udev_installed = False
 
         while self.connecting:
+
+            # TESTING ONLY
+            if self.load_raw:
+                self.device = RawLogReader(self.raw_file)
+                self.connecting = False
+                break
+
             try:
                 self.device = Di4108USB()
                 self.connecting = False
@@ -147,7 +160,8 @@ class DataHandler(QThread):
         self.connecting = False
         acquired = self.quit_lock.acquire(timeout=10)
 
-        self.logger.close()
+        if self.logger is not None:
+            self.logger.close()
 
         self.acquiring_signal.emit(False)
         # Cleanup QThreads

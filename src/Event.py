@@ -73,7 +73,8 @@ class Event():
         # No statistical analysis of period events is necessary, so this loss of data is fine.
         # If initialized with a step time, this means the data has already been compressed.
         if self.event_type == self.PERIOD and step_time is None:
-            self.data = self.compress_data(data, 600)
+            self.data = data # np.ndarray (?,8) np.int16
+            #self.data = self.compress_data(data, 600)
         else:
             self.data = data # np.ndarray (?,8) np.int16
 
