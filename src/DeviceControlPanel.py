@@ -6,7 +6,8 @@ from PySide6.QtWidgets import (
     QLabel,
     QWidget,
     QSizePolicy,
-    QGridLayout
+    QGridLayout,
+    QSpacerItem
 )
 from ToggleButton import ToggleButton
 from TogglePictureButton import TogglePictureButton
@@ -47,7 +48,7 @@ class DeviceControlPanel(QGroupBox):
         self.pulse_button.setSizePolicy(policy)
 
         # Spacer for when buttons are hidden
-        #self.spacer = QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.spacer = QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)
 
         # Set layouts
         button_layout = QVBoxLayout()
@@ -64,7 +65,7 @@ class DeviceControlPanel(QGroupBox):
         layout.addWidget(self.console_button, 2, 0)
         layout.addWidget(self.manual_button, 2, 1)
         layout.addWidget(self.button_widget, 3, 0, 1, 2)
-        #layout.addItem(self.spacer, 3, 0)
+        layout.addItem(self.spacer, 3, 0)
 
         self.setMinimumWidth(287) # Width of depressurize button.Without this the panel shrinks when buttons are hidden
         self.setStyleSheet("font-size: 21pt;")
@@ -80,8 +81,8 @@ class DeviceControlPanel(QGroupBox):
             # Set pulser off, pump on, valves closed
             self.pulse_button.setChecked(False)
             self.pump_button.setChecked(True)
-            self.pressurize_button.setChecked(True)
-            self.depressurize_button.setChecked(True)
+            self.pressurize_button.setChecked(False)
+            self.depressurize_button.setChecked(False)
 
 
     def change_to_manual(self):

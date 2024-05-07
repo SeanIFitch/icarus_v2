@@ -13,6 +13,7 @@ from ErrorDialog import open_error_dialog
 from Event import Channel, get_channel
 import numpy as np
 from PySide6.QtCore import Qt
+from time import sleep
 
 
 class SettingsDialog(QDialog):
@@ -98,7 +99,7 @@ class SettingsDialog(QDialog):
         hardware_layout.addWidget(QLabel("Pressurize Count:"), 1, 0)
         hardware_layout.addWidget(QLabel("Depressurize Count"), 2, 0)
         hardware_layout.addWidget(QLabel("Tube Length:"), 3, 0)
-        hardware_layout.addWidget(QLabel("Recalibrate sensors:"), 4, 0)
+        hardware_layout.addWidget(QLabel("Recalibrate Sensors:"), 4, 0)
         hardware_layout.addWidget(self.pump_count_edit, 0, 1)
         hardware_layout.addWidget(self.pressurize_count_edit, 1, 1)
         hardware_layout.addWidget(self.depressurize_count_edit, 2, 1)
@@ -151,7 +152,6 @@ class SettingsDialog(QDialog):
             # Do not apply changes or close window
             return
 
-        self.config_manager.save_settings('plotting_coefficients', self.coefficients)
         self.config_manager.save_settings("timing_settings", self.timing_settings)
         self.config_manager.save_settings("counter_settings", self.counter_settings)
         self.config_manager.save_settings("tube_length", self.tube_length)
@@ -230,6 +230,8 @@ class SettingsDialog(QDialog):
 
         # Send pressure readings exactly once
         self.pressure_signal.connect(recalibrate, type=Qt.SingleShotConnection)
+        sleep(0.4) # Time for a pressure event * 2
+        self.config_manager.save_settings('plotting_coefficients', self.coefficients)
 
 
     def set_connected(self, connected):
