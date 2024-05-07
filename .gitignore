@@ -4,3 +4,6 @@ __pycache__/
 logs/temp/
 logs/experiment/
 logs/recently_deleted
+# Ignore dist files
+build/
+dist/
