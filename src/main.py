@@ -13,7 +13,6 @@ def main():
     # Use XCB platform for Qt
     # Wayland does not render drop shadows or toolbar colors and offsets popups
     os.environ["QT_QPA_PLATFORM"] = "xcb"
-    #qt.qpa.plugin: From 6.5.0, xcb-cursor0 or libxcb-cursor0 is needed to load the Qt xcb platform plugin.
 
     base_dir = get_base_directory()
     config_file_path = os.path.join(base_dir, "settings.json")

@@ -71,6 +71,6 @@ class BufferLoader(QThread):
 
     def quit(self):
         self.may_start = False
-        if hasattr(self, "device") and self.device.acquiring:
+        if self.device is not None and self.device.acquiring:
             self.device.stop()
             self.device.close_device()
