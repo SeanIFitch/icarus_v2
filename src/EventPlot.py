@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt
 import pyqtgraph as pg
 import numpy as np
 from Event import Event, Channel, get_channel
-from PySide6.QtWidgets import QLabel, QGridLayout, QWidget
+from PySide6.QtWidgets import QLabel, QGridLayout, QWidget, QSpacerItem, QSizePolicy
 
 
 class EventPlot(QWidget):
@@ -101,7 +101,16 @@ class EventPlot(QWidget):
             layout.addWidget(self.period_display, 0, 1)
             layout.addWidget(self.delay_display, 1, 1)
 
-        layout.setContentsMargins(0, 35, 5, 0)
+        # Mouse position label
+        spacer = QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.mouse_label = QLabel("0.00, 0.00")
+        self.mouse_label.setStyleSheet(f"font-size: {size}px;")
+        # Limit rate of mouseMoved signal to 60 Hz
+        self.proxy = pg.SignalProxy(self.plot.scene().sigMouseMoved, rateLimit=60, slot=self.mouse_moved)
+        layout.addItem(spacer, 2, 0)
+        layout.addWidget(self.mouse_label, 3, 0, 1, 2, Qt.AlignRight | Qt.AlignBottom)
+
+        layout.setContentsMargins(0, 35, 5, 45)
         return layout
 
 
@@ -143,3 +152,8 @@ class EventPlot(QWidget):
     def reset_history(self):
         for line_reference in self.line_references.values():
             line_reference.setData([], [])
+
+
+    def mouse_moved(self, event):
+        mousePoint = self.plot.getViewBox().mapSceneToView(event[0])
+        self.mouse_label.setText(f"{mousePoint.x():.2f}, {mousePoint.y():.2f}")

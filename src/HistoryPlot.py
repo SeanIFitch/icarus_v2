@@ -1,6 +1,6 @@
 from PySide6.QtGui import QPalette
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QLabel, QGridLayout
+from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QSpacerItem, QSizePolicy
 import pyqtgraph as pg
 from Event import Event, Channel
 from bisect import bisect_right, bisect_left
@@ -50,6 +50,8 @@ class HistoryPlot(QWidget):
 
         # Dictionary of line references
         self.lines = {}
+        # Dictionary of mouse position labels
+        self.mouse_labels = {}
         # Colors for plots
         window_color = self.palette().color(QPalette.Window)
         text_color = self.palette().color(QPalette.WindowText)
@@ -135,12 +137,21 @@ class HistoryPlot(QWidget):
         self.avg_pressure_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
         last_pressure_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         avg_pressure_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        # Mouse label
+        self.mouse_labels[self.pressure_plot] = QLabel("0.00, 0.00")
+        self.mouse_labels[self.pressure_plot].setStyleSheet(f"font-size: {size}px;")
+        # Limit rate of mouseMoved signal to 60 Hz
+        pressure_func = lambda x: self.mouse_moved(self.pressure_plot, x)
+        self.pressure_proxy = pg.SignalProxy(self.pressure_plot.scene().sigMouseMoved, rateLimit=60, slot=pressure_func)
+        spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
         pressure_labels = QGridLayout()
-        pressure_labels.setContentsMargins(0, 35, 5, 0)
-        pressure_labels.addWidget(last_pressure_label, 0, 0)
-        pressure_labels.addWidget(avg_pressure_label, 1, 0)
-        pressure_labels.addWidget(self.last_pressure_display, 0, 1)
-        pressure_labels.addWidget(self.avg_pressure_display, 1, 1)
+        pressure_labels.setContentsMargins(0, 35, 5, 45)
+        pressure_labels.addWidget(last_pressure_label, 0, 1)
+        pressure_labels.addWidget(avg_pressure_label, 1, 1)
+        pressure_labels.addWidget(self.last_pressure_display, 0, 2)
+        pressure_labels.addWidget(self.avg_pressure_display, 1, 2)
+        pressure_labels.addItem(spacer, 2, 0)
+        pressure_labels.addWidget(self.mouse_labels[self.pressure_plot], 3, 0, 1, 3, Qt.AlignRight | Qt.AlignBottom)
         # Slope plot
         self.last_press_slope_display = QLabel("0.00")
         self.avg_press_slope_display = QLabel("0.00")
@@ -160,16 +171,25 @@ class HistoryPlot(QWidget):
         self.avg_depress_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
         last_depress_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         avg_depress_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        # Mouse label
+        self.mouse_labels[self.slope_plot] = QLabel("0.00, 0.00")
+        self.mouse_labels[self.slope_plot].setStyleSheet(f"font-size: {size}px;")
+        # Limit rate of mouseMoved signal to 60 Hz
+        slope_func = lambda x: self.mouse_moved(self.slope_plot, x)
+        self.slope_proxy = pg.SignalProxy(self.slope_plot.scene().sigMouseMoved, rateLimit=60, slot=slope_func)
+        spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
         slope_labels = QGridLayout()
-        slope_labels.setContentsMargins(0, 35, 5, 0)
-        slope_labels.addWidget(last_press_slope_label, 0, 0)
-        slope_labels.addWidget(avg_press_slope_label, 1, 0)
-        slope_labels.addWidget(self.last_press_slope_display, 0, 1)
-        slope_labels.addWidget(self.avg_press_slope_display, 1, 1)
-        slope_labels.addWidget(last_depress_slope_label, 2, 0)
-        slope_labels.addWidget(avg_depress_slope_label, 3, 0)
-        slope_labels.addWidget(self.last_depress_slope_display, 2, 1)
-        slope_labels.addWidget(self.avg_depress_slope_display, 3, 1)
+        slope_labels.setContentsMargins(0, 35, 5, 45)
+        slope_labels.addWidget(last_press_slope_label, 0, 1)
+        slope_labels.addWidget(avg_press_slope_label, 1, 1)
+        slope_labels.addWidget(self.last_press_slope_display, 0, 2)
+        slope_labels.addWidget(self.avg_press_slope_display, 1, 2)
+        slope_labels.addWidget(last_depress_slope_label, 2, 1)
+        slope_labels.addWidget(avg_depress_slope_label, 3, 1)
+        slope_labels.addWidget(self.last_depress_slope_display, 2, 2)
+        slope_labels.addWidget(self.avg_depress_slope_display, 3, 2)
+        slope_labels.addItem(spacer, 4, 0)
+        slope_labels.addWidget(self.mouse_labels[self.slope_plot], 5, 0, 1, 3, Qt.AlignRight | Qt.AlignBottom)
         #Switch Time Plot
         self.last_press_switch_display = QLabel("0.00")
         self.avg_press_switch_display = QLabel("0.00")
@@ -189,16 +209,25 @@ class HistoryPlot(QWidget):
         self.avg_depress_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
         last_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         avg_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        # Mouse label
+        self.mouse_labels[self.switch_time_plot] = QLabel("0.00, 0.00")
+        self.mouse_labels[self.switch_time_plot].setStyleSheet(f"font-size: {size}px;")
+        # Limit rate of mouseMoved signal to 60 Hz
+        switch_func = lambda x: self.mouse_moved(self.switch_time_plot, x)
+        self.switch_proxy = pg.SignalProxy(self.switch_time_plot.scene().sigMouseMoved, rateLimit=60, slot=switch_func)
+        spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
         switch_labels = QGridLayout()
-        switch_labels.setContentsMargins(0, 35, 5, 0)
-        switch_labels.addWidget(last_press_switch_label, 0, 0)
-        switch_labels.addWidget(avg_press_switch_label, 1, 0)
-        switch_labels.addWidget(self.last_press_switch_display, 0, 1)
-        switch_labels.addWidget(self.avg_press_switch_display, 1, 1)
-        switch_labels.addWidget(last_depress_switch_label, 2, 0)
-        switch_labels.addWidget(avg_depress_switch_label, 3, 0)
-        switch_labels.addWidget(self.last_depress_switch_display, 2, 1)
-        switch_labels.addWidget(self.avg_depress_switch_display, 3, 1)
+        switch_labels.setContentsMargins(0, 35, 5, 45)
+        switch_labels.addWidget(last_press_switch_label, 0, 1)
+        switch_labels.addWidget(avg_press_switch_label, 1, 1)
+        switch_labels.addWidget(self.last_press_switch_display, 0, 2)
+        switch_labels.addWidget(self.avg_press_switch_display, 1, 2)
+        switch_labels.addWidget(last_depress_switch_label, 2, 1)
+        switch_labels.addWidget(avg_depress_switch_label, 3, 1)
+        switch_labels.addWidget(self.last_depress_switch_display, 2, 2)
+        switch_labels.addWidget(self.avg_depress_switch_display, 3, 2)
+        switch_labels.addItem(spacer, 4, 0)
+        switch_labels.addWidget(self.mouse_labels[self.switch_time_plot], 5, 0, 1, 3, Qt.AlignRight | Qt.AlignBottom)
 
         # Lines for displaying log view time
         self.press_time_press = None
@@ -411,3 +440,8 @@ class HistoryPlot(QWidget):
             self.pressure_plot.addItem(self.depress_time_press)
             self.slope_plot.addItem(self.depress_time_slope)
             self.switch_time_plot.addItem(self.depress_time_switch)
+
+
+    def mouse_moved(self, plot, event):
+        mousePoint = plot.getViewBox().mapSceneToView(event[0])
+        self.mouse_labels[plot].setText(f"{mousePoint.x():.2f}, {mousePoint.y():.2f}")
