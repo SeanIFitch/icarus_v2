@@ -43,6 +43,7 @@ class SPMCRingBufferReader:
     # Returns view of range of data without advancing read_index
     def retrieve_range(self, start, end, timeout=2):
         cap = self.buffer.capacity
+        start = max(0, start)
 
         if end - start > cap:
             raise RuntimeError("Retrieving more data than buffer can store")

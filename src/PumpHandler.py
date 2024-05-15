@@ -12,6 +12,8 @@ class PumpHandler(EventHandler):
         self.threshold = -4 # Threshold for pressure drop
         self.average_every = 100 # Number of points to average
         self.last_low_index = -2 # Will not interfere as long as its not -1
+        self.event_report_range = (-100, 500)
+        self.event_type = Event.PUMP
 
         update_rate = 4
         super().__init__(loader, signal, sample_rate, update_rate)
@@ -47,7 +49,13 @@ class PumpHandler(EventHandler):
 
             # Emit for every dip
             for i in low_indices:
-                self.signal.emit(Event(Event.PUMP, None))
+                event_index = buffer_index + i
+                event_data = self.get_event_data(event_index)
+                if event_data is not None:
+                    sample_rate_kHz = float(self.sample_rate) / 1000
+                    event_index = int( - self.event_report_range[0] * sample_rate_kHz)
+                    new_event = Event(self.event_type, event_data, event_index)
+                    self.signal.emit(new_event)
 
             if len(low_indices) > 0:
                 self.last_low_index = len(dy_smoothed) - low_indices[-1]

@@ -16,6 +16,30 @@ class Channel(Enum):
     PRE_VALVE = 9       # Digital CH2: pressurize valve (Active low / open on False)
     LOG = 10            # Digital CH4: log (Active low / logging on False)
 
+    def __str__(self):
+        if self.value == 0:
+            return "Target Pressure"
+        elif self.value == 1:
+            return "Depressurization Valve Lower Sensor"
+        elif self.value == 2:
+            return "Depressurization Valve Upper Sensor"
+        elif self.value == 3:
+            return "Pressurization Valve Lower Sensor"
+        elif self.value == 4:
+            return "Pressurization Valve Upper Sensor"
+        elif self.value == 5:
+            return "Origin High Pressure Sensor"
+        elif self.value == 6:
+            return "Sample High Pressure Sensor"
+        elif self.value == 7:
+            return "Pump DIO"
+        elif self.value == 8:
+            return "Depressurization Valve DIO"
+        elif self.value == 9:
+            return "Pressurization Valve DIO"
+        elif self.value == 10:
+            return "Log DIO"
+
 
 # Returns a view of the selected channel
 # Can be used on data that has not been wrapped in an event
@@ -27,6 +51,8 @@ def get_channel(data, channel):
     else:
         digital = 7
         bit = 1 << (channel.value - 7)
+        if data[:,digital].dtype != np.int16:
+            data = data.astype(np.int16)
         channel_data = data[:,digital] & bit
         return channel_data.astype(np.bool_)
 
@@ -57,7 +83,11 @@ class Event():
             raise RuntimeError(event_type + "event not supported.")
 
         if event_time == None:
-            self.event_time = time() # float
+            self.event_time = time()
+            if data is not None:
+                self.event_time -= data.shape[1] / 4000 # Assumes srate = 4000. 
+            if event_index is not None:
+                self.event_time += event_index / 4000
         # Case where this is a priorly generated event being deserialized
         else:
             self.event_time = event_time
@@ -73,8 +103,7 @@ class Event():
         # No statistical analysis of period events is necessary, so this loss of data is fine.
         # If initialized with a step time, this means the data has already been compressed.
         if self.event_type == self.PERIOD and step_time is None:
-            self.data = data # np.ndarray (?,8) np.int16
-            #self.data = self.compress_data(data, 600)
+            self.data = self.compress_data(data, 600)
         else:
             self.data = data # np.ndarray (?,8) np.int16
 

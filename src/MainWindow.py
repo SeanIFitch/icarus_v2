@@ -118,6 +118,7 @@ class MainWindow(QMainWindow):
         data_handler.pump_event_signal.connect(self.counter_display.increment_count)
         data_handler.acquiring_signal.connect(lambda x: self.set_connected(x))
         data_handler.display_error.connect(open_error_dialog)
+        data_handler.toolbar_warning.connect(self.toolbar.display_warning)
 
         # Connect plot signals
         self.set_mode(self.mode)

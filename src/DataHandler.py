@@ -32,6 +32,8 @@ class DataHandler(QThread):
     acquiring_signal = Signal(bool)
     # display error dialog
     display_error = Signal(str)
+    # Show error in toolbar
+    toolbar_warning = Signal(str)
     # Start new log file
     log_signal = Signal(bool)
 
@@ -75,9 +77,13 @@ class DataHandler(QThread):
 
         # Sentry
         self.sentry = Sentry()
-        self.pump_event_signal.connect(self.sentry.check_pump_rate)
-        self.pressurize_event_signal.connect(self.sentry.check_increasing_pressure)
-        self.sentry.warning_signal.connect(lambda x: self.display_error.emit(x))
+        self.log_signal.connect(self.sentry.handle_experiment)
+        self.period_event_signal.connect(self.sentry.handle_period)
+        self.pump_event_signal.connect(self.sentry.handle_pump)
+        self.depressurize_event_signal.connect(self.sentry.handle_depressurize)
+        self.pressurize_event_signal.connect(self.sentry.handle_pressurize)
+        self.pressure_event_signal.connect(self.sentry.handle_pressure)
+        self.sentry.warning_signal.connect(lambda x: self.toolbar_warning.emit(x))
 
         # Prevents another thread from quitting this while it is initializing the device.
         # Without this, the cleanup code would run and then the QThreads would be initialized.

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QToolBar, QFileDialog
+from PySide6.QtWidgets import QToolBar, QLabel, QWidget, QSizePolicy
 from PySide6.QtGui import QIcon, QAction
 from SettingsDialog import SettingsDialog
 from PySide6.QtCore import Signal
@@ -31,6 +31,14 @@ class ToolBar(QToolBar):
         self.change_mode_action.triggered.connect(self.change_log_mode)
         self.addAction(self.change_mode_action)
 
+        # Warning Label
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.addWidget(spacer)
+        self.warning_label = QLabel("", self)
+        self.warning_label.setStyleSheet("color: orange; font-size: 12pt;") 
+        self.addWidget(self.warning_label)
+
 
     def open_settings(self):
         # Open the settings dialog
@@ -58,3 +66,7 @@ class ToolBar(QToolBar):
         self.connected = connected
         if self.settings_dialog is not None:
             self.settings_dialog.set_connected(connected)
+
+
+    def display_warning(self, warning):
+        self.warning_label.setText(warning)
