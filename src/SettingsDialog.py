@@ -7,6 +7,9 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QGroupBox,
     QPushButton,
+    QCheckBox,
+    QSpacerItem,
+    QSizePolicy
 )
 from PySide6.QtGui import QDoubleValidator, QIntValidator
 from ErrorDialog import open_error_dialog
@@ -30,6 +33,24 @@ class SettingsDialog(QDialog):
         positive_int.setBottom(0)
         # Width of edit boxes
         edit_width = 190
+
+        # View section
+        self.hide_valve_checkbox = QCheckBox()
+        hide_valve = self.config_manager.get_settings('hide_valve_sensors')
+        self.hide_valve_checkbox.setCheckState(Qt.Checked if hide_valve else Qt.Unchecked)
+        self.hide_valve_checkbox.stateChanged.connect(self.set_hide_valve)
+        self.hide_valve_checkbox.setStyleSheet("""
+            QCheckBox::indicator {
+                width: 23px;
+                height: 23px;
+            }
+            """)
+        view_layout = QGridLayout()
+        view_layout.addWidget(QLabel("Hide Valve Sensors:"), 0, 0)
+        view_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Preferred), 0, 1)
+        view_layout.addWidget(self.hide_valve_checkbox, 0, 2)
+        view_group = QGroupBox("View")
+        view_group.setLayout(view_layout)
 
         # Pulse timings section
         self.pressurize_width_edit = QLineEdit()
@@ -71,40 +92,32 @@ class SettingsDialog(QDialog):
         self.pump_count_edit = QLineEdit()
         self.pressurize_count_edit = QLineEdit()
         self.depressurize_count_edit = QLineEdit()
-        self.tube_length_edit = QLineEdit()
         self.recalibrate_button = QPushButton("Recalibrate")
         self.recalibrate_button.setEnabled(connected)
         self.pump_count_edit.setFixedWidth(edit_width)
         self.pressurize_count_edit.setFixedWidth(edit_width)
         self.depressurize_count_edit.setFixedWidth(edit_width)
-        self.tube_length_edit.setFixedWidth(edit_width)
         self.pump_count_edit.setValidator(positive_int)
         self.pressurize_count_edit.setValidator(positive_int)
         self.depressurize_count_edit.setValidator(positive_int)
-        self.tube_length_edit.setValidator(positive_float)
         self.counter_settings = self.config_manager.get_settings('counter_settings')
-        self.tube_length = self.config_manager.get_settings('tube_length')
         self.pump_count_edit.setText(str(self.counter_settings['pump_count']))
         self.pressurize_count_edit.setText(str(self.counter_settings['pressurize_count']))
         self.depressurize_count_edit.setText(str(self.counter_settings['depressurize_count']))
-        self.tube_length_edit.setText(str(self.tube_length))
         self.pump_count_edit.textChanged.connect(self.set_pump_count)
         self.pressurize_count_edit.textChanged.connect(self.set_pressurize_count)
         self.depressurize_count_edit.textChanged.connect(self.set_depressurize_count)
-        self.tube_length_edit.textChanged.connect(self.set_tube_length)
         self.recalibrate_button.clicked.connect(self.get_recalibration)
 
         hardware_layout = QGridLayout()
         hardware_layout.addWidget(QLabel("Pump Count:"), 0, 0)
         hardware_layout.addWidget(QLabel("Pressurize Count:"), 1, 0)
         hardware_layout.addWidget(QLabel("Depressurize Count"), 2, 0)
-        hardware_layout.addWidget(QLabel("Tube Length:"), 3, 0)
-        hardware_layout.addWidget(QLabel("Recalibrate Sensors:"), 4, 0)
+        hardware_layout.addWidget(QLabel("Recalibrate Sensors:"), 3, 0)
         hardware_layout.addWidget(self.pump_count_edit, 0, 1)
         hardware_layout.addWidget(self.pressurize_count_edit, 1, 1)
         hardware_layout.addWidget(self.depressurize_count_edit, 2, 1)
-        hardware_layout.addWidget(self.tube_length_edit, 3, 1)
-        hardware_layout.addWidget(self.recalibrate_button, 4, 1)
+        hardware_layout.addWidget(self.recalibrate_button, 3, 1)
         hardware_group = QGroupBox("Hardware")
         hardware_group.setLayout(hardware_layout)
 
@@ -120,6 +133,7 @@ class SettingsDialog(QDialog):
 
         # Main layout for the dialog
         main_layout = QVBoxLayout(self)
+        main_layout.addWidget(view_group)
         main_layout.addWidget(timings_group)
         main_layout.addWidget(hardware_group)
         main_layout.addWidget(button_box)
@@ -154,7 +168,6 @@ class SettingsDialog(QDialog):
 
         self.config_manager.save_settings("timing_settings", self.timing_settings)
         self.config_manager.save_settings("counter_settings", self.counter_settings)
-        self.config_manager.save_settings("tube_length", self.tube_length)
         self.close()
 
 
@@ -207,13 +220,6 @@ class SettingsDialog(QDialog):
             return
         self.counter_settings['pump_count'] = pump_count
 
-    def set_tube_length(self, tube_length):
-        try:
-            tube_length = float(tube_length)
-        except:
-            return
-        self.tube_length = tube_length
-
     # Make target and sample match origin
     def get_recalibration(self):
         def recalibrate(event):
@@ -233,6 +239,8 @@ class SettingsDialog(QDialog):
         sleep(0.4) # Time for a pressure event * 2
         self.config_manager.save_settings('plotting_coefficients', self.coefficients)
 
+    def set_hide_valve(self, state):
+        self.config_manager.save_settings('hide_valve_sensors', bool(state))
 
     def set_connected(self, connected):
         self.recalibrate_button.setEnabled(connected)

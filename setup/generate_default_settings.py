@@ -38,6 +38,7 @@ if __name__ == "__main__":
         "period_width": 5.0,
         "delay_width": 2.0
     }
+    hide_valve_sensors = False
 
     '''
     # Dataq: volts = value_read * range / 32768     # range = 10
@@ -84,16 +85,16 @@ if __name__ == "__main__":
         PRE_VALVE:      2.85,    # Arbitrary for visibility
     }
 
-    tube = 100.0
-
     # Legacy
+    #tube = 100.0
     #theme = "System Default"
 
     settings = {
         "timing_settings": timing_settings,
         "counter_settings": counter,
         "plotting_coefficients": coefficients,
-        "tube_length": tube,
+        "hide_valve_sensors": hide_valve_sensors
+        #"tube_length": tube,
         #"theme": theme
     }
 

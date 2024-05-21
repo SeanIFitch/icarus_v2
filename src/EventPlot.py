@@ -28,6 +28,7 @@ class EventPlot(QWidget):
         self.config_manager = config_manager
         self.config_manager.settings_updated.connect(self.update_settings)
         self.coefficients = config_manager.get_settings("plotting_coefficients")
+        self.hide_valve_setting = config_manager.get_settings("hide_valve_sensors")
         display_channels = [Channel.TARGET, Channel.HI_PRE_SAMPLE, Channel.HI_PRE_ORIG, Channel.DEPRE_VALVE, Channel.PRE_VALVE]
 
         if event_type == Event.PRESSURIZE:
@@ -58,12 +59,15 @@ class EventPlot(QWidget):
 
         # Create a dictionary of lines for each channel listed in display_channels
         self.line_references = {}
+        self.line_currently_shown = {}
         for channel in display_channels:
             style = self.LINE_STYLES[channel]
             pen = pg.mkPen(color=style[0], style=style[1])
             self.line_references[channel] = self.plot.plot([], [], pen=pen)
+            self.line_currently_shown[channel] = True
 
         labels = self.init_labels()
+        self.hide_valve_sensors(self.hide_valve_setting)
 
         # Set layout
         layout = QGridLayout()
@@ -147,6 +151,9 @@ class EventPlot(QWidget):
     def update_settings(self, key):
         if key == "plotting_coefficients":
             self.coefficients = self.config_manager.get_settings(key)
+        elif key == "hide_valve_sensors":
+            self.hide_valve_setting = self.config_manager.get_settings(key)
+            self.hide_valve_sensors(self.hide_valve_setting)
 
 
     def reset_history(self):
@@ -157,3 +164,23 @@ class EventPlot(QWidget):
     def mouse_moved(self, event):
         mousePoint = self.plot.getViewBox().mapSceneToView(event[0])
         self.mouse_label.setText(f"{mousePoint.x():.2f}, {mousePoint.y():.2f}")
+
+
+    def hide_valve_sensors(self, hide_valve_sensors):
+        if self.event_type == Event.PRESSURIZE:
+            valve_sensors = [Channel.PRE_LOW, Channel.PRE_UP]
+        elif self.event_type == Event.DEPRESSURIZE:
+            valve_sensors = [Channel.DEPRE_LOW, Channel.DEPRE_UP]
+        else:
+            valve_sensors = []
+
+        if hide_valve_sensors:
+            for channel in valve_sensors:
+                if self.line_currently_shown[channel]:
+                    self.plot.removeItem(self.line_references[channel])
+                    self.line_currently_shown[channel] = False
+        else:
+            for channel in valve_sensors:
+                if not self.line_currently_shown[channel]:
+                    self.plot.addItem(self.line_references[channel])
+                    self.line_currently_shown[channel] = True
