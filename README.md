@@ -48,24 +48,24 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-![Product Name Screen Shot][product-screenshot]
+![Screen Shot][images/example-log-screen.png]
 
-The <a href="https://pubmed.ncbi.nlm.nih.gov/29666248/">Icarus</a> NMR Pressure Jump Apparatus is a novel device used to rapidly switch the pressure within an NMR sample cell. This enables study of the unfolded protein under native conditions and, vice versa, study of the native protein under denaturing conditions. This project is the <a href="https://github.com/vstadnytskyi/icarus-nmr">second</a> version of a monitoring software for the pressure sensors and digital controls. It is responsible for displaying device readings, controlling or testing hardware, and detecting faults. 
+The <a href="https://pubmed.ncbi.nlm.nih.gov/29666248/">Icarus</a> NMR Pressure Jump Apparatus is a novel device used to rapidly switch the pressure within an NMR sample cell. This enables study of the unfolded protein under native conditions and, vice versa, study of the native protein under denaturing conditions. This project is the <a href="https://github.com/vstadnytskyi/icarus-nmr">second</a> version of a monitoring software for the pressure sensors and digital controls. It is responsible for displaying device readings, controlling and testing hardware, and detecting faults. 
 
 Once a DATAQ DI-4108 USB device is detected by the monitoring software, it establishes a connection and begins reading data from the USB device at 4000Hz. The analog and digital channels monitored are as follows:
-Analog:
-    CH0: target pressure sensor
-    CH1: depressurization valve lower sensor
-    CH2: depressurization valve upper sensor
-    CH3: pressurization valve lower sensor
-    CH4: pressurization valve upper sensor
-    CH5: high pressure sensor at the origin
-    CH6: high pressure sensor at the sample
-Digital:
-    CH0: high pressure pump control
-    CH1: depressurize valve control
-    CH2: pressurize valve control
-    CH4: log control
+* Analog:
+	CH0: target pressure sensor
+	CH1: depressurization valve lower sensor
+	CH2: depressurization valve upper sensor
+	CH3: pressurization valve lower sensor
+	CH4: pressurization valve upper sensor
+	CH5: high pressure sensor at the origin
+	CH6: high pressure sensor at the sample
+* Digital:
+	CH0: high pressure pump control
+	CH1: depressurize valve control
+	CH2: pressurize valve control
+	CH4: log control
 The data is stored in a circular buffer with a default length of 2 minutes. The data is read by many event handlers which each detect certain features in the readings. They then signal events containing their respective data which may be read by the GUI. The event handlers are as follows:
 1. Depressurize: detects high to low state transitions in digital CH0
 2. Pressurize: detects high to low state transitions in digital CH1
@@ -79,13 +79,17 @@ The digital channels may be controlled by the software by sending commands to th
 2. Hardware tests under manual device operation
 3. Shutdowns, either manual or when a fatal error is detected by the Sentry
 
+All events are transmitted to the GUI and are rendered in dedicated event plots, history plots, and status indicators. They are also transmitted to a Sentry module which analyzes them to detect leaks and abnormal behavior. In the event of a serious leak, the device will automatically shut down. Pressurize, depressurize, and period events are also transmitted to a logger, which generates LZMA compressed log files. These files may be opened by the GUI for later viewing.
+
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 
 ### Built With
 
-* [![Next][Next.js]][Next-url]
+Python 3.10
+PySide6
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -202,11 +206,3 @@ Project Link: [https://github.com/SeanIFitch/Icarus_v2](https://github.com/SeanI
 * [icarus-nmr](https://github.com/vstadnytskyi/icarus-nmr) by Valentyn Stadnytskyi
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[product-screenshot]: images/example-log-screen.png
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
-[Next-url]: https://nextjs.org/

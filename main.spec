@@ -9,7 +9,7 @@ a = Analysis(
         ('images', 'images'), 
         ('settings.json', '.'),
         ('setup', 'setup'),
-        ('LICENSE.md', '.'),
+        ('LICENSE.txt', '.'),
         ('README.md', '.')
     ],
     hiddenimports=[],
