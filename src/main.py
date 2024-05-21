@@ -16,7 +16,7 @@ def main():
 
     base_dir = get_base_directory()
     config_file_path = os.path.join(base_dir, "settings.json")
-    icon_path = os.path.join(base_dir, 'icons', 'wing.png')
+    icon_path = os.path.join(base_dir, 'images', 'wing.png')
 
     config_manager = ConfigurationManager(config_file_path)
 

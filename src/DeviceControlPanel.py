@@ -33,7 +33,7 @@ class DeviceControlPanel(QGroupBox):
 
         # Initialize buttons
         base_dir = get_base_directory()
-        shutdown_path = os.path.join(base_dir, "icons/shutdown.svg")
+        shutdown_path = os.path.join(base_dir, "images/shutdown.svg")
         self.shutdown_button = ImageButton(shutdown_path, "Shutdown")
 
         self.pump_button = ToggleButton("Pump on", "Pump off")

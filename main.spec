@@ -6,10 +6,11 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('icons', 'icons'), 
+        ('images', 'images'), 
         ('settings.json', '.'),
         ('setup', 'setup'),
-        ('README.txt', '.')
+        ('LICENSE.md', '.'),
+        ('README.md', '.')
     ],
     hiddenimports=[],
     hookspath=[],
@@ -32,7 +33,7 @@ exe = EXE(
     strip=False,
     upx=True,
     console=True,
-    icon='icons/wing.png',
+    icon='images/wing.png',
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
