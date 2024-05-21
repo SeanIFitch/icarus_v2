@@ -119,6 +119,7 @@ class MainWindow(QMainWindow):
         data_handler.acquiring_signal.connect(lambda x: self.set_connected(x))
         data_handler.display_error.connect(open_error_dialog)
         data_handler.toolbar_warning.connect(self.toolbar.display_warning)
+        data_handler.log_signal.connect(self.history_plot.reset_history)
 
         # Connect plot signals
         self.set_mode(self.mode)
