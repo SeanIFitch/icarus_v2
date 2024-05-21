@@ -8,10 +8,10 @@
     <img src="images/wing.png" alt="Logo" width="80" height="80">
   </a>
 
-<h3 align="center">project_title</h3>
+<h3 align="center">Icarus v2</h3>
 
   <p align="center">
-    project_description
+    Monitoring software for the Icarus NMR pressure jump apparatus
     <br />
     <a href="https://pubmed.ncbi.nlm.nih.gov/29666248/">Pressure Jump Apparatus</a>
   </p>
@@ -73,6 +73,22 @@ To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
+#### System Requirements
+These instructions are tailored for Ubuntu 24, which is the only operating system tested and supported for this setup.
+
+#### Installing Python
+Ensure you have Python 3.10 installed on your system. If you do not have Python 3.10 installed, you can install it using the following commands:
+```sh
+sudo apt update
+sudo apt install python3.10
+```
+#### Cloning the Repository
+Before you can start setting up your environment, you'll need to clone the repository containing the project. Open your terminal and execute the following command:
+```sh
+git clone https://github.com/SeanIFitch/Icarus_v2
+cd Icarus_v2
+```
+
 This is an example of how to list things you need to use the software and how to install them.
 * npm
   ```sh
@@ -81,14 +97,23 @@ This is an example of how to list things you need to use the software and how to
 
 ### Installation
 
-1. Clone the repo
+#### Setting Up Your Environment
+1. Create a Virtual Environment:
+Use a virtual environment to manage dependencies effectively and avoid conflicts between package versions. Run the following command in your project directory to create a virtual environment:
    ```sh
-   git clone https://github.com/SeanIFitch/Icarus_v2.git
+   python3.10 -m venv venv
    ```
-2. Install NPM packages
+2. Activate the Virtual Environment:
+Once the virtual environment is created, activate it with:
    ```sh
-   npm install
+   source venv/bin/activate
    ```
+#### Installing Dependencies
+With the virtual environment activated, you can now install all required packages from required-packages.txt. Install these packages by running:
+   ```sh
+   pip install -r required-packages.txt
+   ```
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -97,9 +122,10 @@ This is an example of how to list things you need to use the software and how to
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
+To run the application, use:
+   ```sh
+   python3 src/main.py
+   ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -156,7 +182,7 @@ Project Link: [https://github.com/SeanIFitch/Icarus_v2](https://github.com/SeanI
 ## Acknowledgments
 
 * Dr. Philip Anfinrud - Software design
-* [icarus-nmr by Valentyn Stadnytskyi](https://github.com/vstadnytskyi/icarus-nmr)
+* [icarus-nmr](https://github.com/vstadnytskyi/icarus-nmr) by Valentyn Stadnytskyi
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
