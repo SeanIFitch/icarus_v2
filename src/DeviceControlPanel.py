@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QSpacerItem
 )
 from ToggleButton import ToggleButton
-from TogglePictureButton import TogglePictureButton
+from ImageButton import ImageButton
 from time import sleep
 import os
 from path_utils import get_base_directory
@@ -34,7 +34,7 @@ class DeviceControlPanel(QGroupBox):
         # Initialize buttons
         base_dir = get_base_directory()
         shutdown_path = os.path.join(base_dir, "icons/shutdown.svg")
-        self.shutdown_button = TogglePictureButton(shutdown_path, "Shutdown", "Restart")
+        self.shutdown_button = ImageButton(shutdown_path, "Shutdown")
 
         self.pump_button = ToggleButton("Pump on", "Pump off")
         self.pressurize_button = ToggleButton("Pressurize open", "Pressurize close")
@@ -96,8 +96,7 @@ class DeviceControlPanel(QGroupBox):
     def set_pulse_generator(self, pulse_generator):
         self.pulse_generator = pulse_generator
 
-        self.shutdown_button.set_check_function(self.on_shutdown)
-        self.shutdown_button.set_uncheck_function(self.on_restart)
+        self.shutdown_button.clicked.connect(self.on_shutdown)
         self.pump_button.set_uncheck_function(self.pulse_generator.set_pump_high)
         self.pump_button.set_check_function(self.pulse_generator.set_pump_low)
         self.pressurize_button.set_check_function(self.pulse_generator.set_pressurize_low)
@@ -110,14 +109,10 @@ class DeviceControlPanel(QGroupBox):
 
     def on_shutdown(self):
         # Turn pump off
-        self.pump_button.setEnabled(False)
         self.pump_button.setChecked(False)
         # Stop pulsing
-        self.pulse_button.setEnabled(False)
         self.pulse_button.setChecked(False)
         # Open valves
-        self.pressurize_button.setEnabled(False)
-        self.depressurize_button.setEnabled(False)
         self.pressurize_button.setChecked(True)
         self.depressurize_button.setChecked(True)
 
@@ -126,12 +121,6 @@ class DeviceControlPanel(QGroupBox):
         self.manual_button.setChecked(True)
 
 
-    # Enable buttons
-    def on_restart(self):
-        self.pump_button.setEnabled(True)
-        self.pressurize_button.setEnabled(True)
-        self.depressurize_button.setEnabled(True)
-        self.pulse_button.setEnabled(True)
 
 
     def on_start_pulsing(self):
@@ -150,11 +139,7 @@ class DeviceControlPanel(QGroupBox):
 
 
     def reset(self):
-        # Enable buttons
-        self.on_restart()
-
         # Reset buttons to initial states without triggering their slots
-        self.shutdown_button.set_checked(False)
         self.pump_button.set_checked(False)
         self.pressurize_button.set_checked(False)
         self.depressurize_button.set_checked(False)
