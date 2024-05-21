@@ -53,19 +53,19 @@
 The <a href="https://pubmed.ncbi.nlm.nih.gov/29666248/">Icarus</a> NMR Pressure Jump Apparatus is a novel device used to rapidly switch the pressure within an NMR sample cell. This enables study of the unfolded protein under native conditions and, vice versa, study of the native protein under denaturing conditions. This project is the <a href="https://github.com/vstadnytskyi/icarus-nmr">second</a> version of a monitoring software for the pressure sensors and digital controls. It is responsible for displaying device readings, controlling and testing hardware, and detecting faults. 
 
 Once a DATAQ DI-4108 USB device is detected by the monitoring software, it establishes a connection and begins reading data from the USB device at 4000Hz. The analog and digital channels monitored are as follows:
-* Analog:\
-	CH0: target pressure sensor\
-	CH1: depressurization valve lower sensor\
-	CH2: depressurization valve upper sensor\
-	CH3: pressurization valve lower sensor\
-	CH4: pressurization valve upper sensor\
-	CH5: high pressure sensor at the origin\
-	CH6: high pressure sensor at the sample\
-* Digital:\
-	CH0: high pressure pump control\
-	CH1: depressurize valve control\
-	CH2: pressurize valve control\
-	CH4: log control\
+* Analog:
+	CH0: target pressure sensor
+	CH1: depressurization valve lower sensor
+	CH2: depressurization valve upper sensor
+	CH3: pressurization valve lower sensor
+	CH4: pressurization valve upper sensor
+	CH5: high pressure sensor at the origin
+	CH6: high pressure sensor at the sample
+* Digital:
+	CH0: high pressure pump control
+	CH1: depressurize valve control
+	CH2: pressurize valve control
+	CH4: log control
 
 The data is stored in a circular buffer with a default length of 2 minutes. The data is read by many event handlers which each detect certain features in the readings. They then signal events containing their respective data which may be read by the GUI. The event handlers are as follows:
 1. Depressurize: detects high to low state transitions in digital CH0
