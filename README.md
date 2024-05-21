@@ -11,9 +11,7 @@
 <h3 align="center">Icarus v2</h3>
 
   <p align="center">
-    Monitoring software for the Icarus NMR pressure jump apparatus
-    <br />
-    <a href="https://pubmed.ncbi.nlm.nih.gov/29666248/">Pressure Jump Apparatus</a>
+    Monitoring software for the <a href="https://pubmed.ncbi.nlm.nih.gov/29666248/">Icarus</a> NMR pressure jump apparatus
   </p>
 </div>
 
@@ -50,7 +48,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-![Product Name Screen Shot](product-screenshot)
+[![Product Name Screen Shot][product-screenshot]]
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -67,9 +65,6 @@
 
 <!-- GETTING STARTED -->
 ## Getting Started
-
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
@@ -88,12 +83,6 @@ Before you can start setting up your environment, you'll need to clone the repos
 git clone https://github.com/SeanIFitch/Icarus_v2
 cd Icarus_v2
 ```
-
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
 
 ### Installation
 
