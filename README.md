@@ -48,7 +48,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-![Screen Shot][images/example-log-screen.png]
+![Screen Shot][screenshot]
 
 The <a href="https://pubmed.ncbi.nlm.nih.gov/29666248/">Icarus</a> NMR Pressure Jump Apparatus is a novel device used to rapidly switch the pressure within an NMR sample cell. This enables study of the unfolded protein under native conditions and, vice versa, study of the native protein under denaturing conditions. This project is the <a href="https://github.com/vstadnytskyi/icarus-nmr">second</a> version of a monitoring software for the pressure sensors and digital controls. It is responsible for displaying device readings, controlling and testing hardware, and detecting faults. 
 
@@ -89,6 +89,7 @@ All events are transmitted to the GUI and are rendered in dedicated event plots,
 ### Built With
 
 Python 3.10
+
 PySide6
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -206,3 +207,6 @@ Project Link: [https://github.com/SeanIFitch/Icarus_v2](https://github.com/SeanI
 * [icarus-nmr](https://github.com/vstadnytskyi/icarus-nmr) by Valentyn Stadnytskyi
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+[screenshot]: images/example-log-screen.png
