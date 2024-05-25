@@ -20,7 +20,6 @@ from ToolBar import ToolBar
 from LogReader import LogReader
 from ErrorDialog import open_error_dialog
 from Event import Event
-from PySide6.QtCore import Qt
 
 
 # Can be either in log reading or device mode.
@@ -55,16 +54,14 @@ class MainWindow(QMainWindow):
         self.log_control_panel.depressurize_event_signal.connect(self.history_plot.render_depressurize_time)
         self.log_control_panel.period_event_signal.connect(self.period_plot.update_data)
         self.log_control_panel.event_list_signal.connect(self.history_plot.load_event_list)
-        self.log_control_panel.reset_history_signal.connect(self.history_plot.reset_history)
-        self.log_control_panel.reset_history_signal.connect(self.pressurize_plot.reset_history)
-        self.log_control_panel.reset_history_signal.connect(self.depressurize_plot.reset_history)
-        self.log_control_panel.reset_history_signal.connect(self.period_plot.reset_history)
+        self.log_control_panel.reset_history_signal.connect(self.reset_history)
+        self.log_control_panel.sample_sensor_connected.connect(self.set_sample_sensor_connected)
 
         # ToolBar
         self.toolbar = ToolBar(config_manager)
         self.addToolBar(self.toolbar)
         self.toolbar.set_mode_signal.connect(self.set_mode)
-        self.toolbar.history_reset_action.triggered.connect(self.history_plot.reset_history)
+        self.toolbar.history_reset_action.triggered.connect(self.reset_history)
 
         # Control and value layout
         # Show bounding box even when no controls are displayed
@@ -75,7 +72,7 @@ class MainWindow(QMainWindow):
         self.bounding_box.setLayout(box_layout)
         self.bounding_box.setMinimumWidth(287) # Width of DeviceControlPanel
 
-
+        # Control layout
         control_layout = QGridLayout()
         control_layout.addWidget(self.pressure_display, 0, 0)
         control_layout.addWidget(self.device_control_panel, 1, 0)
@@ -119,7 +116,6 @@ class MainWindow(QMainWindow):
         data_handler.acquiring_signal.connect(lambda x: self.set_connected(x))
         data_handler.display_error.connect(open_error_dialog)
         data_handler.toolbar_warning.connect(self.toolbar.display_warning)
-        data_handler.log_signal.connect(self.history_plot.reset_history)
 
         # Connect plot signals
         self.set_mode(self.mode)
@@ -140,13 +136,10 @@ class MainWindow(QMainWindow):
                 self.data_handler.period_event_signal.disconnect(self.period_plot.update_data)
                 self.data_handler.pressurize_event_signal.disconnect(self.history_plot.add_event)
                 self.data_handler.depressurize_event_signal.disconnect(self.history_plot.add_event)
+                self.data_handler.log_signal.disconnect(self.reset_history)
 
             # Clear plots
-            self.history_plot.reset_history()
-            self.pressurize_plot.reset_history()
-            self.depressurize_plot.reset_history()
-            self.period_plot.reset_history()
-
+            self.reset_history()
 
         elif mode == "device":
             if self.connected:
@@ -165,12 +158,10 @@ class MainWindow(QMainWindow):
                 self.data_handler.period_event_signal.connect(self.period_plot.update_data)
                 self.data_handler.pressurize_event_signal.connect(self.history_plot.add_event)
                 self.data_handler.depressurize_event_signal.connect(self.history_plot.add_event)
+                self.data_handler.log_signal.connect(self.reset_history)
 
             # Clear plots
-            self.history_plot.reset_history()
-            self.pressurize_plot.reset_history()
-            self.depressurize_plot.reset_history()
-            self.period_plot.reset_history()
+            self.reset_history()
 
             # restore history
             if self.connected:
@@ -210,6 +201,22 @@ class MainWindow(QMainWindow):
             if self.mode == "device":
                 self.bounding_box.show()
                 self.device_control_panel.hide()
+
+
+    def set_sample_sensor_connected(self, connected):
+        self.history_plot.set_sample_sensor(connected)
+        self.pressurize_plot.set_sample_sensor(connected)
+        self.depressurize_plot.set_sample_sensor(connected)
+        self.period_plot.set_sample_sensor(connected)
+
+
+    def reset_history(self):
+        self.set_sample_sensor_connected(True)
+
+        self.history_plot.reset_history()
+        self.pressurize_plot.reset_history()
+        self.depressurize_plot.reset_history()
+        self.period_plot.reset_history()
 
 
     # Runs on quitting the application

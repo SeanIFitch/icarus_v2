@@ -50,6 +50,7 @@ class HistoryPlot(QWidget):
 
         # Dictionary of line references
         self.lines = {}
+        self.hide_sample_sensor = False
         # Dictionary of mouse position labels
         self.mouse_labels = {}
         # Colors for plots
@@ -445,3 +446,22 @@ class HistoryPlot(QWidget):
     def mouse_moved(self, plot, event):
         mousePoint = plot.getViewBox().mapSceneToView(event[0])
         self.mouse_labels[plot].setText(f"{mousePoint.x():.2f}, {mousePoint.y():.2f}")
+
+
+    def set_sample_sensor(self, connected):
+        if not connected and not self.hide_sample_sensor:
+            self.pressure_plot.removeItem(self.lines["sample pressure"])
+            self.slope_plot.removeItem(self.lines["press sample slope"])
+            self.slope_plot.removeItem(self.lines["depress sample slope"])
+            self.switch_time_plot.removeItem(self.lines["press sample switch"])
+            self.switch_time_plot.removeItem(self.lines["depress sample switch"])
+            self.hide_sample_sensor = True
+
+        elif connected and self.hide_sample_sensor:
+            self.pressure_plot.addItem(self.lines["sample pressure"])
+            self.slope_plot.addItem(self.lines["press sample slope"])
+            self.slope_plot.addItem(self.lines["depress sample slope"])
+            self.switch_time_plot.addItem(self.lines["press sample switch"])
+            self.switch_time_plot.addItem(self.lines["depress sample switch"])
+            self.hide_sample_sensor = False
+

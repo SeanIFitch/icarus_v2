@@ -20,6 +20,7 @@ from Event import Event
 from LogReader import LogReader
 from math import ceil
 from path_utils import get_base_directory
+from SampleSensorDetector import SampleSensorDetector
 
 
 # Control panel for logs
@@ -29,6 +30,7 @@ class LogControlPanel(QGroupBox):
     period_event_signal = Signal(Event)
     event_list_signal = Signal(list)
     reset_history_signal = Signal()
+    sample_sensor_connected = Signal(bool)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -136,11 +138,27 @@ class LogControlPanel(QGroupBox):
             if QFontMetrics(self.filename_label.font()).boundingRect(os.path.basename(self.filename)).width() < self.width() - 25:
                 break
 
+        # Set limit on time line edit
         if len(self.log_reader.events) > 0:
             upper_bound = self.log_reader.events[-1].event_time - self.log_reader.events[0].event_time
         else:
             upper_bound = 0
         self.time_edit.setValidator(QDoubleValidator(0, upper_bound, 2))
+
+        # TODO: GET COEFFICIENTS FROM LOG FILES
+        from Event import Channel
+        co = { Channel.TARGET: 0.00015891062810171653, 
+            Channel.DEPRE_LOW: 0.00015, 
+            Channel.DEPRE_UP: 0.00015, 
+            Channel.PRE_LOW: 0.00015, 
+            Channel.PRE_UP: 0.00015, 
+            Channel.HI_PRE_ORIG: 0.00021041129395578411, 
+            Channel.HI_PRE_SAMPLE: 0.00020670162896002954, 
+            Channel.DEPRE_VALVE: 2.8, 
+            Channel.PRE_VALVE: 2.85
+        }
+        sample_sensor_connected = SampleSensorDetector.detect_from_list(self.log_reader.events, co)
+        self.sample_sensor_connected.emit(sample_sensor_connected)
         self.event_list_signal.emit(self.log_reader.events)
 
 

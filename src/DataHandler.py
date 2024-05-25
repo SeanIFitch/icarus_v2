@@ -18,7 +18,7 @@ from PressureHandler import PressureHandler
 from PumpHandler import PumpHandler
 from LogHandler import LogHandler
 from Sentry import Sentry
-
+from SampleSensorDetector import SampleSensorDetector
 
 # Define the DataHandler class
 class DataHandler(QThread):
@@ -36,6 +36,8 @@ class DataHandler(QThread):
     toolbar_warning = Signal(str)
     # Start new log file
     log_signal = Signal(bool)
+    # Tell GUI whether or not the sample sensor is connected
+    sample_sensor_connected = Signal(bool)
 
 
     def __init__(self, config_manager):
@@ -85,6 +87,10 @@ class DataHandler(QThread):
         self.pressure_event_signal.connect(self.sentry.handle_pressure)
         self.sentry.warning_signal.connect(lambda x: self.toolbar_warning.emit(x))
 
+        # Sample sensor detector
+        self.sample_sensor_detector = SampleSensorDetector(self.config_manager, self.sample_sensor_connected)
+        self.depressurize_event_signal.connect(self.sample_sensor_detector.detect)
+
         # Prevents another thread from quitting this while it is initializing the device.
         # Without this, the cleanup code would run and then the QThreads would be initialized.
         self.quit_lock = Lock()
@@ -126,12 +132,9 @@ class DataHandler(QThread):
                             udev_installed = True
                         sleep(1)
                     except Exception as err:
-                        print("THERE")
-                        print(err)
-                        self.display_error.emit(str(e))
+                        self.display_error.emit(str(err))
                         break
                 else:
-                    print("HERE")
                     self.display_error.emit(str(e))
                     break
 
@@ -157,6 +160,15 @@ class DataHandler(QThread):
 
     def device_disconnected(self):
         self.quit()
+
+        # Reset persistent states
+        self.pressurize_handler.last_pressurize_bit = None
+        self.depressurize_handler.last_depressurize_bit = None
+        self.period_handler.last_depressurize_bit = None
+        self.period_handler.last_depressurize_bit = None
+        self.pump_handler.last_low_index = -2
+        self.log_handler.last_log_bit = None
+        self.sample_sensor_detector.last_result = True
 
         # Try to reconnect to device
         self.start()

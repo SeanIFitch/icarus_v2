@@ -29,6 +29,7 @@ class EventPlot(QWidget):
         self.config_manager.settings_updated.connect(self.update_settings)
         self.coefficients = config_manager.get_settings("plotting_coefficients")
         self.hide_valve_setting = config_manager.get_settings("hide_valve_sensors")
+        self.hide_sample_sensor = False
         display_channels = [Channel.TARGET, Channel.HI_PRE_SAMPLE, Channel.HI_PRE_ORIG, Channel.DEPRE_VALVE, Channel.PRE_VALVE]
 
         if event_type == Event.PRESSURIZE:
@@ -184,3 +185,12 @@ class EventPlot(QWidget):
                 if not self.line_currently_shown[channel]:
                     self.plot.addItem(self.line_references[channel])
                     self.line_currently_shown[channel] = True
+
+
+    def set_sample_sensor(self, connected):
+        if not connected and not self.hide_sample_sensor:
+            self.plot.removeItem(self.line_references[Channel.HI_PRE_SAMPLE])
+            self.hide_sample_sensor = True
+        elif connected and self.hide_sample_sensor:
+            self.plot.addItem(self.line_references[Channel.HI_PRE_SAMPLE])
+            self.hide_sample_sensor = False
