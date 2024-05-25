@@ -18,7 +18,6 @@ class BufferLoader(QThread):
 
         # TESTING ONLY. logs all raw data.
         self.log_raw = False
-        self.load_raw = False
 
 
     def set_device(self, device):
@@ -42,6 +41,14 @@ class BufferLoader(QThread):
                 self.device.acquiring = False
                 self.device_disconnected.emit()
                 return
+            except RuntimeError as e:
+                if "End of file reached." in str(e):
+                    # End of file reached
+                    self.device.acquiring = False
+                    self.device_disconnected.emit()
+                    return
+                else:
+                    raise e
 
             if self.log_raw:
                 self.raw_logger.log_raw(data)
