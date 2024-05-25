@@ -1,7 +1,7 @@
 import numpy as np
 from PySide6.QtCore import QThread, Signal
-from Event import get_channel, gaussian_filter, Channel
-from time import localtime, strftime, time, sleep
+from Event import get_channel, Channel
+from time import localtime, strftime
 
 
 class Sentry(QThread):
@@ -11,13 +11,10 @@ class Sentry(QThread):
 
     def __init__(self):
         super().__init__()
-        self.max_switch_time = 50 # ms
-        self.sample_rate = 4000
         # Number of events with which to define expected values
-        self.num_example_periods = 2
-        self.example_pumps = 10
+        self.example_events = 10
         # Max percent difference between expected and actual period
-        self.max_difference = {
+        self.max_period_diff = {
             Channel.TARGET: 0.25,
             Channel.DEPRE_LOW: 0.25,
             Channel.DEPRE_UP: 0.25,
@@ -29,42 +26,47 @@ class Sentry(QThread):
             Channel.PRE_VALVE: 0.25,
         }
         self.max_pump_rate_increase = 0.25
+        self.max_pressure_before_depress_decrease = 0.1
+        self.max_pressure_before_press_increase = 0.1
 
         self.current_experiment = False
-        self.example_periods = []
 
-        self.last_pressurize_time = None
+        self.example_periods = []
+        self.example_depress_pressures = []
+        self.example_press_pressures = []
+        self.pump_times = []
         self.last_depressurize_time = None
+        self.last_pressurize_time = None
+
         self.expected_period = None
         self.expected_pump_rate = None
-        self.pump_times = []
-
-
-    def run(self):
-        self.running = True
-        while self.running:
-            if not self.no_hang_sleep(time() + 1):
-                break
+        self.expected_pressure_before_depressurize = None
+        self.expected_pressure_before_pressurize = None
 
 
     # Takes boolean representing the new state of bit 4
     # Resets all expected values
     def handle_experiment(self, event):
         self.current_experiment = not event
-        #self.current_experiment = True
+        self.current_experiment = True
         self.expected_period = None
         self.expected_pump_rate = None
+        self.expected_pressure_before_depressurize = None
+        self.expected_pressure_before_pressurize = None
         self.pump_times = []
+        self.example_depress_pressures = []
+        self.example_press_pressures = []
         self.example_periods = []
 
 
     # Emits warnings when period deviates from expected value
     # TODO: implement outlier rejection
     def handle_period(self, event):
+        return
         if not self.current_experiment:
             return
 
-        # Pad array with zeros. Only necessary when period width is less than 600/4000 seconds
+        # Pad array with zeros. Only necessary when period width is less than 600/4000 seconds which shouldnt ever happen
         padding_width = 600 - event.data.shape[1]
         if padding_width < 0:
             raise RuntimeError("Period of length greater than 600")
@@ -74,7 +76,7 @@ class Sentry(QThread):
         # Define exepected period
         if self.expected_period is None:
             self.example_periods.append(data)
-            if len(self.example_periods) == self.num_example_periods:
+            if len(self.example_periods) == self.example_events:
                 stacked_data = np.asarray(self.example_periods)
                 self.expected_period = np.mean(stacked_data, axis=0)
 
@@ -88,7 +90,7 @@ class Sentry(QThread):
         else:
             deviated_channels = []
             data_diff = np.abs(data - self.expected_period)
-            for channel, max_difference in self.max_difference.items():
+            for channel, max_difference in self.max_period_diff.items():
                 avg_difference = np.mean(get_channel(data_diff, channel) )
                 avg = np.mean(get_channel(self.expected_period, channel))
                 if avg_difference / avg > max_difference:
@@ -99,6 +101,7 @@ class Sentry(QThread):
 
     # Emits warning if pressure does not increase or pump rate exceeds expected value
     def handle_pump(self, event):
+        return
         # Check for increasing pressure
         target = get_channel(event.data, Channel.TARGET)
         before_pump = target[:event.event_index]
@@ -113,71 +116,61 @@ class Sentry(QThread):
 
         self.pump_times.append(event.event_time)
         # Define exepected pump rate
-        if self.expected_pump_rate is None and len(self.pump_times) == self.example_pumps:
+        if self.expected_pump_rate is None and len(self.pump_times) == self.example_events:
             avg = np.diff(self.pump_times).mean()
             self.expected_pump_rate = 1 / avg
 
         # Check for deviation from expected rate
-        if len(self.pump_times) > self.example_pumps:
+        if len(self.pump_times) > self.example_events:
             self.pump_times.pop(0)
-            if 1 / np.diff(self.pump_times).mean() - self.expected_pump_rate > self.max_pump_rate_increase * self.expected_pump_rate:
-                self.warning_signal.emit(f"Warning: pump rate exceeding expected value at {strftime('%H:%M:%S', localtime(event.event_time))}. Possible leak.")
+            pump_rate = 1 / np.diff(self.pump_times).mean()
+            rate_percent_increase = (pump_rate - self.expected_pump_rate) / self.expected_pump_rate
+            if rate_percent_increase > self.max_pump_rate_increase:
+                self.warning_signal.emit(f"Warning: pump rate at {strftime('%H:%M:%S', localtime(event.event_time))} is {pump_rate:.2f}, which is {rate_percent_increase:.2f} over the expected rate from the beginning of the experiment. Possible leak.")
 
 
-    # Emits warning if pressure increases after the min # TODO NEEDS HANDLING FOR INCREASE AFTER CLOSE EVENTS
-    # TODO: warn if presure decreases below expected
+    # Emits warning if pressure at beginning is decreasing. Possible leak.
     def handle_depressurize(self, event):
         self.last_depressurize_time = event.event_time
 
-        y = get_channel(event, Channel.HI_PRE_ORIG)
-        check_after = np.argmin(y) + 30
-        if check_after < len(y):
-            y = y[np.argmin(y) + 30:]
+        initial_pressure = get_channel(event, Channel.HI_PRE_ORIG)[:event.event_index].mean()
 
-            # Calculate the first derivative of the data
-            dy = np.diff(y)
-            dy_smoothed = gaussian_filter(dy, 5, 5)
+        # define expected pressure before depressurize
+        if self.expected_pressure_before_depressurize is None:
+            self.example_depress_pressures.append(initial_pressure)
+            if len(self.example_depress_pressures) == self.example_events:
+                self.expected_pressure_before_depressurize = np.mean(self.example_depress_pressures)
 
-            if max(dy_smoothed) > 0:
-                self.warning_signal.emit(f"Warning: pressure continuing to increase after depressurize event at {strftime('%H:%M:%S', localtime(event.event_time))}. Possible leaky pressurize valve.")
+        else:
+            percent_decrease = (self.expected_pressure_before_depressurize - initial_pressure) / self.expected_pressure_before_depressurize
+            if percent_decrease > self.max_pressure_before_depress_decrease:
+                self.warning_signal.emit(f"Warning: pressure before depressurize event decreasing at {strftime('%H:%M:%S', localtime(event.event_time))}. Possible leak.")
 
 
-    # Emits warning if pressure increases after the max # TODO NEEDS HANDLING FOR INCREASE AFTER CLOSE EVENTS
-    # TODO: warn if presure decreases below expected
+    # Emits warning if pressure at beginning is increasing. Possible leak.
     def handle_pressurize(self, event):
+        # Check only the first pressurize event after depressurize
+        if (self.last_depressurize_time is not None and
+                self.last_pressurize_time is not None and
+                self.last_pressurize_time >  self.last_depressurize_time
+            ):
+            return
         self.last_pressurize_time = event.event_time
 
-        y = get_channel(event, Channel.HI_PRE_ORIG)
-        check_after = np.argmax(y) + 30
-        if check_after < len(y):
-            y = y[np.argmax(y) + 30:]
+        initial_pressure = get_channel(event, Channel.HI_PRE_ORIG)[:event.event_index].mean()
 
-            # Calculate the first derivative of the data
-            dy = np.diff(y)
-            dy_smoothed = gaussian_filter(dy, 5, 5)
+        # define expected pressure before pressurize
+        if self.expected_pressure_before_pressurize is None:
+            self.example_press_pressures.append(initial_pressure)
+            if len(self.example_press_pressures) == self.example_events:
+                self.expected_pressure_before_pressurize = np.mean(self.example_press_pressures)
 
-            if max(dy_smoothed) > 0:
-                self.warning_signal.emit(f"Warning: pressure continuing to increase after pressurize event at {strftime('%H:%M:%S', localtime(event.event_time))}. Possible leaky pressurize valve.")
+        else:
+            percent_increase = (initial_pressure - self.expected_pressure_before_pressurize) / self.expected_pressure_before_pressurize
+            if percent_increase > self.max_pressure_before_press_increase:
+                self.warning_signal.emit(f"Warning: pressure before pressurize event increasing at {strftime('%H:%M:%S', localtime(event.event_time))}. Possible leaky pressurize valve.")
 
 
     # TODO: warn on unexpected sudden pressure change
     def handle_pressure(self, event):
         pass
-
-
-    # Sleep until end_time, checking for self.pulsing frequently
-    # Returns False if self.running becomes false, true otherwise
-    def no_hang_sleep(self, end_time, running_check_hz = 10):
-        remaining_time = end_time - time()
-        while remaining_time >= 0:
-            sleep_time = min(1 / running_check_hz, remaining_time)
-            sleep(sleep_time)
-            remaining_time = end_time - time()
-
-            if not self.running:
-                return False
-        return True
-
-
-    def quit(self):
-        self.running = False

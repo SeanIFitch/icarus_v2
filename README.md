@@ -204,7 +204,7 @@ Project Link: [https://github.com/SeanIFitch/Icarus_v2](https://github.com/SeanI
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-* Dr. Philip Anfinrud - Software design
+* Dr. Philip Anfinrud - Software specification
 * [icarus-nmr](https://github.com/vstadnytskyi/icarus-nmr) by Valentyn Stadnytskyi
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

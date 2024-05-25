@@ -15,6 +15,10 @@ Changed:
  - Shutdown button is now momentary contact
  - Update README
  - Prevent multiple pressurizes per depressurize on history plot
+ - Sentry only compares pressure right before events rather than looking for slope changes
+
+Fixed:
+ - When loading raw data files, replay file rather than raising an exception at EOF
 
 
 v0.1.1 (2024-05-07)
