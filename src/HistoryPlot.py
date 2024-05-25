@@ -51,6 +51,8 @@ class HistoryPlot(QWidget):
         # Dictionary of line references
         self.lines = {}
         self.hide_sample_sensor = False
+        # Used to prevent plotting multiple pressurizes per depressurize which results in noisy plots
+        self.can_plot_pressurize = True
         # Dictionary of mouse position labels
         self.mouse_labels = {}
         # Colors for plots
@@ -270,6 +272,7 @@ class HistoryPlot(QWidget):
             "press sample switch": [],
         }
         self.initial_time = None
+        self.can_plot_pressurize = True
 
         for line in self.lines.values():
             line.setData([], [])
@@ -303,6 +306,14 @@ class HistoryPlot(QWidget):
 
 
     def add_event(self, event):
+        # plot only one pressurize per pressurize. plots are noisy with multiple pressurizes.
+        if event.event_type == Event.PRESSURIZE:
+            if not self.can_plot_pressurize:
+                return
+            self.can_plot_pressurize = False
+        elif event.event_type == Event.DEPRESSURIZE:
+            self.can_plot_pressurize = True
+
         # Check if currently fully zoomed out
         current_x_range = self.pressure_plot.viewRange()[0]
         low_diff = current_x_range[0] - self.limits[0]
@@ -332,7 +343,11 @@ class HistoryPlot(QWidget):
             return
 
         for event in list:
-            if event.event_type == Event.PRESSURIZE or event.event_type == Event.DEPRESSURIZE:
+            if event.event_type == Event.DEPRESSURIZE:
+                self.can_plot_pressurize = True
+                self.process_data(event)
+            if event.event_type == Event.PRESSURIZE and self.can_plot_pressurize:
+                self.can_plot_pressurize = False
                 self.process_data(event)
 
         for update in self.EVENT_LINES[Event.DEPRESSURIZE]:
