@@ -1,9 +1,10 @@
-# Ignore Python bytecode files
+# Ignore Python files
 __pycache__/
+venv/
 # Ignore log files
 logs/temp/
 logs/experiment/
-logs/recently_deleted
+logs/recently_deleted/
 # Ignore dist files
 build/
 dist/

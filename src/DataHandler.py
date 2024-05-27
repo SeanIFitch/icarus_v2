@@ -50,8 +50,8 @@ class DataHandler(QThread):
         self.logger = None
 
         # TESTING ONLY. reads a raw data file instead of connecting to a device
-        self.load_raw = False
-        self.raw_file = "/home/seanf/Icarus_v2/logs/raw/2.1_to_1.5kBar.xz"
+        self.load_raw = True
+        self.raw_file = "/home/seanf/Icarus_v2/logs/example/raw/2.1_to_1.5kBar.xz"
 
         # Loads data from device into buffer
         self.loader = BufferLoader()
@@ -80,11 +80,9 @@ class DataHandler(QThread):
         # Sentry
         self.sentry = Sentry()
         self.log_signal.connect(self.sentry.handle_experiment)
-        self.period_event_signal.connect(self.sentry.handle_period)
         self.pump_event_signal.connect(self.sentry.handle_pump)
         self.depressurize_event_signal.connect(self.sentry.handle_depressurize)
         self.pressurize_event_signal.connect(self.sentry.handle_pressurize)
-        self.pressure_event_signal.connect(self.sentry.handle_pressure)
         self.sentry.warning_signal.connect(lambda x: self.toolbar_warning.emit(x))
 
         # Sample sensor detector
@@ -165,10 +163,11 @@ class DataHandler(QThread):
         self.pressurize_handler.last_pressurize_bit = None
         self.depressurize_handler.last_depressurize_bit = None
         self.period_handler.last_depressurize_bit = None
-        self.period_handler.last_depressurize_bit = None
-        self.pump_handler.last_low_index = -2
+        self.period_handler.last_depressurize_event = None
         self.log_handler.last_log_bit = None
         self.sample_sensor_detector.last_result = True
+        self.pump_handler.reset()
+        self.sentry.reset()
 
         # Try to reconnect to device
         self.start()

@@ -14,7 +14,7 @@ class Sentry(QThread):
         # Number of events with which to define expected values
         self.example_events = 10
         # Max percent difference between expected and actual period
-        self.max_period_diff = {
+        '''self.max_period_diff = {
             Channel.TARGET: 0.25,
             Channel.DEPRE_LOW: 0.25,
             Channel.DEPRE_UP: 0.25,
@@ -24,21 +24,23 @@ class Sentry(QThread):
             Channel.HI_PRE_SAMPLE: 0.25,
             Channel.DEPRE_VALVE: 0.25,
             Channel.PRE_VALVE: 0.25,
-        }
+        }'''
         self.max_pump_rate_increase = 0.25
         self.max_pressure_before_depress_decrease = 0.1
         self.max_pressure_before_press_increase = 0.1
 
         self.current_experiment = False
 
-        self.example_periods = []
+        #self.example_periods = []
         self.example_depress_pressures = []
         self.example_press_pressures = []
         self.pump_times = []
+        self.last_pump_time = None
+        self.last_pump_initial_pressure = None
         self.last_depressurize_time = None
         self.last_pressurize_time = None
 
-        self.expected_period = None
+        #self.expected_period = None
         self.expected_pump_rate = None
         self.expected_pressure_before_depressurize = None
         self.expected_pressure_before_pressurize = None
@@ -59,57 +61,15 @@ class Sentry(QThread):
         self.example_periods = []
 
 
-    # Emits warnings when period deviates from expected value
-    # TODO: implement outlier rejection
-    def handle_period(self, event):
-        return
-        if not self.current_experiment:
-            return
-
-        # Pad array with zeros. Only necessary when period width is less than 600/4000 seconds which shouldnt ever happen
-        padding_width = 600 - event.data.shape[1]
-        if padding_width < 0:
-            raise RuntimeError("Period of length greater than 600")
-        if padding_width > 0:
-            data = np.pad(event.data, ((0, 0), (0, padding_width)), mode='constant', constant_values=0)
-
-        # Define exepected period
-        if self.expected_period is None:
-            self.example_periods.append(data)
-            if len(self.example_periods) == self.example_events:
-                stacked_data = np.asarray(self.example_periods)
-                self.expected_period = np.mean(stacked_data, axis=0)
-
-                # Digital should be mode
-                #find unique values in array along with their counts
-                vals, counts = np.unique(stacked_data[:,:,-1], axis=0, return_counts=True)
-                mode = vals[np.argmax(counts, axis=0)]
-                self.expected_period[:,-1] = mode
-
-        # Check for deviation from expected period
-        else:
-            deviated_channels = []
-            data_diff = np.abs(data - self.expected_period)
-            for channel, max_difference in self.max_period_diff.items():
-                avg_difference = np.mean(get_channel(data_diff, channel) )
-                avg = np.mean(get_channel(self.expected_period, channel))
-                if avg_difference / avg > max_difference:
-                    deviated_channels.append(channel)
-            if len(deviated_channels) > 0:
-                self.warning_signal.emit(f"Warning: period deviating from expected value in channels {deviated_channels} at {strftime('%H:%M:%S', localtime(event.event_time))}.")
-
-
     # Emits warning if pressure does not increase or pump rate exceeds expected value
     def handle_pump(self, event):
-        return
-        # Check for increasing pressure
-        target = get_channel(event.data, Channel.TARGET)
-        before_pump = target[:event.event_index]
-        after_pump = target[event.event_index:]
-        high_avg_before = np.mean(np.sort(before_pump)[int(-0.1*len(before_pump)):])
-        high_avg_after = np.mean(np.sort(after_pump)[int(-0.1*len(after_pump)):])
-        if high_avg_after < high_avg_before:
-            self.warning_signal.emit(f"Warning: pressure not increasing after pump event at {strftime('%H:%M:%S', localtime(event.event_time))}. Possible leak.")
+        # Check for increasing pressure when pump strokes are within 1 second of eachother
+        if self.last_pump_time is not None and event.event_time - self.last_pump_time < 1:
+            if event.get_initial_target() <= self.last_pump_initial_pressure:
+                self.warning_signal.emit(f"Warning: pressure not increasing after pump event at {strftime('%H:%M:%S', localtime(event.event_time))}. Possible leak.")
+
+        self.last_pump_initial_pressure = event.get_initial_target()
+        self.last_pump_time = event.event_time
 
         if not self.current_experiment:
             return
@@ -171,6 +131,65 @@ class Sentry(QThread):
                 self.warning_signal.emit(f"Warning: pressure before pressurize event increasing at {strftime('%H:%M:%S', localtime(event.event_time))}. Possible leaky pressurize valve.")
 
 
+    def reset(self):
+        self.current_experiment = False
+
+        #self.example_periods = []
+        self.example_depress_pressures = []
+        self.example_press_pressures = []
+        self.pump_times = []
+        self.last_pump_time = None
+        self.last_pump_initial_pressure = None
+        self.last_depressurize_time = None
+        self.last_pressurize_time = None
+
+        #self.expected_period = None
+        self.expected_pump_rate = None
+        self.expected_pressure_before_depressurize = None
+        self.expected_pressure_before_pressurize = None
+
+    '''
     # TODO: warn on unexpected sudden pressure change
     def handle_pressure(self, event):
         pass
+
+
+    # Emits warnings when period deviates from expected value
+    # TODO: implement outlier rejection
+    def handle_period(self, event):
+        return
+        if not self.current_experiment:
+            return
+
+        # Pad array with zeros. Only necessary when period width is less than 600/4000 seconds which shouldnt ever happen
+        padding_width = 600 - event.data.shape[1]
+        if padding_width < 0:
+            raise RuntimeError("Period of length greater than 600")
+        if padding_width > 0:
+            data = np.pad(event.data, ((0, 0), (0, padding_width)), mode='constant', constant_values=0)
+
+        # Define exepected period
+        if self.expected_period is None:
+            self.example_periods.append(data)
+            if len(self.example_periods) == self.example_events:
+                stacked_data = np.asarray(self.example_periods)
+                self.expected_period = np.mean(stacked_data, axis=0)
+
+                # Digital should be mode
+                #find unique values in array along with their counts
+                vals, counts = np.unique(stacked_data[:,:,-1], axis=0, return_counts=True)
+                mode = vals[np.argmax(counts, axis=0)]
+                self.expected_period[:,-1] = mode
+
+        # Check for deviation from expected period
+        else:
+            deviated_channels = []
+            data_diff = np.abs(data - self.expected_period)
+            for channel, max_difference in self.max_period_diff.items():
+                avg_difference = np.mean(get_channel(data_diff, channel) )
+                avg = np.mean(get_channel(self.expected_period, channel))
+                if avg_difference / avg > max_difference:
+                    deviated_channels.append(channel)
+            if len(deviated_channels) > 0:
+                self.warning_signal.emit(f"Warning: period deviating from expected value in channels {deviated_channels} at {strftime('%H:%M:%S', localtime(event.event_time))}.")
+    '''

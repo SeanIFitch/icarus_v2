@@ -60,10 +60,14 @@ def get_channel(data, channel):
 # Used for ramp detection
 def gaussian_filter(data, kernel_size, sigma=1):
     """Applies a 1D Gaussian filter to the data."""
+    if kernel_size % 2 == 0 or kernel_size <= 0:
+        raise ValueError("kernel_size must be a positive odd integer")
+
     kernel_range = np.arange(-kernel_size // 2 + 1, kernel_size // 2 + 1)
     kernel = np.exp(-kernel_range**2 / (2 * sigma**2))
     kernel /= kernel.sum()
-    return np.convolve(data, kernel, mode='same')
+    padded_data = np.pad(data, pad_width=kernel_size//2, mode='edge')
+    return np.convolve(padded_data, kernel, mode='valid')
 
 
 
@@ -102,7 +106,7 @@ class Event():
         # Period events can be long. Therefore only take 600 data points to log and plot. (same as pressurize and depressurize plots)
         # No statistical analysis of period events is necessary, so this loss of data is fine.
         # If initialized with a step time, this means the data has already been compressed.
-        if self.event_type == self.PERIOD and step_time is None:
+        if self.event_type == self.PERIOD or self.event_type == self.PUMP and step_time is None:
             self.data = self.compress_data(data, 600)
         else:
             self.data = data # np.ndarray (?,8) np.int16
@@ -228,8 +232,17 @@ class Event():
         if self.event_type != self.DEPRESSURIZE:
             raise RuntimeError("Cannot call get_initial_origin() on event type " + self.event_type)
 
-        sample_pressure = np.average(get_channel(self, Channel.HI_PRE_ORIG)[:self.event_index])
-        return sample_pressure
+        origin_pressure = np.average(get_channel(self, Channel.HI_PRE_ORIG)[:self.event_index])
+        return origin_pressure
+
+
+    # Returns pressure before event starts
+    def get_initial_target(self):
+        if self.event_type != self.PUMP:
+            raise RuntimeError("Cannot call get_initial_target() on event type " + self.event_type)
+
+        target_pressure = np.average(get_channel(self, Channel.TARGET)[:self.event_index])
+        return target_pressure
 
 
     # Returns difference of index of half max and event_index
