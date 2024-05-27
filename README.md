@@ -210,4 +210,4 @@ Project Link: [https://github.com/SeanIFitch/Icarus_v2](https://github.com/SeanI
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-[screenshot]: images/example-log-screen.png
+[screenshot]: images/app-screenshot.png

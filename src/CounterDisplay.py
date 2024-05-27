@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
 )
 from Event import Event
 from PySide6.QtCore import QCoreApplication
+import numpy as np
 
 
 # Panel for counts of valves and such
@@ -55,12 +56,11 @@ class CounterDisplay(QGroupBox):
 
             # update pump strokes/hr
             self.pump_times.append(event.event_time)
-            if len(self.pump_times) >= 3:
-                last_interval = self.pump_times[-1] - self.pump_times[-2]
-                prev_interval = self.pump_times[-2] - self.pump_times[-3]
-                avg = (last_interval + prev_interval) / 2
-                strokes_per_hour = 2 * 3600 / avg
+            if len(self.pump_times) == 5:
+                diff_in_sec = np.diff(self.pump_times).mean()
+                strokes_per_hour = 3600 / diff_in_sec
                 self.stroke_display.setText(f"{strokes_per_hour:.2f}")
+                self.pump_times.pop(0)
 
         elif event.event_type == Event.PRESSURIZE:
             self.counts["pressurize_count"] += 1
