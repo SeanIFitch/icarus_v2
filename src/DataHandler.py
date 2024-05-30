@@ -50,7 +50,7 @@ class DataHandler(QThread):
         self.logger = None
 
         # TESTING ONLY. reads a raw data file instead of connecting to a device
-        self.load_raw = True
+        self.load_raw = False
         self.raw_file = "/home/seanf/Icarus_v2/logs/example/raw/2.1_to_1.5kBar.xz"
 
         # Loads data from device into buffer

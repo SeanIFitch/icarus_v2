@@ -50,7 +50,6 @@ class Sentry(QThread):
     # Resets all expected values
     def handle_experiment(self, event):
         self.current_experiment = not event
-        self.current_experiment = True
         self.expected_period = None
         self.expected_pump_rate = None
         self.expected_pressure_before_depressurize = None
