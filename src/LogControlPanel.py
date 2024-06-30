@@ -119,7 +119,11 @@ class LogControlPanel(QGroupBox):
 
     def open_log(self, file):
         self.reset_history_signal.emit()
-        self.log_reader.read_events(file)
+        try:
+            self.log_reader.read_events(file)
+        except:
+            open_error_dialog("Incorrect format for log file.")
+            return
 
         self.time_edit.setText("")
         self.next_button.setEnabled(True)
@@ -213,12 +217,12 @@ class LogControlPanel(QGroupBox):
                 if self.filename == self.log_reader.logger.filename:
                     self.log_reader.logger.new_log_file(self.log_reader.logger.current_path)
 
-                if os.path.exists(self.filename):
-                    try:
-                        os.remove(self.filename)
-                    except OSError as e:
-                        open_error_dialog(e)
-                        return
+            if os.path.exists(self.filename):
+                try:
+                    os.remove(self.filename)
+                except OSError as e:
+                    open_error_dialog(e)
+                    return
 
             self.filename_label.setText(" ")
             self.next_button.setEnabled(False)

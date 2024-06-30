@@ -24,6 +24,8 @@ Fixed:
  - Significantly increase accuracy of pump stroke detection
  - When loading raw data files, replay file rather than raising an exception at EOF
  - Fixed pump stroke rate being multiplied by 2
+ - Allow deletion of open log files
+ - Catch exception when opening log file of improper format
 
 
 v0.1.1 (2024-05-07)
