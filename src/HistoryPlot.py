@@ -141,11 +141,11 @@ class HistoryPlot(QWidget):
         last_pressure_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         avg_pressure_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         # Mouse label
-        self.mouse_labels[self.pressure_plot] = QLabel("0.00, 0.00")
+        self.mouse_labels[self.pressure_plot] = QLabel("")
         self.mouse_labels[self.pressure_plot].setStyleSheet(f"font-size: {size}px;")
         # Limit rate of mouseMoved signal to 60 Hz
         pressure_func = lambda x: self.mouse_moved(self.pressure_plot, x)
-        self.pressure_proxy = pg.SignalProxy(self.pressure_plot.scene().sigMouseMoved, rateLimit=60, slot=pressure_func)
+        self.pressure_proxy = pg.SignalProxy(self.pressure_plot.scene().sigMouseMoved, rateLimit=120, slot=pressure_func)
         spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
         pressure_labels = QGridLayout()
         pressure_labels.setContentsMargins(0, 35, 5, 45)
@@ -175,11 +175,11 @@ class HistoryPlot(QWidget):
         last_depress_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         avg_depress_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         # Mouse label
-        self.mouse_labels[self.slope_plot] = QLabel("0.00, 0.00")
+        self.mouse_labels[self.slope_plot] = QLabel("")
         self.mouse_labels[self.slope_plot].setStyleSheet(f"font-size: {size}px;")
         # Limit rate of mouseMoved signal to 60 Hz
         slope_func = lambda x: self.mouse_moved(self.slope_plot, x)
-        self.slope_proxy = pg.SignalProxy(self.slope_plot.scene().sigMouseMoved, rateLimit=60, slot=slope_func)
+        self.slope_proxy = pg.SignalProxy(self.slope_plot.scene().sigMouseMoved, rateLimit=120, slot=slope_func)
         spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
         slope_labels = QGridLayout()
         slope_labels.setContentsMargins(0, 35, 5, 45)
@@ -213,11 +213,11 @@ class HistoryPlot(QWidget):
         last_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         avg_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         # Mouse label
-        self.mouse_labels[self.switch_time_plot] = QLabel("0.00, 0.00")
+        self.mouse_labels[self.switch_time_plot] = QLabel("")
         self.mouse_labels[self.switch_time_plot].setStyleSheet(f"font-size: {size}px;")
         # Limit rate of mouseMoved signal to 60 Hz
         switch_func = lambda x: self.mouse_moved(self.switch_time_plot, x)
-        self.switch_proxy = pg.SignalProxy(self.switch_time_plot.scene().sigMouseMoved, rateLimit=60, slot=switch_func)
+        self.switch_proxy = pg.SignalProxy(self.switch_time_plot.scene().sigMouseMoved, rateLimit=120, slot=switch_func)
         spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
         switch_labels = QGridLayout()
         switch_labels.setContentsMargins(0, 35, 5, 45)
@@ -460,7 +460,14 @@ class HistoryPlot(QWidget):
 
     def mouse_moved(self, plot, event):
         mousePoint = plot.getViewBox().mapSceneToView(event[0])
-        self.mouse_labels[plot].setText(f"{mousePoint.x():.2f}, {mousePoint.y():.2f}")
+        view_range = plot.getViewBox().viewRange()
+
+        # Check if the mouse point is within the view range
+        if (view_range[0][0] <= mousePoint.x() <= 0.98 * view_range[0][1] and 
+            view_range[1][0] <= mousePoint.y() <= view_range[1][1]):
+            self.mouse_labels[plot].setText(f"{mousePoint.x():.2f}, {mousePoint.y():.2f}")
+        else:
+            self.mouse_labels[plot].setText("")
 
 
     def set_sample_sensor(self, connected):

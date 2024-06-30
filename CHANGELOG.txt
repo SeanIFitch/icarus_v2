@@ -19,6 +19,7 @@ Changed:
  - Update README
  - Prevent multiple pressurizes per depressurize on history plot
  - Sentry only compares pressure right before events rather than looking for slope changes
+ - Remove mouse coordinates when mouse leaves a plot
 
 Fixed:
  - Significantly increase accuracy of pump stroke detection
