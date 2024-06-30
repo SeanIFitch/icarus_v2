@@ -32,11 +32,15 @@ class DataHandler(QThread):
     acquiring_signal = Signal(bool)
     # display error dialog
     display_error = Signal(str)
-    # Show error in toolbar
+    # Show warning or error in toolbar
     toolbar_warning = Signal(str)
+    # Signal to tell device control panel to shutdown
+    # Ideally this is unnecessary as the signal should be directly sent to the pulse_generator
+    # But currently the control panel can not check the state of the device. This is a workaround.
+    shutdown_signal = Signal()
     # Start new log file
     log_signal = Signal(bool)
-    # Tell GUI whether or not the sample sensor is connected
+    # Tell GUI whether or not the sample sensor is connected 
     sample_sensor_connected = Signal(bool)
 
 
@@ -84,6 +88,9 @@ class DataHandler(QThread):
         self.depressurize_event_signal.connect(self.sentry.handle_depressurize)
         self.pressurize_event_signal.connect(self.sentry.handle_pressurize)
         self.sentry.warning_signal.connect(lambda x: self.toolbar_warning.emit(x))
+        self.sentry.error_signal.connect(lambda x: self.toolbar_warning.emit(x))
+        self.sentry.error_signal.connect(lambda x: self.display_error.emit(x))
+        self.sentry.error_signal.connect(lambda x: self.shutdown_signal.emit())
 
         # Sample sensor detector
         self.sample_sensor_detector = SampleSensorDetector(self.config_manager, self.sample_sensor_connected)

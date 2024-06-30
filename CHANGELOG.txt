@@ -3,12 +3,15 @@ Changelog
 
 
 v0.2.0 (UPCOMING)
+# NOTICE: REMEMBER TO REVERT SENTRY CURRENT_EXPERIMENT AND DATAHANDLER LOAD_RAW BEFORE RELEASE
 -----------------
 Added: 
  - Setting to hide valve sensors
- - Move example log files to git LFS
  - Prevent plotting of sample pressure when it is far from origin pressure
  - Hide sample sensor when it is disconnected
+ - Sentry shuts device down if in experiment mode and:
+    - pressure does not increase after rapid pump events
+    - average pressure difference over periods exceeds 25% twice in a row
 
 Changed:
  - Reset history plots when new log starts
@@ -20,6 +23,7 @@ Changed:
 Fixed:
  - Significantly increase accuracy of pump stroke detection
  - When loading raw data files, replay file rather than raising an exception at EOF
+ - Fixed pump stroke rate being multiplied by 2
 
 
 v0.1.1 (2024-05-07)

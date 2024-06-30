@@ -116,6 +116,8 @@ class MainWindow(QMainWindow):
         data_handler.acquiring_signal.connect(lambda x: self.set_connected(x))
         data_handler.display_error.connect(open_error_dialog)
         data_handler.toolbar_warning.connect(self.toolbar.display_warning)
+        # Ideally this is unnecessary as the signal should be directly sent to the pulse_generator. This is a workaround
+        data_handler.shutdown_signal.connect(self.device_control_panel.on_shutdown)
 
         # Connect plot signals
         self.set_mode(self.mode)
