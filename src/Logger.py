@@ -59,5 +59,8 @@ class Logger:
             self.file.close()
             self.file = None
             if self.event_count == 0:
-                os.remove(self.filename)
+                try:
+                    os.remove(self.filename)
+                except FileNotFoundError:
+                    pass
             self.filename = None

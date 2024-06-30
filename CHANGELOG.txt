@@ -26,6 +26,7 @@ Fixed:
  - Fixed pump stroke rate being multiplied by 2
  - Allow deletion of open log files
  - Catch exception when opening log file of improper format
+ - Prevent deleting a log file twice if no events are logged
 
 
 v0.1.1 (2024-05-07)
