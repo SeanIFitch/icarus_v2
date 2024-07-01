@@ -8,13 +8,14 @@ from path_utils import get_base_directory
 # Logs files to logs/temp or logs/experiment depending on bit 4.
 # Files are deleted if no events are logged.
 class Logger:
-    def __init__(self) -> None:
+    def __init__(self, config_manager=None) -> None:
+        self.config_manager = config_manager
         self.file = None
         self.filename = None
         self.current_path = None
+        self.event_count = None
 
-
-    def new_log_file(self, temporary = True, raw = False):
+    def new_log_file(self, temporary=True, raw=False):
         self.close()
 
         self.current_path = temporary
@@ -31,9 +32,7 @@ class Logger:
         self.file = lzma.open(self.filename, "ab")  # Opening file in append binary mode with LZMA compression
         self.event_count = 0
 
-
     def log_event(self, event):
-        self.event_count += 1
         event_dict = {
             'event_type': event.event_type,
             'data': event.data,
@@ -41,21 +40,21 @@ class Logger:
             'event_index': event.event_index,
             'step_time': event.step_time
         }   
-        pickle.dump(event_dict, self.file, protocol=pickle.HIGHEST_PROTOCOL)
-
+        self.log_raw(event_dict)
 
     def log_raw(self, data):
         self.event_count += 1
         pickle.dump(data, self.file, protocol=pickle.HIGHEST_PROTOCOL)
 
-
     def flush(self):
         self.file.close()
         self.file = lzma.open(self.filename, "ab")
 
-
     def close(self):
         if self.file is not None:
+            if self.config_manager is not None:
+                settings = {"plotting_coefficients": self.config_manager.get_settings("plotting_coefficients")}
+                pickle.dump(settings, self.file, protocol=pickle.HIGHEST_PROTOCOL)
             self.file.close()
             self.file = None
             if self.event_count == 0:
@@ -63,4 +62,5 @@ class Logger:
                     os.remove(self.filename)
                 except FileNotFoundError:
                     pass
+
             self.filename = None

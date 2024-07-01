@@ -28,6 +28,7 @@ class MainWindow(QMainWindow):
     # Initializes all widgets and sets layout
     def __init__(self, config_manager):
         super(MainWindow, self).__init__()
+        self.mode = None
 
         self.config_manager = config_manager
         self.data_handler = None
@@ -47,7 +48,7 @@ class MainWindow(QMainWindow):
         self.counter_display = CounterDisplay(config_manager)
         self.pressure_display = PressureDisplay(config_manager)
 
-        self.log_control_panel = LogControlPanel()
+        self.log_control_panel = LogControlPanel(self.config_manager)
         self.log_control_panel.pressurize_event_signal.connect(self.pressurize_plot.update_data)
         self.log_control_panel.pressurize_event_signal.connect(self.history_plot.render_pressurize_time)
         self.log_control_panel.depressurize_event_signal.connect(self.depressurize_plot.update_data)
@@ -56,6 +57,10 @@ class MainWindow(QMainWindow):
         self.log_control_panel.event_list_signal.connect(self.history_plot.load_event_list)
         self.log_control_panel.reset_history_signal.connect(self.reset_history)
         self.log_control_panel.sample_sensor_connected.connect(self.set_sample_sensor_connected)
+        self.log_control_panel.log_coefficients_signal.connect(self.pressurize_plot.set_log_coefficients)
+        self.log_control_panel.log_coefficients_signal.connect(self.depressurize_plot.set_log_coefficients)
+        self.log_control_panel.log_coefficients_signal.connect(self.period_plot.set_log_coefficients)
+        self.log_control_panel.log_coefficients_signal.connect(self.history_plot.set_log_coefficients)
 
         # ToolBar
         self.toolbar = ToolBar(config_manager)
@@ -100,7 +105,6 @@ class MainWindow(QMainWindow):
         self.connected = False
         self.set_mode("device")
 
-
     # Connects widgets to backend
     def set_device(self, data_handler):
         self.data_handler = data_handler
@@ -121,7 +125,6 @@ class MainWindow(QMainWindow):
 
         # Connect plot signals
         self.set_mode(self.mode)
-
 
     # Set device signal connections, clear history, set control panel
     def set_mode(self, mode):
@@ -187,7 +190,6 @@ class MainWindow(QMainWindow):
                 self.depressurize_plot.update_data(depress)
                 self.period_plot.update_data(per)
 
-
     # Set control panel, clear pressure
     def set_connected(self, connected):
         self.connected = connected
@@ -204,13 +206,11 @@ class MainWindow(QMainWindow):
                 self.bounding_box.show()
                 self.device_control_panel.hide()
 
-
     def set_sample_sensor_connected(self, connected):
         self.history_plot.set_sample_sensor(connected)
         self.pressurize_plot.set_sample_sensor(connected)
         self.depressurize_plot.set_sample_sensor(connected)
         self.period_plot.set_sample_sensor(connected)
-
 
     def reset_history(self):
         self.set_sample_sensor_connected(True)
@@ -219,7 +219,6 @@ class MainWindow(QMainWindow):
         self.pressurize_plot.reset_history()
         self.depressurize_plot.reset_history()
         self.period_plot.reset_history()
-
 
     # Runs on quitting the application
     def closeEvent(self, event):

@@ -20,6 +20,7 @@ from LogHandler import LogHandler
 from Sentry import Sentry
 from SampleSensorDetector import SampleSensorDetector
 
+
 # Define the DataHandler class
 class DataHandler(QThread):
     # Send events to gui
@@ -34,15 +35,14 @@ class DataHandler(QThread):
     display_error = Signal(str)
     # Show warning or error in toolbar
     toolbar_warning = Signal(str)
-    # Signal to tell device control panel to shutdown
+    # Signal to tell device control panel to shut down
     # Ideally this is unnecessary as the signal should be directly sent to the pulse_generator
     # But currently the control panel can not check the state of the device. This is a workaround.
     shutdown_signal = Signal()
     # Start new log file
     log_signal = Signal(bool)
-    # Tell GUI whether or not the sample sensor is connected 
+    # Tell GUI whether the sample sensor is connected
     sample_sensor_connected = Signal(bool)
-
 
     def __init__(self, config_manager):
         super().__init__()
@@ -65,17 +65,39 @@ class DataHandler(QThread):
         sample_rate = 4000
         event_update_hz = 30
         pressure_update_hz = 5
-        event_display_bounds = (-10,140)
-        self.pressurize_handler = PressurizeHandler(self.loader, self.pressurize_event_signal, sample_rate, event_update_hz, event_display_bounds)
-        self.depressurize_handler = DepressurizeHandler(self.loader, self.depressurize_event_signal, sample_rate, event_update_hz, event_display_bounds)
-        self.period_handler = PeriodHandler(self.loader, self.period_event_signal, sample_rate, event_update_hz, event_display_bounds)
-        self.pressure_handler = PressureHandler(self.loader, self.pressure_event_signal, sample_rate, pressure_update_hz)
+        event_display_bounds = (-10, 140)
+        self.pressurize_handler = PressurizeHandler(
+            self.loader,
+            self.pressurize_event_signal,
+            sample_rate,
+            event_update_hz,
+            event_display_bounds
+        )
+        self.depressurize_handler = DepressurizeHandler(
+            self.loader,
+            self.depressurize_event_signal,
+            sample_rate,
+            event_update_hz,
+            event_display_bounds
+        )
+        self.period_handler = PeriodHandler(
+            self.loader,
+            self.period_event_signal,
+            sample_rate,
+            event_update_hz,
+            event_display_bounds
+        )
+        self.pressure_handler = PressureHandler(
+            self.loader,
+            self.pressure_event_signal,
+            sample_rate,
+            pressure_update_hz)
         self.pump_handler = PumpHandler(self.loader, self.pump_event_signal, sample_rate)
         self.log_handler = LogHandler(self.loader, self.log_signal, sample_rate, pressure_update_hz)
 
         # Logger
         if not self.load_raw:
-            self.logger = Logger()
+            self.logger = Logger(self.config_manager)
             self.pressurize_event_signal.connect(self.logger.log_event)
             self.depressurize_event_signal.connect(self.logger.log_event)
             self.period_event_signal.connect(self.logger.log_event)
@@ -101,7 +123,6 @@ class DataHandler(QThread):
         self.quit_lock = Lock()
 
         self.acquiring_signal.emit(False)
-
 
     # Connect to a device
     def run(self):
@@ -162,7 +183,6 @@ class DataHandler(QThread):
         # Start event loop so that signals sent to this thread may be processed
         self.exec()
 
-
     def device_disconnected(self):
         self.quit()
 
@@ -178,7 +198,6 @@ class DataHandler(QThread):
 
         # Try to reconnect to device
         self.start()
-
 
     def quit(self):
         self.connecting = False
@@ -209,4 +228,5 @@ class DataHandler(QThread):
 
         super().quit()
         self.wait()
-        if acquired: self.quit_lock.release()
+        if acquired:
+            self.quit_lock.release()

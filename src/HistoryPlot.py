@@ -10,16 +10,16 @@ import numpy as np
 class HistoryPlot(QWidget):
     # Dictionary of pens to plot each line
     LINE_STYLES = {
-        "origin pressure": ('#FFDC00',Qt.SolidLine),       # yellow
-        "sample pressure": ('#FFDC00',Qt.DashLine),        # yellow dashed
-        "depress origin slope": ('#59D8E6',Qt.SolidLine),  # cyan
-        "depress sample slope": ('#59D8E6',Qt.DashLine),   # cyan dashed
-        "press origin slope": ('#B9121B',Qt.SolidLine),    # red
-        "press sample slope": ('#B9121B',Qt.DashLine),     # red dashed
-        "depress origin switch": ('#59D8E6',Qt.SolidLine), # cyan
-        "depress sample switch": ('#59D8E6',Qt.DashLine),  # cyan dashed
-        "press origin switch": ('#B9121B',Qt.SolidLine),   # red
-        "press sample switch": ('#B9121B',Qt.DashLine),    # red dashed
+        "origin pressure": ('#FFDC00', Qt.SolidLine),       # yellow
+        "sample pressure": ('#FFDC00', Qt.DashLine),        # yellow dashed
+        "depress origin slope": ('#59D8E6', Qt.SolidLine),  # cyan
+        "depress sample slope": ('#59D8E6', Qt.DashLine),   # cyan dashed
+        "press origin slope": ('#B9121B', Qt.SolidLine),    # red
+        "press sample slope": ('#B9121B', Qt.DashLine),     # red dashed
+        "depress origin switch": ('#59D8E6', Qt.SolidLine), # cyan
+        "depress sample switch": ('#59D8E6', Qt.DashLine),  # cyan dashed
+        "press origin switch": ('#B9121B', Qt.SolidLine),   # red
+        "press sample switch": ('#B9121B', Qt.DashLine),    # red dashed
     }
 
     # Dictionary of lines updated on certain events
@@ -40,13 +40,19 @@ class HistoryPlot(QWidget):
             ]
     }
 
-
     def __init__(self, config_manager):
         super().__init__()
 
         self.config_manager = config_manager
+        self.coefficients = None
+        self.log_coefficients = None
         self.update_settings("plotting_coefficients")
         self.config_manager.settings_updated.connect(self.update_settings)
+        self.data = None
+        self.initial_time = None
+        self.can_plot_pressurize = None
+        self.limits = None
+        self.min_zoom = None
 
         # Dictionary of line references
         self.lines = {}
@@ -112,7 +118,7 @@ class HistoryPlot(QWidget):
         self.switch_time_plot.setLabel('left', 'Time (ms)', **text_style)
         self.switch_time_plot.setLabel('bottom', 'Time (s)', **text_style)
         self.switch_time_plot.setYRange(0, 45)
-        self.switch_time_plot.hideButtons() # Remove autoScale button
+        self.switch_time_plot.hideButtons()  # Remove autoScale button
         style = self.LINE_STYLES["depress origin switch"]
         pen = pg.mkPen(color=style[0], style=style[1])
         self.lines["depress origin switch"] = self.switch_time_plot.plot([], [], pen=pen)
@@ -193,7 +199,7 @@ class HistoryPlot(QWidget):
         slope_labels.addWidget(self.avg_depress_slope_display, 3, 2)
         slope_labels.addItem(spacer, 4, 0)
         slope_labels.addWidget(self.mouse_labels[self.slope_plot], 5, 0, 1, 3, Qt.AlignRight | Qt.AlignBottom)
-        #Switch Time Plot
+        # Switch Time Plot
         self.last_press_switch_display = QLabel("0.00")
         self.avg_press_switch_display = QLabel("0.00")
         last_press_switch_label = QLabel("Last:")
@@ -253,7 +259,6 @@ class HistoryPlot(QWidget):
 
         self.reset_history()
 
-
     def reset_history(self):
         self.data = {
             "time": {
@@ -277,11 +282,9 @@ class HistoryPlot(QWidget):
         for line in self.lines.values():
             line.setData([], [])
 
-        self.limits = (0,1)
+        self.limits = (0, 1)
         self.min_zoom = 1
-        self.pressure_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
-        self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
-        self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
+        self.reset_limits()
 
         self.last_pressure_display.setText("0.000")
         self.avg_pressure_display.setText("0.000")
@@ -303,7 +306,6 @@ class HistoryPlot(QWidget):
         self.switch_time_plot.removeItem(self.depress_time_switch)
 
         self.pressure_plot.setXRange(self.limits[0], self.limits[1])
-
 
     def add_event(self, event):
         # plot only one pressurize per pressurize. plots are noisy with multiple pressurizes.
@@ -327,22 +329,25 @@ class HistoryPlot(QWidget):
         # Update limits to fit new point
         max_view = max(event.event_time - self.initial_time, self.pressure_plot.viewRange()[0][1])
         self.limits = (0, max_view)
-        if self.min_zoom < 10 and max_view >= 10: self.min_zoom = 10
-        self.pressure_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
-        self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
-        self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
+        if self.min_zoom < 10 <= max_view:
+            self.min_zoom = 10
+        self.reset_limits()
         # Update view range iff was already zoomed out
         if currently_zoomed_out:
             # Only need to do pressure plot since plot x ranges are linked
             self.pressure_plot.setXRange(self.limits[0], self.limits[1])
 
+    def reset_limits(self):
+        self.pressure_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange=self.min_zoom)
+        self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange=self.min_zoom)
+        self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange=self.min_zoom)
 
     # Assumes list is sorted by time
-    def load_event_list(self, list):
-        if len(list) == 0:
+    def load_event_list(self, event_list):
+        if len(event_list) == 0:
             return
 
-        for event in list:
+        for event in event_list:
             if event.event_type == Event.DEPRESSURIZE:
                 self.can_plot_pressurize = True
                 self.process_data(event)
@@ -355,16 +360,14 @@ class HistoryPlot(QWidget):
         for update in self.EVENT_LINES[Event.PRESSURIZE]:
             self.lines[update].setData(self.data["time"][Event.PRESSURIZE], self.data[update])
 
-        max_view = max(list[-1].event_time - self.initial_time, self.pressure_plot.viewRange()[0][1])
+        max_view = max(event_list[-1].event_time - self.initial_time, self.pressure_plot.viewRange()[0][1])
         self.limits = (0, max_view)
-        if self.min_zoom < 10 and max_view >= 10: self.min_zoom = 10
-        self.pressure_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
-        self.slope_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
-        self.switch_time_plot.setLimits(xMin=self.limits[0], xMax=self.limits[1], minXRange = self.min_zoom)
+        if self.min_zoom < 10 <= max_view:
+            self.min_zoom = 10
+        self.reset_limits()
         # Only need to do pressure plot since plot x ranges are linked
         self.pressure_plot.setXRange(self.limits[0], self.limits[1])
         self.set_text()
-
 
     def process_data(self, event):
         # Define start time of plots
@@ -373,54 +376,50 @@ class HistoryPlot(QWidget):
 
         # Update data
         self.data["time"][event.event_type].append(event.event_time - self.initial_time)
+        coefficients = self.coefficients if self.log_coefficients is None else self.log_coefficients
         for update in self.EVENT_LINES[event.event_type]:
             # Add event to data dict
-            self.data[update].append(event.get_event_info(update) * self.coefficients[update])
-
+            self.data[update].append(event.get_event_info(update) * coefficients[update])
 
     # Sets all text to the data in view
     def set_text(self):
-        range = self.pressure_plot.viewRange()[0]
+        view_range = self.pressure_plot.viewRange()[0]
         press_range = (
-            bisect_left(self.data["time"][Event.PRESSURIZE], range[0]),
-            bisect_right(self.data["time"][Event.PRESSURIZE], range[1]) - 1
+            bisect_left(self.data["time"][Event.PRESSURIZE], view_range[0]),
+            bisect_right(self.data["time"][Event.PRESSURIZE], view_range[1]) - 1
         )
         depress_range = (
-            bisect_left(self.data["time"][Event.DEPRESSURIZE], range[0]),
-            bisect_right(self.data["time"][Event.DEPRESSURIZE], range[1]) - 1
+            bisect_left(self.data["time"][Event.DEPRESSURIZE], view_range[0]),
+            bisect_right(self.data["time"][Event.DEPRESSURIZE], view_range[1]) - 1
         )
 
         if depress_range[1] - depress_range[0] > 0:
             self.last_pressure_display.setText(f"{self.data['origin pressure'][depress_range[1]]:.3f}")
-            self.avg_pressure_display.setText(f"{np.mean(self.data['origin pressure'][depress_range[0]:depress_range[1]]):.3f}")
+            self.avg_pressure_display.setText(
+                f"{np.mean(self.data['origin pressure'][depress_range[0]:depress_range[1]]):.3f}"
+            )
             self.last_depress_slope_display.setText(f"{self.data['depress origin slope'][depress_range[1]]:.2f}")
-            self.avg_depress_slope_display.setText(f"{np.mean(self.data['depress origin slope'][depress_range[0]:depress_range[1]]):.2f}")
+            self.avg_depress_slope_display.setText(
+                f"{np.mean(self.data['depress origin slope'][depress_range[0]:depress_range[1]]):.2f}"
+            )
             self.last_depress_switch_display.setText(f"{self.data['depress origin switch'][depress_range[1]]:.2f}")
-            self.avg_depress_switch_display.setText(f"{np.mean(self.data['depress origin switch'][depress_range[0]:depress_range[1]]):.2f}")
+            self.avg_depress_switch_display.setText(
+                f"{np.mean(self.data['depress origin switch'][depress_range[0]:depress_range[1]]):.2f}"
+            )
         if press_range[1] - press_range[0] > 0:
             self.last_press_slope_display.setText(f"{self.data['press origin slope'][press_range[1]]:.2f}")
-            self.avg_press_slope_display.setText(f"{np.mean(self.data['press origin slope'][press_range[0]:press_range[1]]):.2f}")
+            self.avg_press_slope_display.setText(
+                f"{np.mean(self.data['press origin slope'][press_range[0]:press_range[1]]):.2f}"
+            )
             self.last_press_switch_display.setText(f"{self.data['press origin switch'][press_range[1]]:.2f}")
-            self.avg_press_switch_display.setText(f"{np.mean(self.data['press origin switch'][press_range[0]:press_range[1]]):.2f}")
-
+            self.avg_press_switch_display.setText(
+                f"{np.mean(self.data['press origin switch'][press_range[0]:press_range[1]]):.2f}"
+            )
 
     def update_settings(self, key):
         if key == "plotting_coefficients":
             plotting_coefficients = self.config_manager.get_settings(key)
-            # Dictionary of coefficient to apply when plotting each channel
-            self.coefficients = {
-                "origin pressure": plotting_coefficients[Channel.HI_PRE_ORIG],
-                "sample pressure": plotting_coefficients[Channel.HI_PRE_SAMPLE],
-                "depress origin slope": plotting_coefficients[Channel.HI_PRE_ORIG] * 4,
-                "depress sample slope": plotting_coefficients[Channel.HI_PRE_SAMPLE] * 4,
-                "press origin slope": plotting_coefficients[Channel.HI_PRE_ORIG] * 4,
-                "press sample slope": plotting_coefficients[Channel.HI_PRE_SAMPLE] * 4,
-                "depress origin switch": 0.25,
-                "depress sample switch": 0.25,
-                "press origin switch": 0.25,    # ms per index
-                "press sample switch": 0.25,    # ms per index
-            }
-
+            self.coefficients = self.define_coefficients(plotting_coefficients)
 
     def render_pressurize_time(self, event):
         # Remove old time
@@ -431,14 +430,7 @@ class HistoryPlot(QWidget):
         if event is not None:
             time = event.event_time - self.initial_time
             style = self.LINE_STYLES["press origin slope"]
-            pen = pg.mkPen(color=style[0], style=style[1])
-            self.press_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
-            self.press_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
-            self.press_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
-            self.pressure_plot.addItem(self.press_time_press)
-            self.slope_plot.addItem(self.press_time_slope)
-            self.switch_time_plot.addItem(self.press_time_switch)
-
+            self.render_time_indicator(style, time)
 
     def render_depressurize_time(self, event):
         # Remove old time
@@ -449,26 +441,27 @@ class HistoryPlot(QWidget):
         if event is not None:
             time = event.event_time - self.initial_time
             style = self.LINE_STYLES["depress origin slope"]
-            pen = pg.mkPen(color=style[0], style=style[1])
-            self.depress_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
-            self.depress_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
-            self.depress_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
-            self.pressure_plot.addItem(self.depress_time_press)
-            self.slope_plot.addItem(self.depress_time_slope)
-            self.switch_time_plot.addItem(self.depress_time_switch)
+            self.render_time_indicator(style, time)
 
+    def render_time_indicator(self, style, time):
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.press_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
+        self.press_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
+        self.press_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
+        self.pressure_plot.addItem(self.press_time_press)
+        self.slope_plot.addItem(self.press_time_slope)
+        self.switch_time_plot.addItem(self.press_time_switch)
 
     def mouse_moved(self, plot, event):
-        mousePoint = plot.getViewBox().mapSceneToView(event[0])
+        mouse_point = plot.getViewBox().mapSceneToView(event[0])
         view_range = plot.getViewBox().viewRange()
 
         # Check if the mouse point is within the view range
-        if (view_range[0][0] <= mousePoint.x() <= 0.98 * view_range[0][1] and 
-            view_range[1][0] <= mousePoint.y() <= view_range[1][1]):
-            self.mouse_labels[plot].setText(f"{mousePoint.x():.2f}, {mousePoint.y():.2f}")
+        if (view_range[0][0] <= mouse_point.x() <= 0.98 * view_range[0][1] and
+                view_range[1][0] <= mouse_point.y() <= view_range[1][1]):
+            self.mouse_labels[plot].setText(f"{mouse_point.x():.2f}, {mouse_point.y():.2f}")
         else:
             self.mouse_labels[plot].setText("")
-
 
     def set_sample_sensor(self, connected):
         if not connected and not self.hide_sample_sensor:
@@ -487,3 +480,25 @@ class HistoryPlot(QWidget):
             self.switch_time_plot.addItem(self.lines["depress sample switch"])
             self.hide_sample_sensor = False
 
+    def set_log_coefficients(self, coefficients):
+        self.log_coefficients = self.define_coefficients(coefficients)
+
+    # Dictionary of coefficient to apply when plotting each channel
+    @staticmethod
+    def define_coefficients(plotting_coefficients):
+        if plotting_coefficients is None:
+            return None
+        # Dictionary of coefficient to apply when plotting each channel
+        coefficients = {
+            "origin pressure": plotting_coefficients[Channel.HI_PRE_ORIG],
+            "sample pressure": plotting_coefficients[Channel.HI_PRE_SAMPLE],
+            "depress origin slope": plotting_coefficients[Channel.HI_PRE_ORIG] * 4,
+            "depress sample slope": plotting_coefficients[Channel.HI_PRE_SAMPLE] * 4,
+            "press origin slope": plotting_coefficients[Channel.HI_PRE_ORIG] * 4,
+            "press sample slope": plotting_coefficients[Channel.HI_PRE_SAMPLE] * 4,
+            "depress origin switch": 0.25,
+            "depress sample switch": 0.25,
+            "press origin switch": 0.25,  # ms per index
+            "press sample switch": 0.25,  # ms per index
+        }
+        return coefficients

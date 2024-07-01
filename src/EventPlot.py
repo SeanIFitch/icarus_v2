@@ -20,7 +20,6 @@ class EventPlot(QWidget):
         Channel.PRE_VALVE: ('#B9121B', Qt.SolidLine),       # red
     }
 
-
     def __init__(self, event_type, config_manager):
         super().__init__()
 
@@ -28,6 +27,7 @@ class EventPlot(QWidget):
         self.config_manager = config_manager
         self.config_manager.settings_updated.connect(self.update_settings)
         self.coefficients = config_manager.get_settings("plotting_coefficients")
+        self.log_coefficients = None
         self.hide_valve_setting = config_manager.get_settings("hide_valve_sensors")
         self.hide_sample_sensor = False
         display_channels = [Channel.TARGET, Channel.HI_PRE_SAMPLE, Channel.HI_PRE_ORIG, Channel.DEPRE_VALVE, Channel.PRE_VALVE]
@@ -36,27 +36,29 @@ class EventPlot(QWidget):
             display_channels += [Channel.PRE_LOW, Channel.PRE_UP]
             self.x_unit = 'ms'
             title = "Pressurize"
-            #self.plot.setXRange(-10, 140)
         elif event_type == Event.DEPRESSURIZE:
             display_channels += [Channel.DEPRE_LOW, Channel.DEPRE_UP]
             self.x_unit = 'ms'
             title = "Depressurize"
-            #self.plot.setXRange(-10, 140)
-        elif event_type == Event.PERIOD:
+        else:
             self.x_unit = 's'
             title = "Period"
-
 
         self.plot = pg.PlotWidget(background= self.palette().color(QPalette.Window))
         self.plot.showGrid(x=True, y=True)
         self.plot.setYRange(0, 3)
-        self.plot.setMouseEnabled(x=False, y=False) # Prevent zooming
-        self.plot.hideButtons() # Remove autoScale button
+        self.plot.setMouseEnabled(x=False, y=False)  # Prevent zooming
+        self.plot.hideButtons()  # Remove autoScale button
         # Labels
         text_color = self.palette().color(QPalette.WindowText)
         self.plot.setTitle(title, color=text_color, size="17pt")
-        self.plot.setLabel('left', 'Pressure (kbar)', **{'color':text_color})
-        self.plot.setLabel('bottom', f'Time ({self.x_unit})', **{'color':text_color})
+        self.plot.setLabel('left', 'Pressure (kbar)', **{'color': text_color})
+        self.plot.setLabel('bottom', f'Time ({self.x_unit})', **{'color': text_color})
+        self.width_display = None
+        self.period_display = None
+        self.delay_display = None
+        self.mouse_label = None
+        self.proxy = None
 
         # Create a dictionary of lines for each channel listed in display_channels
         self.line_references = {}
@@ -76,7 +78,6 @@ class EventPlot(QWidget):
         layout.addLayout(labels, 0, 0, Qt.AlignRight | Qt.AlignTop)
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
-
 
     def init_labels(self):
         layout = QGridLayout()
@@ -118,7 +119,6 @@ class EventPlot(QWidget):
         layout.setContentsMargins(0, 35, 5, 45)
         return layout
 
-
     def update_data(self, event):
         if event is None:
             self.reset_history()
@@ -127,14 +127,15 @@ class EventPlot(QWidget):
         data = event.data
         # Calculate times based on event.step_time and event_index
         time_before_event = - event.event_index * event.step_time
-        time_after_event = (len(event.data)  - event.event_index - 1) * event.step_time
+        time_after_event = (len(event.data) - event.event_index - 1) * event.step_time
         times = np.linspace(time_before_event, time_after_event, len(data))
         if self.x_unit == "s":
             times /= 1000
 
         # update data for each line
+        coefficients = self.coefficients if self.log_coefficients is None else self.log_coefficients
         for channel, line_reference in self.line_references.items():
-            coefficient = self.coefficients[channel]
+            coefficient = coefficients[channel]
             line_reference.setData(times, get_channel(data, channel) * coefficient)
 
         # Update timings labels
@@ -148,7 +149,6 @@ class EventPlot(QWidget):
             self.period_display.setText(f"{period_width:.2f}")
             self.delay_display.setText(f"{delay_width:.2f}")
 
-
     def update_settings(self, key):
         if key == "plotting_coefficients":
             self.coefficients = self.config_manager.get_settings(key)
@@ -156,23 +156,20 @@ class EventPlot(QWidget):
             self.hide_valve_setting = self.config_manager.get_settings(key)
             self.hide_valve_sensors(self.hide_valve_setting)
 
-
     def reset_history(self):
         for line_reference in self.line_references.values():
             line_reference.setData([], [])
 
-
     def mouse_moved(self, event):
-        mousePoint = self.plot.getViewBox().mapSceneToView(event[0])
+        mouse_point = self.plot.getViewBox().mapSceneToView(event[0])
         view_range = self.plot.getViewBox().viewRange()
 
         # Check if the mouse point is within the view range
-        if (view_range[0][0] <= mousePoint.x() <= 0.98 * view_range[0][1] and 
-            view_range[1][0] <= mousePoint.y() <= view_range[1][1]):
-            self.mouse_label.setText(f"{mousePoint.x():.2f}, {mousePoint.y():.2f}")
+        if (view_range[0][0] <= mouse_point.x() <= 0.98 * view_range[0][1] and
+                view_range[1][0] <= mouse_point.y() <= view_range[1][1]):
+            self.mouse_label.setText(f"{mouse_point.x():.2f}, {mouse_point.y():.2f}")
         else:
             self.mouse_label.setText("")
-
 
     def hide_valve_sensors(self, hide_valve_sensors):
         if self.event_type == Event.PRESSURIZE:
@@ -193,7 +190,6 @@ class EventPlot(QWidget):
                     self.plot.addItem(self.line_references[channel])
                     self.line_currently_shown[channel] = True
 
-
     def set_sample_sensor(self, connected):
         if not connected and not self.hide_sample_sensor:
             self.plot.removeItem(self.line_references[Channel.HI_PRE_SAMPLE])
@@ -201,3 +197,6 @@ class EventPlot(QWidget):
         elif connected and self.hide_sample_sensor:
             self.plot.addItem(self.line_references[Channel.HI_PRE_SAMPLE])
             self.hide_sample_sensor = False
+
+    def set_log_coefficients(self, coefficients):
+        self.log_coefficients = coefficients

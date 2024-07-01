@@ -31,11 +31,20 @@ class LogControlPanel(QGroupBox):
     event_list_signal = Signal(list)
     reset_history_signal = Signal()
     sample_sensor_connected = Signal(bool)
+    log_coefficients_signal = Signal(object)
 
-    def __init__(self, parent=None):
+    def __init__(self, config_manager, parent=None):
         super().__init__(parent=parent)
 
         self.log_reader = LogReader()
+        self.press_index = None
+        self.depress_index = None
+        self.period_index = None
+        self.filename = None
+        self.edit_dialog = None
+        self.name_edit = None
+        self.currently_logging = None
+        self.sample_sensor_detector = SampleSensorDetector(config_manager, self.sample_sensor_connected)
 
         # Title
         title = QLabel("Viewing Log")
@@ -86,25 +95,25 @@ class LogControlPanel(QGroupBox):
         layout = QVBoxLayout(self)
         layout.addWidget(title, alignment=Qt.AlignHCenter)
         layout.addWidget(self.filename_label)
-        layout.addItem(QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)) # Spacer to separate sections
+        # Spacer to separate sections
+        layout.addItem(QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding))
         layout.addLayout(time_layout)
         layout.addLayout(step_layout)
-        layout.addItem(QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)) # Spacer to separate sections
+        # Spacer to separate sections
+        layout.addItem(QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding))
         layout.addWidget(self.current_button)
         layout.addWidget(open_button)
         layout.addWidget(self.new_log_button)
         layout.addWidget(self.edit_button)
 
         self.set_logging(False)
-        self.setFixedWidth(287) # Width of device control panel
-
+        self.setFixedWidth(287)  # Width of device control panel
 
     def open_current(self):
         if not self.currently_logging:
             return
         filename = self.log_reader.logger.filename
         self.open_log(filename)
-
 
     def choose_log(self):
         base_dir = get_base_directory()
@@ -116,12 +125,11 @@ class LogControlPanel(QGroupBox):
             return
         self.open_log(file)
 
-
     def open_log(self, file):
         self.reset_history_signal.emit()
         try:
             self.log_reader.read_events(file)
-        except:
+        except Exception as e:
             open_error_dialog("Incorrect format for log file.")
             return
 
@@ -139,32 +147,23 @@ class LogControlPanel(QGroupBox):
         # Adjust font size to fit in the view
         for i in range(17, 8, -1):
             self.filename_label.setStyleSheet(f"font-size: {i}px")
-            if QFontMetrics(self.filename_label.font()).boundingRect(os.path.basename(self.filename)).width() < self.width() - 25:
+            if (QFontMetrics(self.filename_label.font()).boundingRect(os.path.basename(self.filename)).width()
+                    < self.width() - 25):
                 break
 
-        # Set limit on time line edit
+        # Set limit on time line_edit
         if len(self.log_reader.events) > 0:
             upper_bound = self.log_reader.events[-1].event_time - self.log_reader.events[0].event_time
         else:
             upper_bound = 0
         self.time_edit.setValidator(QDoubleValidator(0, upper_bound, 2))
 
-        # TODO: GET COEFFICIENTS FROM LOG FILES
-        from Event import Channel
-        co = { Channel.TARGET: 0.00015891062810171653, 
-            Channel.DEPRE_LOW: 0.00015, 
-            Channel.DEPRE_UP: 0.00015, 
-            Channel.PRE_LOW: 0.00015, 
-            Channel.PRE_UP: 0.00015, 
-            Channel.HI_PRE_ORIG: 0.00021041129395578411, 
-            Channel.HI_PRE_SAMPLE: 0.00020670162896002954, 
-            Channel.DEPRE_VALVE: 2.8, 
-            Channel.PRE_VALVE: 2.85
-        }
-        sample_sensor_connected = SampleSensorDetector.detect_from_list(self.log_reader.events, co)
-        self.sample_sensor_connected.emit(sample_sensor_connected)
+        self.sample_sensor_detector.detect_from_list(
+            self.log_reader.events,
+            self.log_reader.log_coefficients
+        )
+        self.log_coefficients_signal.emit(self.log_reader.log_coefficients)
         self.event_list_signal.emit(self.log_reader.events)
-
 
     def edit_file(self):
         self.edit_dialog = QDialog(self)
@@ -190,7 +189,6 @@ class LogControlPanel(QGroupBox):
         self.edit_dialog.setLayout(layout)
         self.edit_dialog.exec_()
 
-
     def rename_file(self):
         new_name = self.name_edit.text()
         if new_name:
@@ -207,7 +205,6 @@ class LogControlPanel(QGroupBox):
             except OSError as e:
                 open_error_dialog(e)
         self.edit_dialog.close()
-
 
     def delete_file(self):
         confirm_dialog = QMessageBox.question(self, "Are you sure?", "This action cannot be undone.", QMessageBox.Yes | QMessageBox.Cancel)
@@ -230,11 +227,10 @@ class LogControlPanel(QGroupBox):
             self.reset_history_signal.emit()
         self.edit_dialog.close()
 
-
     def select_time(self):
         try:
-            time=float(self.time_edit.text())
-        except:
+            time = float(self.time_edit.text())
+        except Exception as e:
             return
         if len(self.log_reader.events) == 0:
             return
@@ -263,7 +259,6 @@ class LogControlPanel(QGroupBox):
         self.pressurize_event_signal.emit(press)
         self.depressurize_event_signal.emit(depress)
         self.period_event_signal.emit(period)
-
 
     def emit_next_event(self):
         index = max(self.press_index, self.depress_index, self.period_index) + 1
@@ -299,7 +294,6 @@ class LogControlPanel(QGroupBox):
         time = max_time - self.log_reader.events[0].event_time
         self.time_edit.setText(str(ceil(time)))
 
-
     def emit_last_event(self):
         index = min(self.press_index, self.depress_index, self.period_index) - 1
         if index < 0:
@@ -334,23 +328,21 @@ class LogControlPanel(QGroupBox):
         time = max_time - self.log_reader.events[0].event_time
         self.time_edit.setText(str(ceil(time)))
 
-
     # Also reset the log file when panel is hidden
     def hide(self):
         super().hide()
         self.filename_label.setText("")
         self.time_edit.setText("")
+        self.log_coefficients_signal.emit(None)
 
         self.next_button.setEnabled(False)
         self.last_button.setEnabled(False)
         self.edit_button.setEnabled(False)
 
-
     def set_logging(self, connected):
         self.currently_logging = connected
         self.current_button.setEnabled(connected)
         self.new_log_button.setEnabled(connected)
-
 
     def new_log(self):
         if self.currently_logging:

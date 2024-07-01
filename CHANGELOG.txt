@@ -12,6 +12,7 @@ Added:
  - Sentry shuts device down if in experiment mode and:
     - pressure does not increase after rapid pump events
     - average pressure difference over periods exceeds 25% twice in a row
+ - Log files store coefficients, so they can be correctly viewed on other machines
 
 Changed:
  - Reset history plots when new log starts
