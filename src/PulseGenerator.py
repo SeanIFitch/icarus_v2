@@ -17,7 +17,6 @@ class PulseGenerator(QThread):
     PRESSURIZE = 2
     LOG = 4
 
-
     def __init__(self, config_manager) -> None:
         super().__init__()
 
@@ -28,19 +27,18 @@ class PulseGenerator(QThread):
         self.settings = config_manager.get_settings('timing_settings')
         self.config_manager.settings_updated.connect(self.update_settings)
 
-        # Whether or not the device should be currently generating pulses
+        # Whether the device should be currently generating pulses
         self.pulsing = False
-
 
     def set_device(self, device):
         self.device = device
-
 
     # Pressurizes and depressurizes at regular intervals
     def run(self):
         self.pulsing = True
         while self.pulsing:
-            # Make sure widths are not edited in the middle of a period. Otherwise this could cause sleeping for negative times.
+            # Make sure widths are not edited in the middle of a period.
+            # Otherwise, this could cause sleeping for negative times.
             pressurize_width = self.settings["pressurize_width"]
             depressurize_width = self.settings["depressurize_width"]
             period_width = self.settings["period_width"]
@@ -56,10 +54,9 @@ class PulseGenerator(QThread):
             if not self.no_hang_sleep(begin_time + period_width):
                 break
 
-
     # Sleep until end_time, checking for self.pulsing frequently
     # Returns False if self.pulsing becomes false, true otherwise
-    def no_hang_sleep(self, end_time, running_check_hz = 10):
+    def no_hang_sleep(self, end_time, running_check_hz=10):
         remaining_time = end_time - time()
         while remaining_time >= 0:
             sleep_time = min(1 / running_check_hz, remaining_time)
@@ -70,35 +67,27 @@ class PulseGenerator(QThread):
                 return False
         return True
 
-
     def set_pressurize_low(self):
         self._set_low(self.PRESSURIZE)
-
 
     def set_pressurize_high(self):
         self._set_high(self.PRESSURIZE)
 
-
     def set_depressurize_low(self):
         self._set_low(self.DEPRESSURIZE)
-
 
     def set_depressurize_high(self):
         self._set_high(self.DEPRESSURIZE)
 
-
     def set_pump_low(self):
         self._set_low(self.PUMP)
-
 
     def set_pump_high(self):
         self._set_high(self.PUMP)
 
-
     def update_settings(self, key = 'timing_settings'):
         if key == 'timing_settings':
             self.settings = self.config_manager.get_settings(key)
-
 
     # Sets channel low for duration milliseconds
     # Raises RuntimeError if channel is already low
@@ -118,7 +107,7 @@ class PulseGenerator(QThread):
         current_time = time()
 
         # Set specified channel low
-        self.device.set_DIO(current_dio ^ channel_bit) # bitwise XOR
+        self.device.set_dio(current_dio ^ channel_bit) # bitwise XOR
 
         # Sleep for remaining time
         duration_sec = float(duration) / 1000
@@ -127,8 +116,7 @@ class PulseGenerator(QThread):
         sleep(remaining_time)
 
         # Reset to original DIO
-        self.device.set_DIO(current_dio)
-
+        self.device.set_dio(current_dio)
 
     # Sets channel low
     # Raises RuntimeError if channel is already low
@@ -141,12 +129,11 @@ class PulseGenerator(QThread):
         channel_bit = 2 ** channel
 
         # Make sure the channel we are setting starts high.
-        if not current_dio & channel_bit: # bitwise AND
+        if not current_dio & channel_bit:  # bitwise AND
             raise RuntimeError(f"Error: setting low digital channel {channel} which is already low.")
 
         # set low
-        self.device.set_DIO(current_dio ^ channel_bit) # bitwise XOR
-
+        self.device.set_dio(current_dio ^ channel_bit)  # bitwise XOR
 
     # Sets channel high
     # Raises RuntimeError if channel is already high
@@ -159,12 +146,11 @@ class PulseGenerator(QThread):
         channel_bit = 2 ** channel
 
         # Make sure the channel we are setting starts low.
-        if current_dio & channel_bit: # bitwise AND
+        if current_dio & channel_bit:  # bitwise AND
             raise RuntimeError(f"Error: setting high digital channel {channel} which is already high.")
 
         # set high
-        self.device.set_DIO(current_dio | channel_bit) # bitwise OR
-
+        self.device.set_dio(current_dio | channel_bit)  # bitwise OR
 
     def quit(self):
         self.pulsing = False

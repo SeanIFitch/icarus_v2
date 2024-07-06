@@ -3,21 +3,31 @@ from array import array
 from threading import Lock
 
 
-#device information
+# Device information
 DI_4108_VENDOR_ID = 0x0683
 DI_4108_PRODUCT_ID = 0x4108
 
 
-class Di4108USB():
+class Di4108USB:
     def __init__(self) -> None:
         """
         Initializes a di_4108 object and sets up device for reading.
         """
-        self.stop_lock = Lock() # Used to make sure you do not stop the device while reading
+        self.stop_lock = Lock()  # Used to make sure you do not stop the device while reading
+
+        self.device = None
+        self.endpoint_out = None
+        self.endpoint_in = None
+        self.usb_buff = None
+        self.sample_rate = None
+        self.points_to_read = None
+        self.channels_to_read = None
+        self.bytes_to_read = None
+        self.current_dio = None
+        self.acquiring = None
 
         self.find_device()
         self.setup_device()
-
 
     def find_device(self):
         """
@@ -33,20 +43,20 @@ class Di4108USB():
             else:
                 # Attempt to read from the device as a simple permission test
                 cfg = self.device.get_active_configuration()
-                intf = cfg[(0,0)]
+                intf = cfg[(0, 0)]
                 ep = usb.util.find_descriptor(
                     intf,
-                    custom_match=lambda e: usb.util.endpoint_direction(e.bEndpointAddress) == usb.util.ENDPOINT_IN
+                    custom_match=lambda err: usb.util.endpoint_direction(err.bEndpointAddress) == usb.util.ENDPOINT_IN
                 )                
                 assert ep is not None
                 # If no exception was raised, assume permissions are adequate
                 return True
         except usb.core.USBError as e:
             if e.errno == 13:
-                raise  RuntimeError("Insufficient permissions to access the USB device. Please set up udev rules by runnning setup/install_udev_rules.sh.")
+                raise RuntimeError("Insufficient permissions to access the USB device. " +
+                                   "Please set up udev rules by running setup/install_udev_rules.sh.")
             else:
-                raise RuntimeError
-
+                raise RuntimeError(e)
 
     def setup_device(self):
         # Reinitialize device
@@ -56,9 +66,9 @@ class Di4108USB():
 
         # Get and setup endpoints
         cfg = self.device.get_active_configuration()
-        intf = cfg[(0,0)]
-        match_out = lambda e: usb.util.endpoint_direction(e.bEndpointAddress) == usb.util.ENDPOINT_OUT
-        match_in = lambda e: usb.util.endpoint_direction(e.bEndpointAddress) == usb.util.ENDPOINT_IN
+        intf = cfg[(0, 0)]
+        def match_out(e): return usb.util.endpoint_direction(e.bEndpointAddress) == usb.util.ENDPOINT_OUT
+        def match_in(e): return usb.util.endpoint_direction(e.bEndpointAddress) == usb.util.ENDPOINT_IN
         self.endpoint_out = usb.util.find_descriptor(intf, custom_match=match_out)
         self.endpoint_in = usb.util.find_descriptor(intf, custom_match=match_in)
         self.endpoint_out.wMaxPacketSize = 7200000
@@ -79,10 +89,8 @@ class Di4108USB():
         self.send_cmd("filter * 1")
 
         # Set slist which is order of channels to sample. See device protocol for more info.
-        # Prior documentation said this was:
-        #   A0 at +-5V, A1 at +-5V, A2 at +-.2V, A3 at +-.2V, A4 at +-.2V, A5 at +-.2V, A6 at +-5V, A7 at +-5V, digital input
-        # This is actually A0-A6 at +-10V, Digital
-        slist = ["0 0","1 1","2 2","3 3","4 4","5 5","6 6","7 8"]
+        # This is A0-A6 at +-10V, Digital
+        slist = ["0 0", "1 1", "2 2", "3 3", "4 4", "5 5", "6 6", "7 8"]
         for i in slist:
             self.send_cmd("slist " + i)
 
@@ -100,18 +108,15 @@ class Di4108USB():
         # 2 bytes per channel
         self.bytes_to_read = self.channels_to_read * 2 * self.points_to_read
 
-
-    def send_cmd(self, command, check_echo = True):
+    def send_cmd(self, command, check_echo=True):
         """
         Sends a command to the USB device.
 
         :param command: The command to be sent.
+        :param check_echo: Whether to compare the return of the device. Do not use while acquiring data.
         """
-        try:
-            self.device.write(self.endpoint_out, (command+'\r').encode('utf-8'))
-        except:
-            raise RuntimeError("Device write failed.")
-        
+        self.device.write(self.endpoint_out, (command+'\r').encode('utf-8'))
+
         # Expect a response unless the device is currently reading
         # Not reading a response can leave the response in the buffer which can cause data processing issues or overflow
         if not self.acquiring:
@@ -120,26 +125,25 @@ class Di4108USB():
                 response = bytes(response).decode('utf-8', errors='ignore').strip('\0')
             expected_response = command+'\r'
             if check_echo and response != expected_response:
-                print(f"Error sending command: Response \"{expected_response.strip()}\" expected but \"{response.strip()}\" received.")
-
+                print(f"Error sending command: Response \"{expected_response.strip()}\"" +
+                      f"expected but \"{response.strip()}\" received.")
 
     # Default value - pump off, valves closed, not logging
-    def set_DIO(self, value = 0b1111111, check_echo = True):
+    def set_dio(self, value=0b1111111, check_echo=True):
         """
         Sets digital input/output state.
 
         :param value: States to set.
+        :param check_echo: Whether to compare the return of the device. Do not use while acquiring data.
         """
         self.current_dio = int(value)
         self.send_cmd("dout " + str(int(value)), check_echo=check_echo)
 
-
-    def read(self, size = None, timeout = 2000):
-        if size == None:
+    def read(self, size=None, timeout=2000):
+        if size is None:
             size = self.usb_buff
         data = self.device.read(self.endpoint_in, size, timeout=timeout)
         return data
-
 
     def start_scan(self):
         # Prevent stopping device while reading
@@ -149,11 +153,9 @@ class Di4108USB():
 
         self.send_cmd('start', check_echo=False)
 
-
     def end_scan(self):
         if self.stop_lock.locked():
             self.stop_lock.release()
-
 
     def read_data(self):
         data = self.read(self.bytes_to_read)
@@ -168,14 +170,12 @@ class Di4108USB():
 
         return data
 
-
     def close_device(self):
         """
         Closes the USB device.
         """
         if self.device is not None:
             usb.util.dispose_resources(self.device)
-
 
     def stop(self):
         """
@@ -186,8 +186,7 @@ class Di4108USB():
         with self.stop_lock:
             self.send_cmd("stop", check_echo=False)
         # Turn all valves off
-        self.set_DIO(0b1111111, check_echo = False)
-
+        self.set_dio(0b1111111, check_echo=False)
 
     def get_current_dio(self):
         return self.current_dio

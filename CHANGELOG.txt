@@ -29,6 +29,7 @@ Fixed:
  - Allow deletion of open log files
  - Catch exception when opening log file of improper format
  - Prevent deleting a log file twice if no events are logged
+ - Handle exception when USB device is disconnected after the device sleeps
 
 
 v0.1.1 (2024-05-07)
