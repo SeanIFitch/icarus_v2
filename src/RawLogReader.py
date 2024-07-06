@@ -7,12 +7,15 @@ import pickle
 
 # Fake device to load raw data files
 # Used only for testing.
-class RawLogReader():
+class RawLogReader:
     def __init__(self, filename) -> None:
         self.stop_lock = Lock() # Used to make sure you do not stop the device while reading
         self.sample_rate = 4000
         self.points_to_read = 64
         self.channels_to_read = 8
+        self.initial_time = None
+        self.current_dio = None
+        self.acquiring = None
         self.bytes_to_read = self.channels_to_read * 2 * self.points_to_read
         self.stop()
 
@@ -20,7 +23,6 @@ class RawLogReader():
         self.read_count = 0
         # File
         self.file = lzma.open(filename, "rb")
-
 
     def read_data(self):
         if self.read_count == 0:
@@ -41,15 +43,13 @@ class RawLogReader():
         except EOFError:
             raise RuntimeError("End of file reached.")
 
-
     def close_device(self):
         self.file.close()
-
 
     # Dummy functions to simulate DI4108USB behavior.
     # None of these do anything more than change member variables.
 
-    def set_DIO(self, value = 0b1111111, check_echo = True):
+    def set_dio(self, value=0b1111111, check_echo=True):
         self.current_dio = int(value)
 
     def start_scan(self):
@@ -64,14 +64,14 @@ class RawLogReader():
 
     def stop(self):
         """
-        - stops data acquisiion
+        - stops data acquisition
         - set digital IO to all high
         """
         self.acquiring = False # Signals to stop acquiring
         with self.stop_lock:
             pass
         # Turn all valves off
-        self.set_DIO(0b1111111, check_echo = False)
+        self.set_dio(0b1111111, check_echo=False)
 
     def get_current_dio(self):
         return self.current_dio
