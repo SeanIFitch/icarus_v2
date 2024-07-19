@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QPushButton
 from PySide6.QtCore import Signal, Slot
+import qdarktheme
 
 
 # PushButton subclass which toggles and runs separate functions on check and uncheck
@@ -16,6 +17,9 @@ class ToggleButton(QPushButton):
         self.uncheck_color = uncheck_color
         self.check_func = None
         self.uncheck_func = None
+
+        self.text_color = qdarktheme.load_palette().text().color()
+        self.border_color = qdarktheme.load_palette().mid().color()
 
         if self.check_text is not None:
             self.setText(check_text)
@@ -67,12 +71,14 @@ class ToggleButton(QPushButton):
         self.setStyleSheet(f"""
             QPushButton {{
                 background-color: {color};
-                border: none;
             }}
             QPushButton:hover {{
                 background-color: {color};
             }}
             QPushButton:pressed {{
                 background-color: {color};
+            }}
+            QPushButton {{
+                color: {self.text_color.name()};
             }}
         """)

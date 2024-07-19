@@ -5,39 +5,40 @@ import pyqtgraph as pg
 from Event import Event, Channel
 from bisect import bisect_right, bisect_left
 import numpy as np
+import qdarktheme
 
 
 class HistoryPlot(QWidget):
     # Dictionary of pens to plot each line
     LINE_STYLES = {
-        "origin pressure": ('#FFDC00', Qt.SolidLine),       # yellow
-        "sample pressure": ('#FFDC00', Qt.DashLine),        # yellow dashed
+        "origin pressure": ('#FFDC00', Qt.SolidLine),  # yellow
+        "sample pressure": ('#FFDC00', Qt.DashLine),  # yellow dashed
         "depress origin slope": ('#59D8E6', Qt.SolidLine),  # cyan
-        "depress sample slope": ('#59D8E6', Qt.DashLine),   # cyan dashed
-        "press origin slope": ('#B9121B', Qt.SolidLine),    # red
-        "press sample slope": ('#B9121B', Qt.DashLine),     # red dashed
-        "depress origin switch": ('#59D8E6', Qt.SolidLine), # cyan
+        "depress sample slope": ('#59D8E6', Qt.DashLine),  # cyan dashed
+        "press origin slope": ('#B9121B', Qt.SolidLine),  # red
+        "press sample slope": ('#B9121B', Qt.DashLine),  # red dashed
+        "depress origin switch": ('#59D8E6', Qt.SolidLine),  # cyan
         "depress sample switch": ('#59D8E6', Qt.DashLine),  # cyan dashed
-        "press origin switch": ('#B9121B', Qt.SolidLine),   # red
-        "press sample switch": ('#B9121B', Qt.DashLine),    # red dashed
+        "press origin switch": ('#B9121B', Qt.SolidLine),  # red
+        "press sample switch": ('#B9121B', Qt.DashLine),  # red dashed
     }
 
     # Dictionary of lines updated on certain events
     EVENT_LINES = {
         Event.PRESSURIZE: [
-                "press origin slope", 
-                "press sample slope", 
-                "press origin switch", 
-                "press sample switch"
-            ],
+            "press origin slope",
+            "press sample slope",
+            "press origin switch",
+            "press sample switch"
+        ],
         Event.DEPRESSURIZE: [
-                "origin pressure",
-                "sample pressure",
-                "depress origin slope", 
-                "depress sample slope", 
-                "depress origin switch", 
-                "depress sample switch"
-            ]
+            "origin pressure",
+            "sample pressure",
+            "depress origin slope",
+            "depress sample slope",
+            "depress origin switch",
+            "depress sample switch"
+        ]
     }
 
     def __init__(self, config_manager):
@@ -62,7 +63,7 @@ class HistoryPlot(QWidget):
         # Dictionary of mouse position labels
         self.mouse_labels = {}
         # Colors for plots
-        window_color = self.palette().color(QPalette.Window)
+        window_color = qdarktheme.load_palette().window().color()
         text_color = self.palette().color(QPalette.WindowText)
         text_style = {'color': text_color}
 
@@ -75,7 +76,7 @@ class HistoryPlot(QWidget):
         self.pressure_plot.setLabel('left', 'Pressure (kBar)', **text_style)
         self.pressure_plot.setLabel('bottom', 'Time (s)', **text_style)
         self.pressure_plot.setYRange(0, 3)
-        self.pressure_plot.hideButtons() # Remove autoScale button
+        self.pressure_plot.hideButtons()  # Remove autoScale button
         style = self.LINE_STYLES["origin pressure"]
         pen = pg.mkPen(color=style[0], style=style[1])
         self.lines["origin pressure"] = self.pressure_plot.plot([], [], pen=pen)
@@ -93,7 +94,7 @@ class HistoryPlot(QWidget):
         self.slope_plot.setLabel('left', 'Slope (kBar/ms)', **text_style)
         self.slope_plot.setLabel('bottom', 'Time (s)', **text_style)
         self.slope_plot.setYRange(-1.1, 1.1)
-        self.slope_plot.hideButtons() # Remove autoScale button
+        self.slope_plot.hideButtons()  # Remove autoScale button
         style = self.LINE_STYLES["depress origin slope"]
         pen = pg.mkPen(color=style[0], style=style[1])
         self.lines["depress origin slope"] = self.slope_plot.plot([], [], pen=pen)
@@ -149,9 +150,13 @@ class HistoryPlot(QWidget):
         # Mouse label
         self.mouse_labels[self.pressure_plot] = QLabel("")
         self.mouse_labels[self.pressure_plot].setStyleSheet(f"font-size: {size}px;")
+
         # Limit rate of mouseMoved signal to 60 Hz
-        pressure_func = lambda x: self.mouse_moved(self.pressure_plot, x)
-        self.pressure_proxy = pg.SignalProxy(self.pressure_plot.scene().sigMouseMoved, rateLimit=120, slot=pressure_func)
+        def pressure_func(x):
+            self.mouse_moved(self.pressure_plot, x)
+
+        self.pressure_proxy = pg.SignalProxy(self.pressure_plot.scene().sigMouseMoved, rateLimit=120,
+                                             slot=pressure_func)
         spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
         pressure_labels = QGridLayout()
         pressure_labels.setContentsMargins(0, 35, 5, 45)
@@ -183,8 +188,12 @@ class HistoryPlot(QWidget):
         # Mouse label
         self.mouse_labels[self.slope_plot] = QLabel("")
         self.mouse_labels[self.slope_plot].setStyleSheet(f"font-size: {size}px;")
+
         # Limit rate of mouseMoved signal to 60 Hz
-        slope_func = lambda x: self.mouse_moved(self.slope_plot, x)
+
+        def slope_func(x):
+            self.mouse_moved(self.slope_plot, x)
+
         self.slope_proxy = pg.SignalProxy(self.slope_plot.scene().sigMouseMoved, rateLimit=120, slot=slope_func)
         spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
         slope_labels = QGridLayout()
@@ -221,8 +230,11 @@ class HistoryPlot(QWidget):
         # Mouse label
         self.mouse_labels[self.switch_time_plot] = QLabel("")
         self.mouse_labels[self.switch_time_plot].setStyleSheet(f"font-size: {size}px;")
+
         # Limit rate of mouseMoved signal to 60 Hz
-        switch_func = lambda x: self.mouse_moved(self.switch_time_plot, x)
+        def switch_func(x):
+            self.mouse_moved(self.switch_time_plot, x)
+
         self.switch_proxy = pg.SignalProxy(self.switch_time_plot.scene().sigMouseMoved, rateLimit=120, slot=switch_func)
         spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
         switch_labels = QGridLayout()
@@ -262,7 +274,7 @@ class HistoryPlot(QWidget):
     def reset_history(self):
         self.data = {
             "time": {
-                Event.DEPRESSURIZE: [], 
+                Event.DEPRESSURIZE: [],
                 Event.PRESSURIZE: []
             },
             "origin pressure": [],
@@ -454,7 +466,6 @@ class HistoryPlot(QWidget):
             self.pressure_plot.addItem(self.depress_time_press)
             self.slope_plot.addItem(self.depress_time_slope)
             self.switch_time_plot.addItem(self.depress_time_switch)
-
 
     def mouse_moved(self, plot, event):
         mouse_point = plot.getViewBox().mapSceneToView(event[0])

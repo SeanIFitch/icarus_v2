@@ -10,6 +10,7 @@ from ImageButton import ImageButton
 from time import sleep
 import os
 from path_utils import get_base_directory
+import qdarktheme
 
 
 # Control panel for manual and console operation
@@ -24,7 +25,8 @@ class DeviceControlPanel(QGroupBox):
         shutdown_path = os.path.join(base_dir, "images/shutdown.svg")
         self.shutdown_button = ImageButton(shutdown_path, "Shutdown")
 
-        self.mode_button = ToggleButton("Manual", "Console")
+        bg = qdarktheme.load_palette().window().color().name()
+        self.mode_button = ToggleButton("Manual", "Console", bg, bg)
         self.mode_button.set_check_function(self.change_to_console)
         self.mode_button.set_uncheck_function(self.change_to_manual)
 

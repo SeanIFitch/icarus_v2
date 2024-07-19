@@ -40,10 +40,10 @@ class MainWindow(QMainWindow):
         self.setAttribute(Qt.WA_AcceptTouchEvents, False)
 
         # Initialize all widgets
-        self.pressure_event_display_range = (-10,140) # How much data to view around pressurize events
-        self.pressurize_plot = EventPlot(Event.PRESSURIZE, self.config_manager)
-        self.depressurize_plot = EventPlot(Event.DEPRESSURIZE, self.config_manager)
-        self.period_plot = EventPlot(Event.PERIOD, self.config_manager)
+        self.pressure_event_display_range = (-10, 140)  # How much data to view around pressurize events
+        self.pressurize_plot = EventPlot(Event.PRESSURIZE, self.config_manager, parent=self)
+        self.depressurize_plot = EventPlot(Event.DEPRESSURIZE, self.config_manager, parent=self)
+        self.period_plot = EventPlot(Event.PERIOD, self.config_manager, parent=self)
         self.history_plot = HistoryPlot(config_manager)
         self.device_control_panel = DeviceControlPanel()
         self.counter_display = CounterDisplay(config_manager)
@@ -76,7 +76,7 @@ class MainWindow(QMainWindow):
         box_layout = QVBoxLayout()
         box_layout.addItem(spacer)
         self.bounding_box.setLayout(box_layout)
-        self.bounding_box.setMinimumWidth(287) # Width of DeviceControlPanel
+        self.bounding_box.setMinimumWidth(287)  # Width of DeviceControlPanel
 
         # Control layout
         control_layout = QGridLayout()
@@ -186,7 +186,8 @@ class MainWindow(QMainWindow):
                         depress = event
                     elif per is None and event.event_type == Event.PERIOD:
                         per = event
-                    if press is not None and depress is not None and per is not None: break
+                    if press is not None and depress is not None and per is not None:
+                        break
                 self.pressurize_plot.update_data(press)
                 self.depressurize_plot.update_data(depress)
                 self.period_plot.update_data(per)

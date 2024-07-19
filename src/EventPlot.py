@@ -4,6 +4,7 @@ import pyqtgraph as pg
 import numpy as np
 from Event import Event, Channel, get_channel
 from PySide6.QtWidgets import QLabel, QGridLayout, QWidget, QSpacerItem, QSizePolicy
+import qdarktheme
 
 
 class EventPlot(QWidget):
@@ -20,8 +21,8 @@ class EventPlot(QWidget):
         Channel.PRE_VALVE: ('#B9121B', Qt.SolidLine),       # red
     }
 
-    def __init__(self, event_type, config_manager):
-        super().__init__()
+    def __init__(self, event_type, config_manager, parent=None):
+        super().__init__(parent=parent)
 
         self.event_type = event_type
         self.config_manager = config_manager
@@ -30,7 +31,9 @@ class EventPlot(QWidget):
         self.log_coefficients = None
         self.hide_valve_setting = config_manager.get_settings("hide_valve_sensors")
         self.hide_sample_sensor = False
-        display_channels = [Channel.TARGET, Channel.HI_PRE_SAMPLE, Channel.HI_PRE_ORIG, Channel.DEPRE_VALVE, Channel.PRE_VALVE]
+        display_channels = [
+            Channel.TARGET, Channel.HI_PRE_SAMPLE, Channel.HI_PRE_ORIG, Channel.DEPRE_VALVE, Channel.PRE_VALVE
+        ]
 
         if event_type == Event.PRESSURIZE:
             display_channels += [Channel.PRE_LOW, Channel.PRE_UP]
@@ -44,7 +47,8 @@ class EventPlot(QWidget):
             self.x_unit = 's'
             title = "Period"
 
-        self.plot = pg.PlotWidget(background= self.palette().color(QPalette.Window))
+        window_bg_color = qdarktheme.load_palette().window().color()
+        self.plot = pg.PlotWidget(background=window_bg_color, parent=self)
         self.plot.showGrid(x=True, y=True)
         self.plot.setYRange(0, 3)
         self.plot.setMouseEnabled(x=False, y=False)  # Prevent zooming
