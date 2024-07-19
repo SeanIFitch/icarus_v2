@@ -64,7 +64,7 @@ class MainWindow(QMainWindow):
         self.log_control_panel.log_coefficients_signal.connect(self.history_plot.set_log_coefficients)
 
         # ToolBar
-        self.toolbar = ToolBar(config_manager)
+        self.toolbar = ToolBar(config_manager, self)
         self.addToolBar(self.toolbar)
         self.toolbar.set_mode_signal.connect(self.set_mode)
         self.toolbar.history_reset_action.triggered.connect(self.reset_history)

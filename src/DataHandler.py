@@ -106,7 +106,7 @@ class DataHandler(QThread):
             self.log_signal.connect(self.logger.new_log_file)
 
         # Sentry
-        self.sentry = Sentry()
+        self.sentry = Sentry(config_manager)
         self.log_signal.connect(self.sentry.handle_experiment)
         self.pump_event_signal.connect(self.sentry.handle_pump)
         self.depressurize_event_signal.connect(self.sentry.handle_depressurize)

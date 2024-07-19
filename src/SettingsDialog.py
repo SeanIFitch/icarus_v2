@@ -9,9 +9,11 @@ from PySide6.QtWidgets import (
     QPushButton,
     QCheckBox,
     QSpacerItem,
-    QSizePolicy
+    QSizePolicy,
+    QWidget,
+    QMenuBar, QStackedWidget
 )
-from PySide6.QtGui import QDoubleValidator, QIntValidator
+from PySide6.QtGui import QDoubleValidator, QIntValidator, QAction, QIcon
 from ErrorDialog import open_error_dialog
 from Event import Channel, get_channel
 import numpy as np
@@ -21,11 +23,47 @@ from time import sleep
 
 class SettingsDialog(QDialog):
     def __init__(self, config_manager, connected, pressure_signal, parent=None):
-        super().__init__()
+        super().__init__(parent=parent)
 
         self.config_manager = config_manager
         self.pressure_signal = pressure_signal
 
+        # Create the toolbar
+        menubar = QMenuBar(parent)
+        action1 = QAction("General", self)
+        action2 = QAction("Advanced", self)
+        action1.triggered.connect(self.show_general)
+        action2.triggered.connect(self.show_advanced)
+        menubar.addAction(action1)
+        menubar.addAction(action2)
+
+        self.general_widget = self.get_default_widget(connected)
+        self.advanced_widget = self.get_advanced_widget()
+        self.stack = QStackedWidget()
+        self.stack.addWidget(self.general_widget)
+        self.stack.addWidget(self.advanced_widget)
+
+        # Button to apply changes
+        buttons = QDialogButtonBox.Apply
+        button_box = QDialogButtonBox(buttons)
+        button_box.button(QDialogButtonBox.Apply).clicked.connect(self.apply)
+
+        # Dialog configuration
+        self.setWindowTitle("Settings")
+        self.setWindowModality(Qt.ApplicationModal)
+        self.setStyleSheet("font-size: 17pt;")
+        self.setMinimumWidth(610)
+
+        # Main layout for the dialog
+        main_layout = QVBoxLayout(self)
+        main_layout.addWidget(self.stack)
+        main_layout.addWidget(button_box)
+        main_layout.setMenuBar(menubar)
+
+        # Default selection
+        button_box.button(QDialogButtonBox.Apply).setFocus()
+
+    def get_default_widget(self, connected):
         # Allow only positive floating-point numbers
         positive_float = QDoubleValidator()
         positive_int = QIntValidator()
@@ -40,11 +78,11 @@ class SettingsDialog(QDialog):
         self.hide_valve_checkbox.setCheckState(Qt.Checked if hide_valve else Qt.Unchecked)
         self.hide_valve_checkbox.stateChanged.connect(self.set_hide_valve)
         self.hide_valve_checkbox.setStyleSheet("""
-            QCheckBox::indicator {
-                width: 23px;
-                height: 23px;
-            }
-            """)
+                    QCheckBox::indicator {
+                        width: 23px;
+                        height: 23px;
+                    }
+                    """)
         view_layout = QGridLayout()
         view_layout.addWidget(QLabel("Hide Valve Sensors:"), 0, 0)
         view_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Preferred), 0, 1)
@@ -121,26 +159,97 @@ class SettingsDialog(QDialog):
         hardware_group = QGroupBox("Hardware")
         hardware_group.setLayout(hardware_layout)
 
-        # Button to apply changes
-        buttons = QDialogButtonBox.Apply
-        button_box = QDialogButtonBox(buttons)
-        button_box.button(QDialogButtonBox.Apply).clicked.connect(self.apply)
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+        layout.addWidget(view_group)
+        layout.addWidget(timings_group)
+        layout.addWidget(hardware_group)
+        layout.addItem(QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        return widget
 
-        # Dialog configuration
-        self.setWindowTitle("Settings")
-        self.setWindowModality(Qt.ApplicationModal)
-        self.setStyleSheet("font-size: 17pt;")
+    def get_advanced_widget(self):
+        # Allow only positive floating-point numbers
+        positive_float = QDoubleValidator()
+        positive_int = QIntValidator()
+        positive_float.setBottom(0)
+        positive_int.setBottom(1)
+        # Width of edit boxes
+        edit_width = 190
 
-        # Main layout for the dialog
-        main_layout = QVBoxLayout(self)
-        main_layout.addWidget(view_group)
-        main_layout.addWidget(timings_group)
-        main_layout.addWidget(hardware_group)
-        main_layout.addWidget(button_box)
+        self.period_edit = QLineEdit()
+        self.depress_edit = QLineEdit()
+        self.press_edit = QLineEdit()
+        self.pump_rate_edit = QLineEdit()
+        self.pump_window_edit = QLineEdit()
+        self.example_edit = QLineEdit()
+        self.diff_count_error = QLineEdit()
 
-        # Default selection
-        button_box.button(QDialogButtonBox.Apply).setFocus()
+        self.period_edit.setFixedWidth(edit_width)
+        self.depress_edit.setFixedWidth(edit_width)
+        self.press_edit.setFixedWidth(edit_width)
+        self.pump_rate_edit.setFixedWidth(edit_width)
+        self.pump_window_edit.setFixedWidth(edit_width)
+        self.example_edit.setFixedWidth(edit_width)
+        self.diff_count_error.setFixedWidth(edit_width)
 
+        self.period_edit.setValidator(positive_float)
+        self.depress_edit.setValidator(positive_float)
+        self.press_edit.setValidator(positive_float)
+        self.pump_rate_edit.setValidator(positive_float)
+        self.pump_window_edit.setValidator(positive_float)
+        self.example_edit.setValidator(positive_int)
+        self.diff_count_error.setValidator(positive_int)
+
+        self.sentry_settings = self.config_manager.get_settings('sentry_settings')
+
+        self.period_edit.setText(str(self.sentry_settings['max_period_pressure_difference'] * 100))
+        self.depress_edit.setText(str(self.sentry_settings['max_pressure_before_depress_decrease'] * 100))
+        self.press_edit.setText(str(self.sentry_settings['max_pressure_before_press_increase'] * 100))
+        self.pump_rate_edit.setText(str(self.sentry_settings['max_pump_rate_increase'] * 100))
+        self.pump_window_edit.setText(str(self.sentry_settings['pump_check_window']))
+        self.example_edit.setText(str(self.sentry_settings['example_events']))
+        self.diff_count_error.setText(str(self.sentry_settings['period_diffs_to_error']))
+
+        self.period_edit.textChanged.connect(self.set_sentry_period)
+        self.depress_edit.textChanged.connect(self.set_sentry_depress)
+        self.press_edit.textChanged.connect(self.set_sentry_press)
+        self.pump_rate_edit.textChanged.connect(self.set_sentry_pump_rate)
+        self.pump_window_edit.textChanged.connect(self.set_sentry_pump_window)
+        self.example_edit.textChanged.connect(self.set_sentry_example)
+        self.diff_count_error.textChanged.connect(self.set_sentry_diff_count)
+
+        sentry_layout = QGridLayout()
+        sentry_layout.addWidget(QLabel("Max Avg Pressure Difference (%):"), 0, 0)
+        sentry_layout.addWidget(QLabel("Max Pressure Decrease (%):"), 1, 0)
+        sentry_layout.addWidget(QLabel("Max Pressure Increase (%):"), 2, 0)
+        sentry_layout.addWidget(QLabel("Max Pump Rate Increase (%):"), 3, 0)
+        sentry_layout.addWidget(QLabel("Rapid Pump Window (s):"), 4, 0)
+        sentry_layout.addWidget(QLabel("Example Event Count:"), 5, 0)
+        sentry_layout.addWidget(QLabel("Pressure Difference to Error Count:"), 6, 0)
+
+        sentry_layout.addWidget(self.period_edit, 0, 1)
+        sentry_layout.addWidget(self.depress_edit, 1, 1)
+        sentry_layout.addWidget(self.press_edit, 2, 1)
+        sentry_layout.addWidget(self.pump_rate_edit, 3, 1)
+        sentry_layout.addWidget(self.pump_window_edit, 4, 1)
+        sentry_layout.addWidget(self.example_edit, 5, 1)
+        sentry_layout.addWidget(self.diff_count_error, 6, 1)
+
+        sentry_group = QGroupBox("Sentry Settings")
+        sentry_group.setLayout(sentry_layout)
+
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+        layout.addWidget(sentry_group)
+        layout.addItem(QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
+
+        return widget
+
+    def show_general(self):
+        self.stack.setCurrentIndex(0)
+
+    def show_advanced(self):
+        self.stack.setCurrentIndex(1)
 
     # Apply changes to config_manager and close the dialog
     # Also does some minor error checking for timing settings
@@ -160,6 +269,10 @@ class SettingsDialog(QDialog):
             error = "Depressurize width should be less than Period width."
         elif self.timing_settings['delay_width'] >= self.timing_settings['period_width']:
             error = "Delay width should be less than Period width."
+        elif self.sentry_settings['example_events'] <= 0:
+            error = "Example events should be greater than 0."
+        elif self.sentry_settings['period_diffs_to_error'] <= 0:
+            error = "Period difference to error count should be greater than 0."
 
         if error is not None:
             open_error_dialog(error, QDialogButtonBox.Ok, self)
@@ -168,8 +281,8 @@ class SettingsDialog(QDialog):
 
         self.config_manager.save_settings("timing_settings", self.timing_settings)
         self.config_manager.save_settings("counter_settings", self.counter_settings)
+        self.config_manager.save_settings("sentry_settings", self.sentry_settings)
         self.close()
-
 
     def set_pressurize_width(self, pressurize_width):
         try:
@@ -236,7 +349,7 @@ class SettingsDialog(QDialog):
 
         # Send pressure readings exactly once
         self.pressure_signal.connect(recalibrate, type=Qt.SingleShotConnection)
-        sleep(0.4) # Time for a pressure event * 2
+        sleep(0.4)  # Time for a pressure event * 2
         self.config_manager.save_settings('plotting_coefficients', self.coefficients)
 
     def set_hide_valve(self, state):
@@ -247,3 +360,52 @@ class SettingsDialog(QDialog):
 
     def set_pressure_signal(self, pressure_signal):
         self.pressure_signal = pressure_signal
+
+    def set_sentry_period(self, period):
+        try:
+            period = float(period) / 100
+        except:
+            return
+        self.sentry_settings['max_period_pressure_difference'] = period
+
+    def set_sentry_depress(self, depress):
+        try:
+            depress = float(depress) / 100
+        except:
+            return
+        self.sentry_settings['max_pressure_before_depress_decrease'] = depress
+
+    def set_sentry_press(self, press):
+        try:
+            press = float(press) / 100
+        except:
+            return
+        self.sentry_settings['max_pressure_before_press_increase'] = press
+
+    def set_sentry_pump_rate(self, pump_rate):
+        try:
+            pump_rate = float(pump_rate) / 100
+        except:
+            return
+        self.sentry_settings['max_pump_rate_increase'] = pump_rate
+
+    def set_sentry_pump_window(self, pump_window):
+        try:
+            pump_window = float(pump_window)
+        except:
+            return
+        self.sentry_settings['pump_check_window'] = pump_window
+
+    def set_sentry_example(self, example):
+        try:
+            example = int(example)
+        except:
+            return
+        self.sentry_settings['example_events'] = example
+
+    def set_sentry_diff_count(self, diff_count):
+        try:
+            diff_count = int(diff_count)
+        except:
+            return
+        self.sentry_settings['period_diffs_to_error'] = diff_count
