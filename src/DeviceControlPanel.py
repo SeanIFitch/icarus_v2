@@ -1,13 +1,9 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QGroupBox,
-    QRadioButton,
-    QVBoxLayout,
-    QLabel,
-    QWidget,
     QSizePolicy,
-    QGridLayout,
-    QSpacerItem
+    QSpacerItem,
+    QVBoxLayout,
 )
 from ToggleButton import ToggleButton
 from ImageButton import ImageButton
@@ -23,89 +19,82 @@ class DeviceControlPanel(QGroupBox):
 
         self.pulse_generator = None
 
-        # Initialize modes
-        self.console_button = QRadioButton("Console")
-        self.console_button.setChecked(False)
-        self.console_button.toggled.connect(self.change_to_console)
-        self.manual_button = QRadioButton("Manual")
-        self.manual_button.setChecked(True)
-        self.manual_button.toggled.connect(self.change_to_manual)
-
         # Initialize buttons
         base_dir = get_base_directory()
         shutdown_path = os.path.join(base_dir, "images/shutdown.svg")
         self.shutdown_button = ImageButton(shutdown_path, "Shutdown")
 
-        self.pump_button = ToggleButton("Pump on", "Pump off")
-        self.pressurize_button = ToggleButton("Pressurize open", "Pressurize close")
-        self.depressurize_button = ToggleButton("Depressurize open", "Depressurize close")
-        self.pulse_button = ToggleButton("Start pulsing", "Stop pulsing")
-        self.shutdown_button.setFixedSize(150,150)
+        self.mode_button = ToggleButton("Manual", "Console")
+        self.mode_button.set_check_function(self.change_to_console)
+        self.mode_button.set_uncheck_function(self.change_to_manual)
+
+        self.pump_button = ToggleButton("Pump", check_color="#56bd5d", uncheck_color="#f45555")
+        self.pressurize_button = ToggleButton("Pressurize", check_color="#56bd5d", uncheck_color="#f45555")
+        self.depressurize_button = ToggleButton("Depressurize", check_color="#56bd5d", uncheck_color="#f45555")
+        self.pulse_button = ToggleButton("Pulsing", check_color="#56bd5d", uncheck_color="#f45555")
+
+        self.shutdown_button.setFixedSize(150, 150)
         policy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.mode_button.setSizePolicy(policy)
         self.pump_button.setSizePolicy(policy)
         self.pressurize_button.setSizePolicy(policy)
         self.depressurize_button.setSizePolicy(policy)
         self.pulse_button.setSizePolicy(policy)
+        self.spacer_item = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        # Spacer for when buttons are hidden
-        self.spacer = QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.layout = QVBoxLayout(self)
+        self.layout.addWidget(self.shutdown_button, alignment=Qt.AlignHCenter | Qt.AlignTop)
+        self.layout.addWidget(self.mode_button)
+        self.layout.addWidget(self.pump_button)
+        self.layout.addWidget(self.pressurize_button)
+        self.layout.addWidget(self.depressurize_button)
+        self.layout.addWidget(self.pulse_button)
 
-        # Set layouts
-        button_layout = QVBoxLayout()
-        button_layout.addWidget(self.pump_button)
-        button_layout.addWidget(self.pressurize_button)
-        button_layout.addWidget(self.depressurize_button)
-        button_layout.addWidget(self.pulse_button)
-        self.button_widget = QWidget()
-        self.button_widget.setLayout(button_layout)
-
-        layout = QGridLayout(self)
-        layout.addWidget(self.shutdown_button, 0, 0, 1, 2, alignment=Qt.AlignHCenter)
-        layout.addWidget(QLabel("Change Mode:"), 1, 0, 1, 2)
-        layout.addWidget(self.console_button, 2, 0)
-        layout.addWidget(self.manual_button, 2, 1)
-        layout.addWidget(self.button_widget, 3, 0, 1, 2)
-        layout.addItem(self.spacer, 3, 0)
-
-        self.setMinimumWidth(287) # Width of depressurize button.Without this the panel shrinks when buttons are hidden
+        self.setMinimumWidth(288)  # Width of depressurize button.Without this the panel shrinks when buttons are hidden
         self.setStyleSheet("font-size: 21pt;")
 
-
     def change_to_console(self):
-        sender = self.sender()
-        # Only follow through if enabling mode not disabling
-        if sender.isChecked():
-            # Remove all buttons from the layout
-            self.button_widget.hide()
+        # Ensure the mode button doesn't expand or move
+        size = self.mode_button.size().height()
+        self.mode_button.setMinimumHeight(size)
+        self.mode_button.setMaximumHeight(size)
 
-            # Set pulser off, pump on, valves closed
-            self.pulse_button.setChecked(False)
-            self.pump_button.setChecked(True)
-            self.pressurize_button.setChecked(False)
-            self.depressurize_button.setChecked(False)
+        for button in [self.pump_button, self.pressurize_button, self.depressurize_button, self.pulse_button]:
+            button.setVisible(False)
+            button.setEnabled(False)
 
+        self.layout.addItem(self.spacer_item)
+
+        # Set pulser off, pump on, valves closed
+        self.pulse_button.setChecked(False)
+        self.pump_button.setChecked(True)
+        self.pressurize_button.setChecked(False)
+        self.depressurize_button.setChecked(False)
 
     def change_to_manual(self):
-        sender = self.sender()
-        # Only follow through if enabling mode not disabling
-        if sender.isChecked():
-            self.button_widget.show()
+        for button in [self.pump_button, self.pressurize_button, self.depressurize_button, self.pulse_button]:
+            button.setVisible(True)
+            button.setEnabled(True)
 
+        self.layout.removeItem(self.spacer_item)
+
+        # Remove size constraint on mode button
+        self.mode_button.setMaximumHeight(16777215)
+        self.mode_button.setMinimumHeight(0)
 
     # Connect buttons to the pulse generator
     def set_pulse_generator(self, pulse_generator):
         self.pulse_generator = pulse_generator
 
         self.shutdown_button.clicked.connect(self.on_shutdown)
-        self.pump_button.set_uncheck_function(self.pulse_generator.set_pump_high)
         self.pump_button.set_check_function(self.pulse_generator.set_pump_low)
+        self.pump_button.set_uncheck_function(self.pulse_generator.set_pump_high)
         self.pressurize_button.set_check_function(self.pulse_generator.set_pressurize_low)
         self.pressurize_button.set_uncheck_function(self.pulse_generator.set_pressurize_high)
         self.depressurize_button.set_check_function(self.pulse_generator.set_depressurize_low)
         self.depressurize_button.set_uncheck_function(self.pulse_generator.set_depressurize_high)
         self.pulse_button.set_check_function(self.on_start_pulsing)
         self.pulse_button.set_uncheck_function(self.on_quit_pulsing)
-
 
     def on_shutdown(self):
         # Turn pump off
@@ -117,11 +106,7 @@ class DeviceControlPanel(QGroupBox):
         self.depressurize_button.setChecked(True)
 
         # Revert to manual mode
-        self.console_button.setChecked(False)
-        self.manual_button.setChecked(True)
-
-
-
+        self.mode_button.setChecked(False)
 
     def on_start_pulsing(self):
         # Prevent other buttons from doing anything while pulsing
@@ -137,7 +122,6 @@ class DeviceControlPanel(QGroupBox):
 
         self.pulse_generator.start()
 
-
     def reset(self):
         # Reset buttons to initial states without triggering their slots
         self.pump_button.set_checked(False)
@@ -146,14 +130,7 @@ class DeviceControlPanel(QGroupBox):
         self.pulse_button.set_checked(False)
 
         # Change to manual mode
-        self.button_widget.show()
-        self.console_button.blockSignals(True)
-        self.console_button.setChecked(False)
-        self.console_button.blockSignals(False)
-        self.manual_button.blockSignals(True)
-        self.manual_button.setChecked(True)
-        self.manual_button.blockSignals(False)
-
+        self.mode_button.setChecked(False)
 
     # Make sure no buttons are clicked until pulsing is fully done
     def on_quit_pulsing(self):

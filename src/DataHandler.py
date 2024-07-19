@@ -3,8 +3,9 @@ from Logger import Logger
 from PySide6.QtCore import Signal, QThread
 from time import sleep
 from threading import Lock
-from path_utils import setup_udev_rules
+from path_utils import get_base_directory, setup_udev_rules
 from RawLogReader import RawLogReader
+import os
 # Data collection & Device imports
 from Di4108USB import Di4108USB
 from BufferLoader import BufferLoader
@@ -55,7 +56,8 @@ class DataHandler(QThread):
 
         # TESTING ONLY. reads a raw data file instead of connecting to a device
         self.load_raw = False
-        self.raw_file = "/home/seanf/Icarus_v2/logs/example/raw/2.1_to_1.5kBar.xz"
+        base_dir = get_base_directory()
+        self.raw_file = os.path.join(base_dir, "logs/example/raw/2.1_to_1.5kBar.xz")
 
         # Loads data from device into buffer
         self.loader = BufferLoader()
@@ -151,7 +153,8 @@ class DataHandler(QThread):
                         ):
                     self.quit_lock.release()
                     sleep(0.1)
-                    if not self.connecting: return
+                    if not self.connecting:
+                        return
                     self.quit_lock.acquire()
                 elif "Insufficient permissions to access the USB device" in str(e):
                     try:
