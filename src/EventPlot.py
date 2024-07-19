@@ -54,7 +54,7 @@ class EventPlot(QWidget):
         self.plot.setMouseEnabled(x=False, y=False)  # Prevent zooming
         self.plot.hideButtons()  # Remove autoScale button
         # Labels
-        text_color = self.palette().color(QPalette.WindowText)
+        text_color = qdarktheme.load_palette().text().color()
         self.plot.setTitle(title, color=text_color, size="17pt")
         self.plot.setLabel('left', 'Pressure (kbar)', **{'color': text_color})
         self.plot.setLabel('bottom', f'Time ({self.x_unit})', **{'color': text_color})

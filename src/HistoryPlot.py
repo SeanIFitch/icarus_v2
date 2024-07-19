@@ -64,7 +64,7 @@ class HistoryPlot(QWidget):
         self.mouse_labels = {}
         # Colors for plots
         window_color = qdarktheme.load_palette().window().color()
-        text_color = self.palette().color(QPalette.WindowText)
+        text_color = qdarktheme.load_palette().text().color()
         text_style = {'color': text_color}
 
         # Pressure plot
