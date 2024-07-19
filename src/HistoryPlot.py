@@ -430,27 +430,31 @@ class HistoryPlot(QWidget):
         if event is not None:
             time = event.event_time - self.initial_time
             style = self.LINE_STYLES["press origin slope"]
-            self.render_time_indicator(style, time)
+            pen = pg.mkPen(color=style[0], style=style[1])
+            self.press_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
+            self.press_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
+            self.press_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
+            self.pressure_plot.addItem(self.press_time_press)
+            self.slope_plot.addItem(self.press_time_slope)
+            self.switch_time_plot.addItem(self.press_time_switch)
 
     def render_depressurize_time(self, event):
         # Remove old time
         self.pressure_plot.removeItem(self.depress_time_press)
         self.slope_plot.removeItem(self.depress_time_slope)
-        self.switch_time_plot.removeItem(self.depress_time_switch )
+        self.switch_time_plot.removeItem(self.depress_time_switch)
 
         if event is not None:
             time = event.event_time - self.initial_time
             style = self.LINE_STYLES["depress origin slope"]
-            self.render_time_indicator(style, time)
+            pen = pg.mkPen(color=style[0], style=style[1])
+            self.depress_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
+            self.depress_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
+            self.depress_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
+            self.pressure_plot.addItem(self.depress_time_press)
+            self.slope_plot.addItem(self.depress_time_slope)
+            self.switch_time_plot.addItem(self.depress_time_switch)
 
-    def render_time_indicator(self, style, time):
-        pen = pg.mkPen(color=style[0], style=style[1])
-        self.press_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
-        self.press_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
-        self.press_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
-        self.pressure_plot.addItem(self.press_time_press)
-        self.slope_plot.addItem(self.press_time_slope)
-        self.switch_time_plot.addItem(self.press_time_switch)
 
     def mouse_moved(self, plot, event):
         mouse_point = plot.getViewBox().mapSceneToView(event[0])
