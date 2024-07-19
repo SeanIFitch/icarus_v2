@@ -269,8 +269,8 @@ class SettingsDialog(QDialog):
             error = "Depressurize width should be less than Period width."
         elif self.timing_settings['delay_width'] >= self.timing_settings['period_width']:
             error = "Delay width should be less than Period width."
-        elif self.sentry_settings['example_events'] <= 0:
-            error = "Example events should be greater than 0."
+        elif self.sentry_settings['example_events'] <= 1:
+            error = "Example events should be greater than 1."
         elif self.sentry_settings['period_diffs_to_error'] <= 0:
             error = "Period difference to error count should be greater than 0."
 

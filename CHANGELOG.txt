@@ -13,6 +13,7 @@ Added:
     - pressure does not increase after rapid pump events
     - average pressure difference over periods exceeds 25% twice in a row
  - Log files store coefficients, so they can be correctly viewed on other machines
+ - Warning and Error history
 
 Changed:
  - Reset history plots when new log starts
@@ -21,6 +22,7 @@ Changed:
  - Prevent multiple pressurizes per depressurize on history plot
  - Sentry only compares pressure right before events rather than looking for slope changes
  - Remove mouse coordinates when mouse leaves a plot
+ - Add colors to the device control panel buttons
 
 Fixed:
  - Significantly increase accuracy of pump stroke detection
@@ -30,6 +32,7 @@ Fixed:
  - Catch exception when opening log file of improper format
  - Prevent deleting a log file twice if no events are logged
  - Handle exception when USB device is disconnected after the device sleeps
+ - Touchpad event error on MacBooks
 
 
 v0.1.1 (2024-05-07)

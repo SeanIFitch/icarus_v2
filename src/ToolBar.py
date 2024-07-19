@@ -1,12 +1,12 @@
-from PySide6.QtWidgets import QToolBar, QLabel, QWidget, QSizePolicy
+from PySide6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
 from PySide6.QtGui import QIcon, QAction
 from SettingsDialog import SettingsDialog
 from PySide6.QtCore import Signal
+from ScrollableMenu import ScrollableMenu
 
 
 class ToolBar(QToolBar):
     set_mode_signal = Signal(str)
-
 
     def __init__(self, config_manager, parent=None):
         super().__init__(parent=parent)
@@ -35,17 +35,21 @@ class ToolBar(QToolBar):
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.addWidget(spacer)
-        self.warning_label = QLabel("", self)
-        self.warning_label.setStyleSheet("color: orange; font-size: 12pt;") 
-        self.addWidget(self.warning_label)
 
+        self.warning_button = QPushButton(self)
+        self.warning_button.setFixedWidth(900)
+        self.warning_button.setStyleSheet("color: orange; font-size: 12pt; text-align: left;")
+        self.addWidget(self.warning_button)
+
+        # Scrollable Menu to show past messages
+        self.messages_menu = ScrollableMenu(parent=self.warning_button)
+        self.warning_button.setMenu(self.messages_menu)
 
     def open_settings(self):
         # Open the settings dialog
         self.settings_dialog = SettingsDialog(self.config_manager, self.connected, self.pressure_signal, self.parent())
         self.settings_dialog.exec()
         self.settings_dialog = None
-
 
     def change_log_mode(self):
         if self.change_mode_action.text() == "Open Logs":
@@ -55,7 +59,6 @@ class ToolBar(QToolBar):
         elif self.change_mode_action.text() == "Close Logs":
             self.change_mode_action.setText("Open Logs")
             self.set_mode_signal.emit("device")
-
 
     def set_pressure_signal(self, pressure_signal):
         self.pressure_signal = pressure_signal
@@ -67,6 +70,6 @@ class ToolBar(QToolBar):
         if self.settings_dialog is not None:
             self.settings_dialog.set_connected(connected)
 
-
     def display_warning(self, warning):
-        self.warning_label.setText(warning)
+        self.warning_button.setText(warning)
+        self.messages_menu.add_message(warning, color="orange")

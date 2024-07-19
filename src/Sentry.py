@@ -25,6 +25,7 @@ class Sentry(QThread):
         self.config_manager = config_manager
         self.settings = config_manager.get_settings('sentry_settings')
         self.config_manager.settings_updated.connect(self.update_settings)
+        self.current_example_events = None
 
         self.current_experiment = False
 
@@ -58,12 +59,14 @@ class Sentry(QThread):
         self.example_press_pressures = []
         self.example_periods = []
         self.consecutive_period_errors = 0
+        # update this only here so it is not changed for an ongoing experiment
+        self.current_example_events = self.settings['example_events']
 
     # Emits warning if pressure does not increase or pump rate exceeds expected value
     def handle_pump(self, event):
         # check for increasing pressure when pump strokes are within self.pump_check_window of each-other
         if (self.last_pump_time is not None
-                and event.event_time - self.last_pump_time < self.settings("pump_check_window")):
+                and event.event_time - self.last_pump_time < self.settings["pump_check_window"]):
             if event.get_initial_target() <= self.last_pump_initial_pressure:
                 if self.current_experiment:
                     self.error_signal.emit(
@@ -80,16 +83,16 @@ class Sentry(QThread):
         if self.current_experiment:
             self.pump_times.append(event.event_time)
             # Define expected pump rate
-            if self.expected_pump_rate is None and len(self.pump_times) == self.settings("example_events"):
+            if self.expected_pump_rate is None and len(self.pump_times) == self.current_example_events:
                 avg = np.diff(self.pump_times).mean()
                 self.expected_pump_rate = 1 / avg
 
             # Check for deviation from expected rate (averaged over last example_events)
-            if len(self.pump_times) > self.settings("example_events"):
+            if len(self.pump_times) > self.current_example_events:
                 self.pump_times.pop(0)
                 pump_rate = 1 / np.diff(self.pump_times).mean()
                 rate_percent_increase = (pump_rate - self.expected_pump_rate) / self.expected_pump_rate
-                if rate_percent_increase > self.settings("max_pump_rate_increase"):
+                if rate_percent_increase > self.settings["max_pump_rate_increase"]:
                     self.warning_signal.emit(
                         f"Warning: pump rate at {strftime('%H:%M:%S', localtime(event.event_time))} is "
                         f"{pump_rate:.2f}, which is {rate_percent_increase:.2f}% over the expected rate from the "
@@ -105,13 +108,13 @@ class Sentry(QThread):
             # define expected pressure before depressurize
             if self.expected_pressure_before_depressurize is None:
                 self.example_depress_pressures.append(initial_pressure)
-                if len(self.example_depress_pressures) == self.settings("example_events"):
+                if len(self.example_depress_pressures) == self.current_example_events:
                     self.expected_pressure_before_depressurize = np.mean(self.example_depress_pressures)
 
             else:
                 percent_decrease = ((self.expected_pressure_before_depressurize - initial_pressure) /
                                     self.expected_pressure_before_depressurize)
-                if percent_decrease > self.settings("max_pressure_before_depress_decrease"):
+                if percent_decrease > self.settings["max_pressure_before_depress_decrease"]:
                     self.warning_signal.emit(
                         f"Warning: pressure before depressurize event decreasing at "
                         f"{strftime('%H:%M:%S', localtime(event.event_time))}. Possible leak.")
@@ -131,13 +134,13 @@ class Sentry(QThread):
             # define expected pressure before pressurize
             if self.expected_pressure_before_pressurize is None:
                 self.example_press_pressures.append(initial_pressure)
-                if len(self.example_press_pressures) == self.settings("example_events"):
+                if len(self.example_press_pressures) == self.current_example_events:
                     self.expected_pressure_before_pressurize = np.mean(self.example_press_pressures)
 
             else:
                 percent_increase = ((initial_pressure - self.expected_pressure_before_pressurize)
                                     / self.expected_pressure_before_pressurize)
-                if percent_increase > self.settings("max_pressure_before_press_increase"):
+                if percent_increase > self.settings["max_pressure_before_press_increase"]:
                     self.warning_signal.emit(
                         f"Warning: pressure before pressurize event increasing at "
                         f"{strftime('%H:%M:%S', localtime(event.event_time))}. Possible leaky pressurize valve.")
@@ -159,18 +162,18 @@ class Sentry(QThread):
             # Define expected period
             if self.expected_period is None:
                 self.example_periods.append(get_channel(data, Channel.HI_PRE_ORIG))
-                if len(self.example_periods) == self.settings("example_events"):
+                if len(self.example_periods) == self.current_example_events:
                     stacked_data = np.asarray(self.example_periods)
                     self.expected_period = np.mean(stacked_data, axis=0)
 
             # Check for deviation from expected period
             else:
                 diff = np.abs(np.mean(get_channel(data, Channel.HI_PRE_ORIG) - self.expected_period))
-                if diff / np.mean(self.expected_period) > self.settings("max_period_pressure_difference"):
+                if diff / np.mean(self.expected_period) > self.settings["max_period_pressure_difference"]:
                     self.warning_signal.emit(
                         "Pressure deviating from expected value at"
                         f"{strftime('%H:%M:%S', localtime(event.event_time))}.")
-                    if self.consecutive_period_errors >= self.settings("period_diffs_to_error"):
+                    if self.consecutive_period_errors >= self.settings[ "period_diffs_to_error"]:
                         self.error_signal.emit(
                             f"Pressure deviated {self.consecutive_period_errors} times in a row from expected value at "
                             f"{strftime('%H:%M:%S', localtime(event.event_time))}.")
