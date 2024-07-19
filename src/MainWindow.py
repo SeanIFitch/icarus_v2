@@ -1,5 +1,5 @@
 # GUI imports
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import (
     QMainWindow,
     QVBoxLayout,
@@ -37,6 +37,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Icarus NMR")
         self.setMinimumSize(QSize(1000, 760))
         self.setStyleSheet("font-size: 17pt;")
+        self.setAttribute(Qt.WA_AcceptTouchEvents, False)
 
         # Initialize all widgets
         self.pressure_event_display_range = (-10,140) # How much data to view around pressurize events
