@@ -1,22 +1,23 @@
 import json
 
-TARGET = 0          # Analog CH0: target pressure 
-DEPRE_LOW = 1       # Analog CH1: depressurization valve lower sensor
-DEPRE_UP = 2        # Analog CH2: depressurization valve upper sensor
-PRE_LOW = 3         # Analog CH3: pressurization valve lower sensor
-PRE_UP = 4          # Analog CH4: pressurization valve upper sensor
-HI_PRE_ORIG = 5     # Analog CH5: high pressure transducer at the origin
-HI_PRE_SAMPLE = 6   # Analog CH6: high pressure transducer at the sample
-PUMP = 7            # Digital CH0: high pressure pump (Active low / pumping on False)
-DEPRE_VALVE = 8     # Digital CH1: depressurize valve (Active low / open on False)
-PRE_VALVE = 9       # Digital CH2: pressurize valve (Active low / open on False)
-LOG = 10            # Digital CH4: log (Active low / logging on False)
+TARGET = 0  # Analog CH0: target pressure
+DEPRE_LOW = 1  # Analog CH1: depressurization valve lower sensor
+DEPRE_UP = 2  # Analog CH2: depressurization valve upper sensor
+PRE_LOW = 3  # Analog CH3: pressurization valve lower sensor
+PRE_UP = 4  # Analog CH4: pressurization valve upper sensor
+HI_PRE_ORIG = 5  # Analog CH5: high pressure transducer at the origin
+HI_PRE_SAMPLE = 6  # Analog CH6: high pressure transducer at the sample
+PUMP = 7  # Digital CH0: high pressure pump (Active low / pumping on False)
+DEPRE_VALVE = 8  # Digital CH1: depressurize valve (Active low / open on False)
+PRE_VALVE = 9  # Digital CH2: pressurize valve (Active low / open on False)
+LOG = 10  # Digital CH4: log (Active low / logging on False)
 
 
 # Save settings to a JSON file
 def save_settings(filename):
     with open(filename, 'w') as file:
         json.dump(settings, file, indent=4)
+
 
 # Load settings from a JSON file
 def load_settings(filename):
@@ -74,30 +75,40 @@ if __name__ == "__main__":
     target = a * 10 * 20 * 400 / (32768 * 14503.7738)
     '''
     coefficients = {
-        TARGET:         10 * 20 * 400 / (32768 * 14503.7738),
-        DEPRE_LOW:      0.00015,      # Arbitrary for visibility
-        DEPRE_UP:       0.00015,      # Arbitrary for visibility
-        PRE_LOW:        0.00015,      # Arbitrary for visibility
-        PRE_UP:         0.00015,      # Arbitrary for visibility
-        HI_PRE_ORIG:    10 * 10000 / (32768 * 14503.7738),
-        HI_PRE_SAMPLE:  10 * 10000 / (32768 * 14503.7738),
-        DEPRE_VALVE:    2.8,    # Arbitrary for visibility
-        PRE_VALVE:      2.85,    # Arbitrary for visibility
+        TARGET: 10 * 20 * 400 / (32768 * 14503.7738),
+        DEPRE_LOW: 0.00015,  # Arbitrary for visibility
+        DEPRE_UP: 0.00015,  # Arbitrary for visibility
+        PRE_LOW: 0.00015,  # Arbitrary for visibility
+        PRE_UP: 0.00015,  # Arbitrary for visibility
+        HI_PRE_ORIG: 10 * 10000 / (32768 * 14503.7738),
+        HI_PRE_SAMPLE: 10 * 10000 / (32768 * 14503.7738),
+        DEPRE_VALVE: 2.8,  # Arbitrary for visibility
+        PRE_VALVE: 2.85,  # Arbitrary for visibility
+    }
+
+    sentry = {
+        "pump_check_window": 1.0,
+        "example_events": 10,
+        "period_diffs_to_error": 3,
+        "max_period_pressure_difference": 0.25,
+        "max_pump_rate_increase": 0.25,
+        "max_pressure_before_depress_decrease": 0.1,
+        "max_pressure_before_press_increase": 0.1
     }
 
     # Legacy
-    #tube = 100.0
-    #theme = "System Default"
+    # tube = 100.0
+    # theme = "System Default"
 
     settings = {
         "timing_settings": timing_settings,
         "counter_settings": counter,
         "plotting_coefficients": coefficients,
-        "hide_valve_sensors": hide_valve_sensors
-        #"tube_length": tube,
-        #"theme": theme
+        "hide_valve_sensors": hide_valve_sensors,
+        "sentry_settings": sentry,
+        # "tube_length": tube,
+        # "theme": theme
     }
 
-
-    filename = "settings.json"
+    filename = "settings1.json"
     save_settings(filename)
