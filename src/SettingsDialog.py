@@ -30,7 +30,6 @@ class SettingsDialog(QDialog):
 
         # Create the toolbar
         menubar = QMenuBar(parent)
-        menubar.setNativeMenuBar(False)
         action1 = QAction("General", self)
         action2 = QAction("Advanced", self)
         action1.triggered.connect(self.show_general)
