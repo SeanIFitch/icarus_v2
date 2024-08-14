@@ -231,6 +231,12 @@ class DataHandler(QThread):
         self.pulse_generator.wait()
         self.loader.wait()
 
+        self.pulse_generator.set_pressurize_low()
+        self.pulse_generator.set_depressurize_low()
+        sleep(2)
+        self.pulse_generator.set_pressurize_high()
+        self.pulse_generator.set_depressurize_high()
+
         super().quit()
         self.wait()
         if acquired:
