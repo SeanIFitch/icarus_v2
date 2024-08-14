@@ -201,7 +201,7 @@ class SettingsDialog(QDialog):
         self.press_edit.setText(str(self.sentry_settings['max_pressure_before_depress_increase'] * 100))
         self.pump_rate_edit.setText(str(self.sentry_settings['max_pump_rate_increase'] * 100))
         self.example_edit.setText(str(self.sentry_settings['example_events']))
-        self.diff_count_error.setText(str(self.sentry_settings['period_diffs_to_error']))
+        self.diff_count_error.setText(str(self.sentry_settings['decrease_count_to_error']))
 
         self.depress_edit.textChanged.connect(self.set_sentry_depress)
         self.press_edit.textChanged.connect(self.set_sentry_press)
@@ -258,8 +258,8 @@ class SettingsDialog(QDialog):
             error = "Delay width should be less than Period width."
         elif self.sentry_settings['example_events'] <= 1:
             error = "Example events should be greater than 1."
-        elif self.sentry_settings['period_diffs_to_error'] <= 0:
-            error = "Period difference to error count should be greater than 0."
+        elif self.sentry_settings['decrease_count_to_error'] <= 0:
+            error = "Difference to error count should be greater than 0."
 
         if error is not None:
             open_error_dialog(error, QDialogButtonBox.Ok, self)
@@ -381,4 +381,4 @@ class SettingsDialog(QDialog):
             diff_count = int(diff_count)
         except:
             return
-        self.sentry_settings['period_diffs_to_error'] = diff_count
+        self.sentry_settings['decrease_count_to_error'] = diff_count

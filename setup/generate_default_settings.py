@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     sentry = {
         "example_events": 10,
-        "period_diffs_to_error": 3,
+        "decrease_count_to_error": 3,
         "max_pump_rate_increase": 0.25,
         "max_pressure_before_depress_decrease": 0.1,
         "max_pressure_before_depress_increase": 0.1
