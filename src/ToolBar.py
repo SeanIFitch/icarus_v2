@@ -17,6 +17,7 @@ class ToolBar(QToolBar):
         # Settings button
         self.connected = False
         self.pressure_signal = None
+        self.sentry = None
         settings_action = QAction(QIcon(), "Settings", self)
         settings_action.triggered.connect(self.open_settings)
         self.addAction(settings_action)
@@ -47,7 +48,7 @@ class ToolBar(QToolBar):
 
     def open_settings(self):
         # Open the settings dialog
-        self.settings_dialog = SettingsDialog(self.config_manager, self.connected, self.pressure_signal)
+        self.settings_dialog = SettingsDialog(self.config_manager, self.connected, self.pressure_signal, self.sentry)
         self.settings_dialog.exec()
         self.settings_dialog = None
 
@@ -64,6 +65,11 @@ class ToolBar(QToolBar):
         self.pressure_signal = pressure_signal
         if self.settings_dialog is not None:
             self.settings_dialog.set_pressure_signal(pressure_signal)
+
+    def set_sentry(self, sentry):
+        self.sentry = sentry
+        if self.settings_dialog is not None:
+            self.settings_dialog.set_sentry(sentry)
 
     def set_connected(self, connected):
         self.connected = connected

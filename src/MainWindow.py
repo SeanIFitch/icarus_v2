@@ -112,6 +112,7 @@ class MainWindow(QMainWindow):
         self.device_control_panel.set_pulse_generator(data_handler.pulse_generator)
         self.log_control_panel.log_reader.set_logger(data_handler.logger)
         self.toolbar.set_pressure_signal(data_handler.pressure_event_signal)
+        self.toolbar.set_sentry(data_handler.sentry)
 
         # Connections that are never disconnected
         data_handler.pressure_event_signal.connect(self.pressure_display.update_pressure)

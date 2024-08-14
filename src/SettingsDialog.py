@@ -23,11 +23,12 @@ from time import sleep
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, config_manager, connected, pressure_signal, parent=None):
+    def __init__(self, config_manager, connected, pressure_signal, sentry, parent=None):
         super().__init__(parent=parent)
 
         self.config_manager = config_manager
         self.pressure_signal = pressure_signal
+        self.sentry = sentry
 
         # Create the toolbar
         toolbar = QToolBar(parent)
@@ -39,7 +40,7 @@ class SettingsDialog(QDialog):
         toolbar.addAction(action2)
 
         self.general_widget = self.get_default_widget(connected)
-        self.advanced_widget = self.get_advanced_widget()
+        self.advanced_widget = self.get_advanced_widget(connected)
         self.stack = QStackedWidget()
         self.stack.addWidget(self.general_widget)
         self.stack.addWidget(self.advanced_widget)
@@ -168,7 +169,7 @@ class SettingsDialog(QDialog):
         layout.addItem(QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
         return widget
 
-    def get_advanced_widget(self):
+    def get_advanced_widget(self, connected):
         # Allow only positive floating-point numbers
         positive_float = QDoubleValidator()
         positive_int = QIntValidator()
@@ -182,6 +183,8 @@ class SettingsDialog(QDialog):
         self.pump_rate_edit = QLineEdit()
         self.example_edit = QLineEdit()
         self.diff_count_error = QLineEdit()
+        self.enable_sentry_button = QPushButton("Enable")
+        self.enable_sentry_button.setEnabled(connected)
 
         self.depress_edit.setFixedWidth(edit_width)
         self.press_edit.setFixedWidth(edit_width)
@@ -208,6 +211,7 @@ class SettingsDialog(QDialog):
         self.pump_rate_edit.textChanged.connect(self.set_sentry_pump_rate)
         self.example_edit.textChanged.connect(self.set_sentry_example)
         self.diff_count_error.textChanged.connect(self.set_sentry_diff_count)
+        self.enable_sentry_button.clicked.connect(self.enable_sentry)
 
         sentry_layout = QGridLayout()
         sentry_layout.addWidget(QLabel("Max Pressure Decrease (%):"), 0, 0)
@@ -215,12 +219,14 @@ class SettingsDialog(QDialog):
         sentry_layout.addWidget(QLabel("Max Pump Rate Increase (%):"), 2, 0)
         sentry_layout.addWidget(QLabel("Example Event Count:"), 3, 0)
         sentry_layout.addWidget(QLabel("Pressure Difference to Error Count:"), 4, 0)
+        sentry_layout.addWidget(QLabel("Enable Sentry (until device disconnected):"), 5, 0)
 
         sentry_layout.addWidget(self.depress_edit, 0, 1)
         sentry_layout.addWidget(self.press_edit, 1, 1)
         sentry_layout.addWidget(self.pump_rate_edit, 2, 1)
         sentry_layout.addWidget(self.example_edit, 3, 1)
         sentry_layout.addWidget(self.diff_count_error, 4, 1)
+        sentry_layout.addWidget(self.enable_sentry_button, 5, 1)
 
         sentry_group = QGroupBox("Sentry Settings")
         sentry_group.setLayout(sentry_layout)
@@ -344,9 +350,13 @@ class SettingsDialog(QDialog):
 
     def set_connected(self, connected):
         self.recalibrate_button.setEnabled(connected)
+        self.enable_sentry_button.setEnabled(connected)
 
     def set_pressure_signal(self, pressure_signal):
         self.pressure_signal = pressure_signal
+
+    def set_sentry(self, sentry):
+        self.sentry = sentry
 
     def set_sentry_depress(self, depress):
         try:
@@ -382,3 +392,6 @@ class SettingsDialog(QDialog):
         except:
             return
         self.sentry_settings['decrease_count_to_error'] = diff_count
+
+    def enable_sentry(self):
+        self.sentry.handle_experiment(False)

@@ -55,7 +55,7 @@ class DataHandler(QThread):
         self.logger = None
 
         # TESTING ONLY. reads a raw data file instead of connecting to a device
-        self.load_raw = True
+        self.load_raw = False
         base_dir = get_base_directory()
         self.raw_file = os.path.join(base_dir, "logs/example/raw/2.1_to_1.5kBar.xz")
 
@@ -143,6 +143,7 @@ class DataHandler(QThread):
                 self.device = Di4108USB()
                 self.connecting = False
             except Exception as e:
+                print(e)
                 # Continue connecting
                 if (
                         "USB device not found" in str(e) or
