@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
     QGroupBox,
     QSizePolicy,
@@ -145,6 +145,11 @@ class DeviceControlPanel(QGroupBox):
         self.pulse_generator = pulse_generator
 
     def on_shutdown(self):
+        self.pressurize_button.setEnabled(False)
+        self.depressurize_button.setEnabled(False)
+        self.pump_button.setEnabled(False)
+        self.pulse_button.setEnabled(False)
+
         # Turn pump off
         self.pump_button.setChecked(False)
         # Stop pulsing
@@ -155,6 +160,18 @@ class DeviceControlPanel(QGroupBox):
 
         # Revert to manual mode
         self.mode_button.setChecked(False)
+
+        # Wait 3 seconds and then set the buttons to unchecked
+        QTimer.singleShot(3000, self.reset_valves)
+
+    def reset_valves(self):
+        self.pressurize_button.setEnabled(True)
+        self.depressurize_button.setEnabled(True)
+        self.pump_button.setEnabled(True)
+        self.pulse_button.setEnabled(True)
+
+        self.pressurize_button.setChecked(False)
+        self.depressurize_button.setChecked(False)
 
     def reset(self):
         # Reset buttons to initial states without triggering their slots

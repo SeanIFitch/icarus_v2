@@ -11,7 +11,8 @@ from PySide6.QtWidgets import (
     QSpacerItem,
     QSizePolicy,
     QWidget,
-    QMenuBar, QStackedWidget, QToolBar
+    QStackedWidget,
+    QToolBar
 )
 from PySide6.QtGui import QDoubleValidator, QIntValidator, QAction, QIcon
 from ErrorDialog import open_error_dialog
