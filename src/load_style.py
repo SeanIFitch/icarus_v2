@@ -48,7 +48,6 @@ THEME_COLOR_VALUES = {
             "base": "#808080",
             "input": {"transparent": 0},
         },
-        # TODO: add button, toggleButtonOff, toggleButtonOn to light mode
         "button": {
             "base": "#e4e7eb",
             "button.activeBackground": {"darken": 0.14, "transparent": 0.23},
@@ -136,6 +135,13 @@ THEME_COLOR_VALUES = {
             "base": "#dadce0",
             "input": {},
         },
+        "button": {
+            "base": "#4d5157",
+            "button.activeBackground": {"darken": 0.14, "transparent": 0.23},
+            "button.hoverBackground": {"darken": 0.1, "transparent": 0.11},
+            "defaultButton.activeBackground": {"darken": 0.12},
+            "defaultButton.hoverBackground": {"darken": 0.06},
+        },
         "foreground": {
             "base": "#4d5157",
             "defaultButton.disabledBackground": {"transparent": 0.25},
@@ -185,6 +191,16 @@ THEME_COLOR_VALUES = {
         "table.alternateBackground": "#00000012",
         "tableSectionHeader.background": "#dadce0",
         "textarea.inactiveSelectionBackground": "#00000015",
+        "toggleButtonOff": {
+            "base": "#f45555",
+            "button.activeBackground": {"lighten": 0.12},
+            "button.hoverBackground": {"lighten": 0.08},
+        },
+        "toggleButtonOn": {
+            "base": "#56bd5d",
+            "button.activeBackground": {"lighten": 0.16},
+            "button.hoverBackground": {"lighten": 0.08},
+        },
         "toolbar.activeBackground": "#00000024",
         "toolbar.background": "#ebebeb",
         "toolbar.hoverBackground": "#00000015",

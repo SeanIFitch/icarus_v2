@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QSpacerItem,
     QSizePolicy,
     QWidget,
-    QMenuBar, QStackedWidget
+    QMenuBar, QStackedWidget, QToolBar
 )
 from PySide6.QtGui import QDoubleValidator, QIntValidator, QAction, QIcon
 from ErrorDialog import open_error_dialog
@@ -29,13 +29,13 @@ class SettingsDialog(QDialog):
         self.pressure_signal = pressure_signal
 
         # Create the toolbar
-        menubar = QMenuBar(parent)
+        toolbar = QToolBar(parent)
         action1 = QAction("General", self)
         action2 = QAction("Advanced", self)
         action1.triggered.connect(self.show_general)
         action2.triggered.connect(self.show_advanced)
-        menubar.addAction(action1)
-        menubar.addAction(action2)
+        toolbar.addAction(action1)
+        toolbar.addAction(action2)
 
         self.general_widget = self.get_default_widget(connected)
         self.advanced_widget = self.get_advanced_widget()
@@ -56,9 +56,9 @@ class SettingsDialog(QDialog):
 
         # Main layout for the dialog
         main_layout = QVBoxLayout(self)
+        main_layout.addWidget(toolbar)
         main_layout.addWidget(self.stack)
         main_layout.addWidget(button_box)
-        main_layout.setMenuBar(menubar)
 
         # Default selection
         button_box.button(QDialogButtonBox.Apply).setFocus()
