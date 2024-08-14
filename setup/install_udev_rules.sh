@@ -41,10 +41,10 @@ else
     else
         display_error_and_exit "UDEV rule file not found at $udev_rule."
     fi
-
-    # Reload UDEV rules
-    echo "Reloading UDEV rules..."
-    sudo udevadm control --reload-rules && sudo udevadm trigger || display_error_and_exit "Failed to reload UDEV rules."
 fi
+
+# Reload UDEV rules
+echo "Reloading UDEV rules..."
+sudo udevadm control --reload-rules && sudo udevadm trigger || display_error_and_exit "Failed to reload UDEV rules."
 
 echo "Installation complete."

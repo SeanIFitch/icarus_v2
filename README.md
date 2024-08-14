@@ -145,11 +145,15 @@ With the virtual environment activated, you can now install all required package
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-To run the application, use:
+To start the application, ensure you have activated the virtual environment:
+   ```sh
+   source venv/bin/activate
+   ```
+And then, launch the application using:
    ```sh
    python3 src/main.py
    ```
-
+Note: the first time the application is run with a DATAQ connected, it will attempt to install a udev rule to allow access to the USB device. This requires admin permissions. If the application fails to connect to the device after a few seconds, reboot your computer to ensure the udev rules are fully reloaded.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
