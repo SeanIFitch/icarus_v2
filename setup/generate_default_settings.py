@@ -87,13 +87,11 @@ if __name__ == "__main__":
     }
 
     sentry = {
-        "pump_check_window": 1.0,
         "example_events": 10,
         "period_diffs_to_error": 3,
-        "max_period_pressure_difference": 0.25,
         "max_pump_rate_increase": 0.25,
         "max_pressure_before_depress_decrease": 0.1,
-        "max_pressure_before_press_increase": 0.1
+        "max_pressure_before_depress_increase": 0.1
     }
 
     # Legacy

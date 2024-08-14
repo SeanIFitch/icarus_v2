@@ -177,64 +177,50 @@ class SettingsDialog(QDialog):
         # Width of edit boxes
         edit_width = 190
 
-        self.period_edit = QLineEdit()
         self.depress_edit = QLineEdit()
         self.press_edit = QLineEdit()
         self.pump_rate_edit = QLineEdit()
-        self.pump_window_edit = QLineEdit()
         self.example_edit = QLineEdit()
         self.diff_count_error = QLineEdit()
 
-        self.period_edit.setFixedWidth(edit_width)
         self.depress_edit.setFixedWidth(edit_width)
         self.press_edit.setFixedWidth(edit_width)
         self.pump_rate_edit.setFixedWidth(edit_width)
-        self.pump_window_edit.setFixedWidth(edit_width)
         self.example_edit.setFixedWidth(edit_width)
         self.diff_count_error.setFixedWidth(edit_width)
 
-        self.period_edit.setValidator(positive_float)
         self.depress_edit.setValidator(positive_float)
         self.press_edit.setValidator(positive_float)
         self.pump_rate_edit.setValidator(positive_float)
-        self.pump_window_edit.setValidator(positive_float)
         self.example_edit.setValidator(positive_int)
         self.diff_count_error.setValidator(positive_int)
 
         self.sentry_settings = self.config_manager.get_settings('sentry_settings')
 
-        self.period_edit.setText(str(self.sentry_settings['max_period_pressure_difference'] * 100))
         self.depress_edit.setText(str(self.sentry_settings['max_pressure_before_depress_decrease'] * 100))
-        self.press_edit.setText(str(self.sentry_settings['max_pressure_before_press_increase'] * 100))
+        self.press_edit.setText(str(self.sentry_settings['max_pressure_before_depress_increase'] * 100))
         self.pump_rate_edit.setText(str(self.sentry_settings['max_pump_rate_increase'] * 100))
-        self.pump_window_edit.setText(str(self.sentry_settings['pump_check_window']))
         self.example_edit.setText(str(self.sentry_settings['example_events']))
         self.diff_count_error.setText(str(self.sentry_settings['period_diffs_to_error']))
 
-        self.period_edit.textChanged.connect(self.set_sentry_period)
         self.depress_edit.textChanged.connect(self.set_sentry_depress)
         self.press_edit.textChanged.connect(self.set_sentry_press)
         self.pump_rate_edit.textChanged.connect(self.set_sentry_pump_rate)
-        self.pump_window_edit.textChanged.connect(self.set_sentry_pump_window)
         self.example_edit.textChanged.connect(self.set_sentry_example)
         self.diff_count_error.textChanged.connect(self.set_sentry_diff_count)
 
         sentry_layout = QGridLayout()
-        sentry_layout.addWidget(QLabel("Max Avg Pressure Difference (%):"), 0, 0)
-        sentry_layout.addWidget(QLabel("Max Pressure Decrease (%):"), 1, 0)
-        sentry_layout.addWidget(QLabel("Max Pressure Increase (%):"), 2, 0)
-        sentry_layout.addWidget(QLabel("Max Pump Rate Increase (%):"), 3, 0)
-        sentry_layout.addWidget(QLabel("Rapid Pump Window (s):"), 4, 0)
-        sentry_layout.addWidget(QLabel("Example Event Count:"), 5, 0)
-        sentry_layout.addWidget(QLabel("Pressure Difference to Error Count:"), 6, 0)
+        sentry_layout.addWidget(QLabel("Max Pressure Decrease (%):"), 0, 0)
+        sentry_layout.addWidget(QLabel("Max Pressure Increase (%):"), 1, 0)
+        sentry_layout.addWidget(QLabel("Max Pump Rate Increase (%):"), 2, 0)
+        sentry_layout.addWidget(QLabel("Example Event Count:"), 3, 0)
+        sentry_layout.addWidget(QLabel("Pressure Difference to Error Count:"), 4, 0)
 
-        sentry_layout.addWidget(self.period_edit, 0, 1)
-        sentry_layout.addWidget(self.depress_edit, 1, 1)
-        sentry_layout.addWidget(self.press_edit, 2, 1)
-        sentry_layout.addWidget(self.pump_rate_edit, 3, 1)
-        sentry_layout.addWidget(self.pump_window_edit, 4, 1)
-        sentry_layout.addWidget(self.example_edit, 5, 1)
-        sentry_layout.addWidget(self.diff_count_error, 6, 1)
+        sentry_layout.addWidget(self.depress_edit, 0, 1)
+        sentry_layout.addWidget(self.press_edit, 1, 1)
+        sentry_layout.addWidget(self.pump_rate_edit, 2, 1)
+        sentry_layout.addWidget(self.example_edit, 3, 1)
+        sentry_layout.addWidget(self.diff_count_error, 4, 1)
 
         sentry_group = QGroupBox("Sentry Settings")
         sentry_group.setLayout(sentry_layout)
@@ -362,13 +348,6 @@ class SettingsDialog(QDialog):
     def set_pressure_signal(self, pressure_signal):
         self.pressure_signal = pressure_signal
 
-    def set_sentry_period(self, period):
-        try:
-            period = float(period) / 100
-        except:
-            return
-        self.sentry_settings['max_period_pressure_difference'] = period
-
     def set_sentry_depress(self, depress):
         try:
             depress = float(depress) / 100
@@ -381,7 +360,7 @@ class SettingsDialog(QDialog):
             press = float(press) / 100
         except:
             return
-        self.sentry_settings['max_pressure_before_press_increase'] = press
+        self.sentry_settings['max_pressure_before_depress_increase'] = press
 
     def set_sentry_pump_rate(self, pump_rate):
         try:
@@ -389,13 +368,6 @@ class SettingsDialog(QDialog):
         except:
             return
         self.sentry_settings['max_pump_rate_increase'] = pump_rate
-
-    def set_sentry_pump_window(self, pump_window):
-        try:
-            pump_window = float(pump_window)
-        except:
-            return
-        self.sentry_settings['pump_check_window'] = pump_window
 
     def set_sentry_example(self, example):
         try:

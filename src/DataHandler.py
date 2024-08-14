@@ -110,7 +110,6 @@ class DataHandler(QThread):
         self.log_signal.connect(self.sentry.handle_experiment)
         self.pump_event_signal.connect(self.sentry.handle_pump)
         self.depressurize_event_signal.connect(self.sentry.handle_depressurize)
-        self.pressurize_event_signal.connect(self.sentry.handle_pressurize)
         self.sentry.warning_signal.connect(lambda x: self.toolbar_warning.emit(x))
         self.sentry.error_signal.connect(lambda x: self.toolbar_warning.emit(x))
         self.sentry.error_signal.connect(lambda x: self.display_error.emit(x))
