@@ -29,7 +29,7 @@ class Sentry(QThread):
     # Takes boolean representing the new state of bit 4
     # Resets all expected values
     def handle_experiment(self, event):
-        self.current_experiment = True # not event
+        self.current_experiment = not event
         self.expected_pump_rate = None
         self.expected_pressure_before_depressurize = None
         self.pump_times = []
