@@ -156,8 +156,8 @@ class Event():
             compressed_depressurize_indeces = np.unique((depressurize_indeces / step).astype(int))
             compressed_pressurize_indeces = np.unique((pressurize_indeces / step).astype(int))
             # Set to false with bitwise operation
-            depre_mask = np.int16(0b1111111111111011)
-            pre_mask = np.int16(0b1111111111110111)
+            depre_mask = np.uint16(0b1111111111111011)
+            pre_mask = np.uint16(0b1111111111110111)
             compressed_data[compressed_depressurize_indeces,7] = compressed_data[compressed_depressurize_indeces,7] & depre_mask
             compressed_data[compressed_pressurize_indeces,7] = compressed_data[compressed_pressurize_indeces,7] & pre_mask
             return compressed_data

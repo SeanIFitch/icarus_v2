@@ -5,7 +5,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/SeanIFitch/icarus_v2">
-    <img src="images/wing.png" alt="Logo" width="80" height="80">
+    <img src="resources/wing.png" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">Icarus v2</h3>
@@ -89,7 +89,7 @@ All events are transmitted to the GUI and are rendered in dedicated event plots,
 
 ### Built With
 
-Python 3.10
+Python 3.12
 
 PySide6
 
@@ -106,10 +106,10 @@ PySide6
 These instructions are tailored for Ubuntu 24, which is the only operating system tested and supported for this setup.
 
 #### Installing Python
-Ensure you have Python 3.10 installed on your system. If you do not have Python 3.10 installed, you can install it using the following commands:
+Ensure you have Python 3.12 installed on your system. If you do not have Python 3.12 installed, you can install it using the following commands:
 ```sh
 sudo apt update
-sudo apt install python3.10
+sudo apt install python3.12
 ```
 #### Cloning the Repository
 Before you can start setting up your environment, you'll need to clone the repository containing the project. Open your terminal and execute the following command:
@@ -124,7 +124,7 @@ cd Icarus_v2
 1. Create a Virtual Environment:
 Use a virtual environment to manage dependencies effectively and avoid conflicts between package versions. Run the following command in your project directory to create a virtual environment:
    ```sh
-   python3.10 -m venv venv
+   python3.12 -m venv venv
    ```
 2. Activate the Virtual Environment:
 Once the virtual environment is created, activate it with:
@@ -210,4 +210,4 @@ Project Link: [https://github.com/SeanIFitch/Icarus_v2](https://github.com/SeanI
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-[screenshot]: images/app-screenshot.png
+[screenshot]: resources/app-screenshot.png

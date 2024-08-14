@@ -4,7 +4,7 @@ import pyqtgraph as pg
 import numpy as np
 from Event import Event, Channel, get_channel
 from PySide6.QtWidgets import QLabel, QGridLayout, QWidget, QSpacerItem, QSizePolicy
-import qdarktheme
+from StyledPlotWidget import StyledPlotWidget
 
 
 class EventPlot(QWidget):
@@ -47,17 +47,11 @@ class EventPlot(QWidget):
             self.x_unit = 's'
             title = "Period"
 
-        window_bg_color = qdarktheme.load_palette().window().color()
-        self.plot = pg.PlotWidget(background=window_bg_color, parent=self)
-        self.plot.showGrid(x=True, y=True)
+        self.plot = StyledPlotWidget()
         self.plot.setYRange(0, 3)
-        self.plot.setMouseEnabled(x=False, y=False)  # Prevent zooming
-        self.plot.hideButtons()  # Remove autoScale button
-        # Labels
-        text_color = qdarktheme.load_palette().text().color()
-        self.plot.setTitle(title, color=text_color, size="17pt")
-        self.plot.setLabel('left', 'Pressure (kbar)', **{'color': text_color})
-        self.plot.setLabel('bottom', f'Time ({self.x_unit})', **{'color': text_color})
+        self.plot.set_title(title)
+        self.plot.set_y_label('Pressure (kbar)')
+        self.plot.set_x_label(f'Time ({self.x_unit})')
         self.width_display = None
         self.period_display = None
         self.delay_display = None

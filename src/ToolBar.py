@@ -3,7 +3,6 @@ from PySide6.QtGui import QIcon, QAction
 from SettingsDialog import SettingsDialog
 from PySide6.QtCore import Signal
 from ScrollableMenu import ScrollableMenu
-import qdarktheme
 
 
 class ToolBar(QToolBar):
@@ -11,16 +10,6 @@ class ToolBar(QToolBar):
 
     def __init__(self, config_manager, parent=None):
         super().__init__(parent=parent)
-
-        window_bg_color = qdarktheme.load_palette().window().color()
-        window_border_color = qdarktheme.load_palette().mid().color()
-
-        self.setStyleSheet(f"""
-                    QToolBar {{
-                        background-color: {window_bg_color.name()};
-                        border: 1px solid {window_border_color.name()};
-                    }}
-                """)
 
         self.config_manager = config_manager
         self.setMovable(False)

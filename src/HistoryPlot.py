@@ -1,12 +1,10 @@
-from PySide6.QtGui import QPalette
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QSpacerItem, QSizePolicy
 import pyqtgraph as pg
 from Event import Event, Channel
 from bisect import bisect_right, bisect_left
 import numpy as np
-import qdarktheme
-
+from StyledPlotWidget import StyledPlotWidget
 
 class HistoryPlot(QWidget):
     # Dictionary of pens to plot each line
@@ -62,21 +60,13 @@ class HistoryPlot(QWidget):
         self.can_plot_pressurize = True
         # Dictionary of mouse position labels
         self.mouse_labels = {}
-        # Colors for plots
-        window_color = qdarktheme.load_palette().window().color()
-        text_color = qdarktheme.load_palette().text().color()
-        text_style = {'color': text_color}
 
         # Pressure plot
-        self.pressure_plot = pg.PlotWidget()
-        self.pressure_plot.setBackground(window_color)
-        self.pressure_plot.showGrid(x=True, y=True)
-        self.pressure_plot.setMouseEnabled(x=True, y=False)
-        self.pressure_plot.setTitle("Pressure", color=text_color, size="17pt")
-        self.pressure_plot.setLabel('left', 'Pressure (kBar)', **text_style)
-        self.pressure_plot.setLabel('bottom', 'Time (s)', **text_style)
+        self.pressure_plot = StyledPlotWidget()
+        self.pressure_plot.set_title("Pressure")
+        self.pressure_plot.set_y_label('Pressure (kBar)')
+        self.pressure_plot.set_x_label('Time (s)')
         self.pressure_plot.setYRange(0, 3)
-        self.pressure_plot.hideButtons()  # Remove autoScale button
         style = self.LINE_STYLES["origin pressure"]
         pen = pg.mkPen(color=style[0], style=style[1])
         self.lines["origin pressure"] = self.pressure_plot.plot([], [], pen=pen)
@@ -86,15 +76,11 @@ class HistoryPlot(QWidget):
         self.pressure_plot.getPlotItem().getViewBox().sigStateChanged.connect(self.set_text)
 
         # Slope plot
-        self.slope_plot = pg.PlotWidget()
-        self.slope_plot.setBackground(window_color)
-        self.slope_plot.showGrid(x=True, y=True)
-        self.slope_plot.setMouseEnabled(x=True, y=False)
-        self.slope_plot.setTitle("Pressure Change Slope", color=text_color, size="17pt")
-        self.slope_plot.setLabel('left', 'Slope (kBar/ms)', **text_style)
-        self.slope_plot.setLabel('bottom', 'Time (s)', **text_style)
+        self.slope_plot = StyledPlotWidget()
+        self.slope_plot.set_title("Pressure Change Slope")
+        self.slope_plot.set_y_label('Slope (kBar/ms)')
+        self.slope_plot.set_x_label('Time (s)')
         self.slope_plot.setYRange(-1.1, 1.1)
-        self.slope_plot.hideButtons()  # Remove autoScale button
         style = self.LINE_STYLES["depress origin slope"]
         pen = pg.mkPen(color=style[0], style=style[1])
         self.lines["depress origin slope"] = self.slope_plot.plot([], [], pen=pen)
@@ -111,15 +97,11 @@ class HistoryPlot(QWidget):
         self.slope_plot.setXLink(self.pressure_plot)
 
         # Switch time plot
-        self.switch_time_plot = pg.PlotWidget()
-        self.switch_time_plot.setBackground(window_color)
-        self.switch_time_plot.showGrid(x=True, y=True)
-        self.switch_time_plot.setMouseEnabled(x=True, y=False)
-        self.switch_time_plot.setTitle("Switch Time", color=text_color, size="17pt")
-        self.switch_time_plot.setLabel('left', 'Time (ms)', **text_style)
-        self.switch_time_plot.setLabel('bottom', 'Time (s)', **text_style)
+        self.switch_time_plot = StyledPlotWidget()
+        self.switch_time_plot.set_title("Switch Time")
+        self.switch_time_plot.set_y_label('Time (ms)')
+        self.switch_time_plot.set_x_label('Time (s)')
         self.switch_time_plot.setYRange(0, 45)
-        self.switch_time_plot.hideButtons()  # Remove autoScale button
         style = self.LINE_STYLES["depress origin switch"]
         pen = pg.mkPen(color=style[0], style=style[1])
         self.lines["depress origin switch"] = self.switch_time_plot.plot([], [], pen=pen)

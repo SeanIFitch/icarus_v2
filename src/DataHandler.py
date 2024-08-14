@@ -55,7 +55,7 @@ class DataHandler(QThread):
         self.logger = None
 
         # TESTING ONLY. reads a raw data file instead of connecting to a device
-        self.load_raw = False
+        self.load_raw = True
         base_dir = get_base_directory()
         self.raw_file = os.path.join(base_dir, "logs/example/raw/2.1_to_1.5kBar.xz")
 

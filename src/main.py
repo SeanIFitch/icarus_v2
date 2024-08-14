@@ -5,8 +5,7 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 from path_utils import get_base_directory
 import os
-import qdarktheme
-
+from load_style import load_stylesheet
 
 # Application entry point
 def main():
@@ -17,12 +16,12 @@ def main():
 
     base_dir = get_base_directory()
     config_file_path = os.path.join(base_dir, "settings.json")
-    icon_path = os.path.join(base_dir, 'images', 'wing.png')
+    icon_path = os.path.join(base_dir, 'resources', 'wing.png')
 
     config_manager = ConfigurationManager(config_file_path)
 
     app = QApplication([])
-    qdarktheme.setup_theme()
+    app.setStyleSheet(load_stylesheet(theme='dark'))
     app.setWindowIcon(QIcon(icon_path))
     app.setApplicationName("Icarus")
 
