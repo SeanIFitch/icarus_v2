@@ -89,7 +89,7 @@ All events are transmitted to the GUI and are rendered in dedicated event plots,
 
 ### Built With
 
-Python 3.12
+Python >=3.10, <=3.12
 
 PySide6
 
@@ -106,7 +106,7 @@ PySide6
 These instructions are tailored for Ubuntu 24, which is the only operating system tested and supported for this setup.
 
 #### Installing Python
-Ensure you have Python 3.12 installed on your system. If you do not have Python 3.12 installed, you can install it using the following commands:
+Ensure you have Python 3.10-3.12 installed on your system. If you do not have Python installed, you can install it using the following commands:
 ```sh
 sudo apt update
 sudo apt install python3.12
@@ -124,17 +124,17 @@ cd Icarus_v2
 1. Create a Virtual Environment:
 Use a virtual environment to manage dependencies effectively and avoid conflicts between package versions. Run the following command in your project directory to create a virtual environment:
    ```sh
-   python3.12 -m venv venv
+   python3.12 -m venv icarus_venv
    ```
 2. Activate the Virtual Environment:
 Once the virtual environment is created, activate it with:
    ```sh
-   source venv/bin/activate
+   source icarus_venv/bin/activate
    ```
 #### Installing Dependencies
 With the virtual environment activated, you can now install all required packages from required-packages.txt. Install these packages by running:
    ```sh
-   pip install -r required-packages.txt
+   pip install -r requirements.txt
    ```
 
 
@@ -147,7 +147,7 @@ With the virtual environment activated, you can now install all required package
 
 To start the application, ensure you have activated the virtual environment:
    ```sh
-   source venv/bin/activate
+   source icarus_venv/bin/activate
    ```
 And then, launch the application using:
    ```sh
