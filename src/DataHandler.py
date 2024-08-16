@@ -144,6 +144,7 @@ class DataHandler(QThread):
             try:
                 self.device = Di4108USB()
                 self.connecting = False
+                self.connected = True
             except Exception as e:
                 # Continue connecting
                 if (
