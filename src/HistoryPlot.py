@@ -62,7 +62,7 @@ class HistoryPlot(QWidget):
         self.mouse_labels = {}
 
         # Pressure plot
-        self.pressure_plot = StyledPlotWidget()
+        self.pressure_plot = StyledPlotWidget(x_zoom=True)
         self.pressure_plot.set_title("Pressure")
         self.pressure_plot.set_y_label('Pressure (kBar)')
         self.pressure_plot.set_x_label('Time (s)')
@@ -76,7 +76,7 @@ class HistoryPlot(QWidget):
         self.pressure_plot.getPlotItem().getViewBox().sigStateChanged.connect(self.set_text)
 
         # Slope plot
-        self.slope_plot = StyledPlotWidget()
+        self.slope_plot = StyledPlotWidget(x_zoom=True)
         self.slope_plot.set_title("Pressure Change Slope")
         self.slope_plot.set_y_label('Slope (kBar/ms)')
         self.slope_plot.set_x_label('Time (s)')
@@ -97,7 +97,7 @@ class HistoryPlot(QWidget):
         self.slope_plot.setXLink(self.pressure_plot)
 
         # Switch time plot
-        self.switch_time_plot = StyledPlotWidget()
+        self.switch_time_plot = StyledPlotWidget(x_zoom=True)
         self.switch_time_plot.set_title("Switch Time")
         self.switch_time_plot.set_y_label('Time (ms)')
         self.switch_time_plot.set_x_label('Time (s)')
