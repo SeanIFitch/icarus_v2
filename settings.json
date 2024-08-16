@@ -24,7 +24,7 @@
     "hide_valve_sensors": false,
     "sentry_settings": {
         "max_pressure_before_depress_decrease": 0.1,
-        "max_pressure_before_depress_increase": 0.1,
+        "max_pressure_before_depress_increase": 0.01,
         "max_pump_rate_increase": 0.25,
         "example_events": 10,
         "decrease_count_to_error": 3

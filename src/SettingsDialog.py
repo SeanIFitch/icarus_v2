@@ -52,7 +52,6 @@ class SettingsDialog(QDialog):
 
         # Dialog configuration
         self.setWindowTitle("Settings")
-        self.setWindowModality(Qt.ApplicationModal)
         self.setStyleSheet("font-size: 17pt;")
         self.setMinimumWidth(610)
 

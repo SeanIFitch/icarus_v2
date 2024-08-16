@@ -187,7 +187,7 @@ class LogControlPanel(QGroupBox):
         self.edit_dialog.setWindowTitle("Edit File")
         self.edit_dialog.setFixedSize(500, 200)
         self.edit_dialog.setLayout(layout)
-        self.edit_dialog.exec_()
+        self.edit_dialog.show()
 
     def rename_file(self):
         new_name = self.name_edit.text()

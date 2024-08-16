@@ -49,8 +49,13 @@ class ToolBar(QToolBar):
     def open_settings(self):
         # Open the settings dialog
         self.settings_dialog = SettingsDialog(self.config_manager, self.connected, self.pressure_signal, self.sentry)
-        self.settings_dialog.exec()
-        self.settings_dialog = None
+
+        def on_dialog_finished():
+            self.settings_dialog = None
+
+        self.settings_dialog.finished.connect(on_dialog_finished)
+
+        self.settings_dialog.show()
 
     def change_log_mode(self):
         if self.change_mode_action.text() == "Open Logs":
