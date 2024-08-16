@@ -74,7 +74,6 @@ class Sentry(QThread):
                 if percent_change < - self.settings["max_pressure_before_depress_decrease"]:
                     self.num_pressure_decreases += 1
                     if self.num_pressure_decreases >= self.settings["decrease_count_to_error"]:
-                        self.num_pressure_decreases = 0
                         self.error_signal.emit(
                             f"Error: pressure decreased {self.num_pressure_decreases} times in a row at "
                             f"{strftime('%H:%M:%S', localtime(event.event_time))}. Likely leak")
