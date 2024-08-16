@@ -182,6 +182,8 @@ class SettingsDialog(QDialog):
         self.pump_rate_edit = QLineEdit()
         self.example_edit = QLineEdit()
         self.diff_count_error = QLineEdit()
+        self.max_pump_edit = QLineEdit()
+        self.pump_window_edit = QLineEdit()
         self.enable_sentry_button = QPushButton("Enable")
         self.enable_sentry_button.setEnabled(connected)
 
@@ -190,12 +192,16 @@ class SettingsDialog(QDialog):
         self.pump_rate_edit.setFixedWidth(edit_width)
         self.example_edit.setFixedWidth(edit_width)
         self.diff_count_error.setFixedWidth(edit_width)
+        self.pump_window_edit.setFixedWidth(edit_width)
+        self.max_pump_edit.setFixedWidth(edit_width)
 
         self.depress_edit.setValidator(positive_float)
         self.press_edit.setValidator(positive_float)
         self.pump_rate_edit.setValidator(positive_float)
         self.example_edit.setValidator(positive_int)
         self.diff_count_error.setValidator(positive_int)
+        self.pump_window_edit.setValidator(positive_float)
+        self.max_pump_edit.setValidator(positive_int)
 
         self.sentry_settings = self.config_manager.get_settings('sentry_settings')
 
@@ -204,35 +210,51 @@ class SettingsDialog(QDialog):
         self.pump_rate_edit.setText(str(self.sentry_settings['max_pump_rate_increase'] * 100))
         self.example_edit.setText(str(self.sentry_settings['example_events']))
         self.diff_count_error.setText(str(self.sentry_settings['decrease_count_to_error']))
+        self.max_pump_edit.setText(str(self.sentry_settings['max_pumps_in_window']))
+        self.pump_window_edit.setText(str(self.sentry_settings['pump_window']))
 
         self.depress_edit.textChanged.connect(self.set_sentry_depress)
         self.press_edit.textChanged.connect(self.set_sentry_press)
         self.pump_rate_edit.textChanged.connect(self.set_sentry_pump_rate)
         self.example_edit.textChanged.connect(self.set_sentry_example)
         self.diff_count_error.textChanged.connect(self.set_sentry_diff_count)
+        self.max_pump_edit.textChanged.connect(self.set_sentry_max_pumps)
+        self.pump_window_edit.textChanged.connect(self.set_sentry_pump_window)
         self.enable_sentry_button.clicked.connect(self.enable_sentry)
 
-        sentry_layout = QGridLayout()
-        sentry_layout.addWidget(QLabel("Max Pressure Decrease (%):"), 0, 0)
-        sentry_layout.addWidget(QLabel("Max Pressure Increase (%):"), 1, 0)
-        sentry_layout.addWidget(QLabel("Max Pump Rate Increase (%):"), 2, 0)
-        sentry_layout.addWidget(QLabel("Example Event Count:"), 3, 0)
-        sentry_layout.addWidget(QLabel("Pressure Difference to Error Count:"), 4, 0)
-        sentry_layout.addWidget(QLabel("Enable Sentry (until device disconnected):"), 5, 0)
+        error_layout = QGridLayout()
+        error_layout.addWidget(QLabel("Pressure Difference to Error Count:"), 0, 0)
+        error_layout.addWidget(QLabel("Max Pump Count in Window:"), 1, 0)
+        error_layout.addWidget(QLabel("Pump Window (s):"), 2, 0)
+        error_layout.addWidget(self.diff_count_error, 0, 1)
+        error_layout.addWidget(self.max_pump_edit, 1, 1)
+        error_layout.addWidget(self.pump_window_edit, 2, 1)
+        error_group = QGroupBox("Errors")
+        error_group.setLayout(error_layout)
 
-        sentry_layout.addWidget(self.depress_edit, 0, 1)
-        sentry_layout.addWidget(self.press_edit, 1, 1)
-        sentry_layout.addWidget(self.pump_rate_edit, 2, 1)
-        sentry_layout.addWidget(self.example_edit, 3, 1)
-        sentry_layout.addWidget(self.diff_count_error, 4, 1)
-        sentry_layout.addWidget(self.enable_sentry_button, 5, 1)
+        warning_layout = QGridLayout()
+        warning_layout.addWidget(QLabel("Max Pressure Decrease (%):"), 0, 0)
+        warning_layout.addWidget(QLabel("Max Pressure Increase (%):"), 1, 0)
+        warning_layout.addWidget(QLabel("Max Pump Rate Increase (%):"), 2, 0)
+        warning_layout.addWidget(self.depress_edit, 0, 1)
+        warning_layout.addWidget(self.press_edit, 1, 1)
+        warning_layout.addWidget(self.pump_rate_edit, 2, 1)
+        warning_group = QGroupBox("Warnings")
+        warning_group.setLayout(warning_layout)
 
-        sentry_group = QGroupBox("Sentry Settings")
-        sentry_group.setLayout(sentry_layout)
+        misc_layout = QGridLayout()
+        misc_layout.addWidget(QLabel("Example Event Count:"), 0, 0)
+        misc_layout.addWidget(QLabel("Enable Sentry (until device disconnected):"), 1, 0)
+        misc_layout.addWidget(self.example_edit, 0, 1)
+        misc_layout.addWidget(self.enable_sentry_button, 1, 1)
+        misc_group = QGroupBox("Sentry")
+        misc_group.setLayout(misc_layout)
 
         widget = QWidget()
         layout = QVBoxLayout(widget)
-        layout.addWidget(sentry_group)
+        layout.addWidget(error_group)
+        layout.addWidget(warning_group)
+        layout.addWidget(misc_group)
         layout.addItem(QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
         return widget
@@ -267,7 +289,7 @@ class SettingsDialog(QDialog):
             error = "Difference to error count should be greater than 0."
 
         if error is not None:
-            open_error_dialog(error, QDialogButtonBox.Ok, self)
+            self.dialog = open_error_dialog(error, QDialogButtonBox.Ok, self)
             # Do not apply changes or close window
             return
 
@@ -391,6 +413,20 @@ class SettingsDialog(QDialog):
         except:
             return
         self.sentry_settings['decrease_count_to_error'] = diff_count
+
+    def set_sentry_pump_window(self, pump_window):
+        try:
+            pump_window = float(pump_window)
+        except:
+            return
+        self.sentry_settings['pump_window'] = pump_window
+
+    def set_sentry_max_pumps(self, max_pumps):
+        try:
+            max_pumps = int(max_pumps)
+        except:
+            return
+        self.sentry_settings['max_pumps_in_window'] = max_pumps
 
     def enable_sentry(self):
         self.sentry.handle_experiment(False)

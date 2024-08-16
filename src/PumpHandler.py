@@ -39,7 +39,7 @@ class PumpHandler(EventHandler):
 
             # dont detect pumps on near-zero data; many false positives
             if np.mean(target_pressure) < 1000:
-                pass # continue
+                continue
 
             if self.overlap_data is not None:
                 target_pressure = np.concatenate((self.overlap_data, target_pressure))

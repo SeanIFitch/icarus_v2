@@ -91,7 +91,9 @@ if __name__ == "__main__":
         "decrease_count_to_error": 3,
         "max_pump_rate_increase": 0.25,
         "max_pressure_before_depress_decrease": 0.1,
-        "max_pressure_before_depress_increase": 0.1
+        "max_pressure_before_depress_increase": 0.01,
+        "pump_window": 2,
+        "max_pumps_in_window": 5,
     }
 
     # Legacy

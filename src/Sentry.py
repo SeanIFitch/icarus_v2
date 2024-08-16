@@ -21,7 +21,8 @@ class Sentry(QThread):
 
         # values defined after an experiment starts for defaults
         self.example_depress_pressures = []
-        self.pump_times = []
+        self.example_pump_times = [] # last example_events stroke times
+        self.recent_pump_times = [] # all times within pump_window
         self.expected_pump_rate = None
         self.expected_pressure_before_depressurize = None
         self.num_pressure_decreases = 0
@@ -32,31 +33,38 @@ class Sentry(QThread):
         self.current_experiment = not event
         self.expected_pump_rate = None
         self.expected_pressure_before_depressurize = None
-        self.pump_times = []
+        self.example_pump_times = []
+        self.recent_pump_times = []
         self.example_depress_pressures = []
         self.num_pressure_decreases = 0
         # update this only here so it is not changed for an ongoing experiment
         self.current_example_events = self.settings['example_events']
 
-    # Emits warning pump rate exceeds expected value
     def handle_pump(self, event):
         if self.current_experiment:
-            self.pump_times.append(event.event_time)
+            self.example_pump_times.append(event.event_time)
             # Define expected pump rate
-            if self.expected_pump_rate is None and len(self.pump_times) == self.current_example_events:
-                avg = np.diff(self.pump_times).mean()
+            if self.expected_pump_rate is None and len(self.example_pump_times) == self.current_example_events:
+                avg = np.diff(self.example_pump_times).mean()
                 self.expected_pump_rate = 1 / avg
 
             # Check for deviation from expected rate (averaged over last example_events)
-            if len(self.pump_times) > self.current_example_events:
-                self.pump_times.pop(0)
-                pump_rate = 1 / np.diff(self.pump_times).mean()
+            if len(self.example_pump_times) > self.current_example_events:
+                self.example_pump_times.pop(0)
+                pump_rate = 1 / np.diff(self.example_pump_times).mean()
                 rate_percent_increase = (pump_rate - self.expected_pump_rate) / self.expected_pump_rate
                 if rate_percent_increase > self.settings["max_pump_rate_increase"]:
                     self.warning_signal.emit(
                         f"Warning: pump rate at {strftime('%H:%M:%S', localtime(event.event_time))} is "
                         f"{pump_rate:.2f}, which is {rate_percent_increase:.2f}% over the expected rate from the "
                         "beginning of the experiment. Possible leak.")
+
+            # check for max_pumps within pump_window
+            self.recent_pump_times.append(event.event_time)
+            self.recent_pump_times = [t for t in self.recent_pump_times if t > event.event_time - self.settings["pump_window"]]
+            if len(self.recent_pump_times) > self.settings["max_pumps_in_window"]:
+                self.error_signal.emit(
+                    f"Error: {len(self.recent_pump_times)} pump strokes occurred within {self.settings["pump_window"]} seconds.")
 
     def handle_depressurize(self, event):
         if self.current_experiment:
@@ -94,6 +102,6 @@ class Sentry(QThread):
         # Exit experiment mode (argument is value of bit 4 and thus is high for normal operation)
         self.handle_experiment(True)
 
-    def update_settings(self, key='timing_settings'):
+    def update_settings(self, key='sentry_settings'):
         if key == 'sentry_settings':
             self.settings = self.config_manager.get_settings(key)

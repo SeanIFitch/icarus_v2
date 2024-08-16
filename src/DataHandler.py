@@ -113,6 +113,7 @@ class DataHandler(QThread):
         self.depressurize_event_signal.connect(self.sentry.handle_depressurize)
         self.sentry.warning_signal.connect(lambda x: self.toolbar_warning.emit(x))
         self.sentry.error_signal.connect(lambda x: self.toolbar_warning.emit(x))
+        self.sentry.error_signal.connect(lambda x: self.display_error.emit(x))
         self.sentry.error_signal.connect(lambda x: self.shutdown_signal.emit())
 
         # Sample sensor detector

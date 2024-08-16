@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
 def open_error_dialog(error, buttons = QDialogButtonBox.Ok, parent=None):
     dialog = ErrorDialog(str(error), buttons, parent=parent)
     dialog.show()
+    return dialog
 
 
 class ErrorDialog(QDialog):

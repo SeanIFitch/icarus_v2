@@ -130,7 +130,7 @@ class LogControlPanel(QGroupBox):
         try:
             self.log_reader.read_events(file)
         except Exception as e:
-            open_error_dialog("Incorrect format for log file.")
+            self.dialog = open_error_dialog("Incorrect format for log file.")
             return
 
         self.time_edit.setText("")
@@ -203,7 +203,7 @@ class LogControlPanel(QGroupBox):
                 self.filename_label.setText(os.path.basename(new_filename))  # Update the label
                 self.filename = new_filename
             except OSError as e:
-                open_error_dialog(e)
+                self.dialog = open_error_dialog(e)
         self.edit_dialog.close()
 
     def delete_file(self):
@@ -218,7 +218,7 @@ class LogControlPanel(QGroupBox):
                 try:
                     os.remove(self.filename)
                 except OSError as e:
-                    open_error_dialog(e)
+                    self.dialog = open_error_dialog(e)
                     return
 
             self.filename_label.setText(" ")
