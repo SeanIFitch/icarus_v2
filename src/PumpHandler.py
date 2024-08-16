@@ -37,10 +37,6 @@ class PumpHandler(EventHandler):
 
             target_pressure = get_channel(data, Channel.TARGET)
 
-            # dont detect pumps on near-zero data; many false positives
-            if np.mean(target_pressure) < 2000:
-                continue
-
             if self.overlap_data is not None:
                 target_pressure = np.concatenate((self.overlap_data, target_pressure))
 
@@ -51,7 +47,7 @@ class PumpHandler(EventHandler):
             corr = np.correlate(target_pressure, dy2, mode='same') / np.correlate(target_pressure, y, mode='same')
             stroke = (np.roll(corr, -1) < corr) & (np.roll(corr, 1) < corr) & (corr > self.threshold) & (
                     np.roll(target_pressure, -35) < target_pressure) & (
-                             np.roll(target_pressure, 35) < target_pressure)
+                             np.roll(target_pressure, 35) < target_pressure) & (target_pressure > 2000)
 
             # Remove detections near the edges
             if self.overlap_data is not None:
