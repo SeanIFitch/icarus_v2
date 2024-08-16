@@ -35,7 +35,10 @@ class SampleSensorDetector(QObject):
             if len(depressurize) == 10:
                 break
         num_connected = sum([self.detect_sensor(event, coefficients) for event in depressurize])
-        sample_sensor_connected = num_connected / len(depressurize) > 0.5
+        if len(depressurize) > 0:
+            sample_sensor_connected = num_connected / len(depressurize) > 0.5
+        else:
+            sample_sensor_connected = True
         self.sample_sensor_connected.emit(sample_sensor_connected)
 
     def detect_sensor(self, depressurize_event, coefficients=None):
