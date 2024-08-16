@@ -145,15 +145,6 @@ class DeviceControlPanel(QGroupBox):
         self.pulse_generator = pulse_generator
 
     def on_shutdown(self):
-        # wait 3 seconds and then set the buttons to unchecked
-        # only if currently in manual, as in console mode closing the valves returns control to console
-        if not self.mode_button.isChecked():
-            self.pressurize_button.setEnabled(False)
-            self.depressurize_button.setEnabled(False)
-            self.pump_button.setEnabled(False)
-            self.pulse_button.setEnabled(False)
-            QTimer.singleShot(3000, self.reset_valves)
-
         # turn pump off
         self.pump_button.setChecked(False)
         # stop pulsing
@@ -161,6 +152,15 @@ class DeviceControlPanel(QGroupBox):
         # open valves
         self.pressurize_button.setChecked(True)
         self.depressurize_button.setChecked(True)
+
+        # wait 3 seconds and then set the buttons to unchecked
+        # only if currently in manual, as in console mode closing the valves returns control to console
+        if not self.mode_button.isChecked():
+            self.pressurize_button.setEnabled(False)
+            self.depressurize_button.setEnabled(False)
+            self.pump_button.setEnabled(False)
+            self.pulse_button.setEnabled(False)
+            QTimer.singleShot(1000, self.reset_valves)
 
         # revert to manual mode
         self.mode_button.setChecked(False)
