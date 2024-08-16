@@ -64,7 +64,7 @@ class Sentry(QThread):
             self.recent_pump_times = [t for t in self.recent_pump_times if t > event.event_time - self.settings["pump_window"]]
             if len(self.recent_pump_times) > self.settings["max_pumps_in_window"]:
                 self.error_signal.emit(
-                    f"Error: {len(self.recent_pump_times)} pump strokes occurred within {self.settings["pump_window"]} seconds.")
+                    f"Error: {len(self.recent_pump_times)} pump strokes occurred within {self.settings['pump_window']} seconds.")
 
     def handle_depressurize(self, event):
         if self.current_experiment:

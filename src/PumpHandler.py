@@ -38,7 +38,7 @@ class PumpHandler(EventHandler):
             target_pressure = get_channel(data, Channel.TARGET)
 
             # dont detect pumps on near-zero data; many false positives
-            if np.mean(target_pressure) < 1000:
+            if np.mean(target_pressure) < 2000:
                 continue
 
             if self.overlap_data is not None:
