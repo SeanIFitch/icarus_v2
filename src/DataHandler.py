@@ -51,6 +51,7 @@ class DataHandler(QThread):
         self.config_manager = config_manager
         self.pulse_generator = PulseGenerator(self.config_manager)
         self.connecting = False
+        self.connected = False
         self.device = None
         self.logger = None
 
@@ -137,13 +138,13 @@ class DataHandler(QThread):
             if self.load_raw:
                 self.device = RawLogReader(self.raw_file)
                 self.connecting = False
+                self.connected = True
                 break
 
             try:
                 self.device = Di4108USB()
                 self.connecting = False
             except Exception as e:
-                print(e)
                 # Continue connecting
                 if (
                         "USB device not found" in str(e) or
@@ -189,6 +190,7 @@ class DataHandler(QThread):
         self.exec()
 
     def device_disconnected(self):
+        self.connected = False
         self.quit()
 
         # Reset persistent states
@@ -231,11 +233,12 @@ class DataHandler(QThread):
         self.pulse_generator.wait()
         self.loader.wait()
 
-        self.pulse_generator.set_pressurize_low()
-        self.pulse_generator.set_depressurize_low()
-        sleep(2)
-        self.pulse_generator.set_pressurize_high()
-        self.pulse_generator.set_depressurize_high()
+        if self.connected:
+            self.pulse_generator.set_pressurize_low()
+            self.pulse_generator.set_depressurize_low()
+            sleep(2)
+            self.pulse_generator.set_pressurize_high()
+            self.pulse_generator.set_depressurize_high()
 
         super().quit()
         self.wait()
