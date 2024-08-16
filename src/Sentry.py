@@ -3,7 +3,6 @@ from PySide6.QtCore import QThread, Signal
 from Event import get_channel, Channel
 from time import localtime, strftime
 
-
 # Gets expected values for the experiment checks from the first example_events events of an experiment
 class Sentry(QThread):
     warning_signal = Signal(str)
@@ -18,6 +17,8 @@ class Sentry(QThread):
         self.current_example_events = None
 
         self.current_experiment = False
+        self.last_error_time = -10
+        self.suppress_errors = 2  # suppress errors for 2 seconds after one error
 
         # values defined after an experiment starts for defaults
         self.example_depress_pressures = []
@@ -37,6 +38,7 @@ class Sentry(QThread):
         self.recent_pump_times = []
         self.example_depress_pressures = []
         self.num_pressure_decreases = 0
+        self.last_error_time = -10
         # update this only here so it is not changed for an ongoing experiment
         self.current_example_events = self.settings['example_events']
 
@@ -53,18 +55,21 @@ class Sentry(QThread):
                 self.example_pump_times.pop(0)
                 pump_rate = 1 / np.diff(self.example_pump_times).mean()
                 rate_percent_increase = (pump_rate - self.expected_pump_rate) / self.expected_pump_rate
-                if rate_percent_increase > self.settings["max_pump_rate_increase"]:
-                    self.warning_signal.emit(
-                        f"Warning: pump rate at {strftime('%H:%M:%S', localtime(event.event_time))} is "
-                        f"{pump_rate:.2f}, which is {rate_percent_increase:.2f}% over the expected rate from the "
-                        "beginning of the experiment. Possible leak.")
+                if event.event_time - self.last_error_time > self.suppress_errors:
+                    if rate_percent_increase > self.settings["max_pump_rate_increase"]:
+                        self.warning_signal.emit(
+                            f"Warning: pump rate at {strftime('%H:%M:%S', localtime(event.event_time))} is "
+                            f"{pump_rate:.2f}, which is {rate_percent_increase:.2f}% over the expected rate from the "
+                            "beginning of the experiment. Possible leak.")
 
             # check for max_pumps within pump_window
             self.recent_pump_times.append(event.event_time)
             self.recent_pump_times = [t for t in self.recent_pump_times if t > event.event_time - self.settings["pump_window"]]
-            if len(self.recent_pump_times) > self.settings["max_pumps_in_window"]:
-                self.error_signal.emit(
-                    f"Error: {len(self.recent_pump_times)} pump strokes occurred within {self.settings['pump_window']} seconds.")
+            if event.event_time - self.last_error_time > self.suppress_errors:
+                if len(self.recent_pump_times) > self.settings["max_pumps_in_window"]:
+                    self.error_signal.emit(
+                        f"Error: {len(self.recent_pump_times)} pump strokes occurred within {self.settings['pump_window']} seconds.")
+                    self.last_error_time = event.event_time
 
     def handle_depressurize(self, event):
         if self.current_experiment:
@@ -81,21 +86,24 @@ class Sentry(QThread):
                                     self.expected_pressure_before_depressurize)
                 if percent_change < - self.settings["max_pressure_before_depress_decrease"]:
                     self.num_pressure_decreases += 1
-                    if self.num_pressure_decreases >= self.settings["decrease_count_to_error"]:
-                        self.error_signal.emit(
-                            f"Error: pressure decreased {self.num_pressure_decreases} times in a row at "
-                            f"{strftime('%H:%M:%S', localtime(event.event_time))}. Likely leak")
-                    else:
-                        self.warning_signal.emit(
-                            f"Warning: pressure decreasing at "
-                            f"{strftime('%H:%M:%S', localtime(event.event_time))}. Possible leak.")
+                    if event.event_time - self.last_error_time > self.suppress_errors:
+                        if self.num_pressure_decreases >= self.settings["decrease_count_to_error"]:
+                            self.error_signal.emit(
+                                f"Error: pressure decreased {self.num_pressure_decreases} times in a row at "
+                                f"{strftime('%H:%M:%S', localtime(event.event_time))}. Likely leak")
+                            self.last_error_time = event.event_time
+                        else:
+                            self.warning_signal.emit(
+                                f"Warning: pressure decreasing at "
+                                f"{strftime('%H:%M:%S', localtime(event.event_time))}. Possible leak.")
                 else:
                     self.num_pressure_decreases = 0
 
-                if percent_change > self.settings["max_pressure_before_depress_increase"]:
-                    self.warning_signal.emit(
-                        f"Warning: pressure increasing at "
-                        f"{strftime('%H:%M:%S', localtime(event.event_time))}. Possible leak.")
+                if event.event_time - self.last_error_time > self.suppress_errors:
+                    if percent_change > self.settings["max_pressure_before_depress_increase"]:
+                        self.warning_signal.emit(
+                            f"Warning: pressure increasing at "
+                            f"{strftime('%H:%M:%S', localtime(event.event_time))}. Possible leak.")
 
     # On device disconnect
     def reset(self):
