@@ -50,6 +50,10 @@ class SampleSensorDetector(QObject):
         origin *= coefficients[Channel.HI_PRE_ORIG]
         sample *= coefficients[Channel.HI_PRE_SAMPLE]
 
+        # AC noise is above 3 kBar, experiments are never run at this pressure
+        if sample.max() > 3.0:
+            return False
+
         # percent difference between the two signals
         diff = (origin.mean() - sample.mean()) / origin.mean()
 
