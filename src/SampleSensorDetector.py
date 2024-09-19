@@ -24,6 +24,8 @@ class SampleSensorDetector(QObject):
                     self.sample_sensor_connected.emit(False)
                 self.last_result = False
             else:
+                if self.last_result:
+                    self.sample_sensor_connected.emit(True)
                 self.last_result = True
 
     def detect_from_list(self, events, coefficients):
