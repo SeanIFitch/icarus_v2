@@ -8,7 +8,7 @@
     <img src="resources/wing.png" alt="Logo" width="80" height="80">
   </a>
 
-<h3 align="center">Icarus v2</h3>
+<h3 align="center">icarus v2</h3>
 
   <p align="center">
     Monitoring software for the <a href="https://pubmed.ncbi.nlm.nih.gov/29666248/">Icarus</a> NMR pressure jump apparatus
@@ -114,8 +114,8 @@ sudo apt install python3.12
 #### Cloning the Repository
 Before you can start setting up your environment, you'll need to clone the repository containing the project. Open your terminal and execute the following command:
 ```sh
-git clone https://github.com/SeanIFitch/Icarus_v2
-cd Icarus_v2
+git clone https://github.com/SeanIFitch/icarus_v2
+cd icarus_v2
 ```
 
 ### Installation
@@ -151,7 +151,7 @@ To start the application, ensure you have activated the virtual environment:
    ```
 And then, launch the application using:
    ```sh
-   python3 src/main.py
+   python3 src/__main__.py
    ```
 Note: the first time the application is run with a DATAQ connected, it will attempt to install a udev rule to allow access to the USB device. This requires admin permissions. If the application fails to connect to the device after a few seconds, reboot your computer to ensure the udev rules are fully reloaded.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -161,7 +161,7 @@ Note: the first time the application is run with a DATAQ connected, it will atte
 <!-- ROADMAP -->
 ## Roadmap
 
-See the [open issues](https://github.com/SeanIFitch/Icarus_v2/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/SeanIFitch/icarus_v2/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -199,7 +199,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 Sean Fitch - seanifitch@gmail.com
 
-Project Link: [https://github.com/SeanIFitch/Icarus_v2](https://github.com/SeanIFitch/Icarus_v2)
+Project Link: [https://github.com/SeanIFitch/icarus_v2](https://github.com/SeanIFitch/icarus_v2)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
