@@ -5,7 +5,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/SeanIFitch/icarus_v2">
-    <img src="resources/wing.png" alt="Logo" width="80" height="80">
+	<img src="https://raw.githubusercontent.com/SeanIFitch/icarus_v2/main/resources/wing.png" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">icarus v2</h3>
@@ -48,7 +48,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-![Screen Shot][screenshot]
+![Screen Shot](https://raw.githubusercontent.com/SeanIFitch/icarus_v2/main/resources/app-screenshot.png)
 
 The <a href="https://pubmed.ncbi.nlm.nih.gov/29666248/">Icarus</a> NMR Pressure Jump Apparatus is a novel device used to rapidly switch the pressure within an NMR sample cell. This enables study of the unfolded protein under native conditions and, vice versa, study of the native protein under denaturing conditions. This project is the <a href="https://github.com/vstadnytskyi/icarus-nmr">second</a> version of a monitoring software for the pressure sensors and digital controls. It is responsible for displaying device readings, controlling and testing hardware, and detecting faults. 
 
@@ -216,6 +216,3 @@ Project Link: [https://github.com/SeanIFitch/icarus_v2](https://github.com/SeanI
 * [icarus-nmr](https://github.com/vstadnytskyi/icarus-nmr) by Valentyn Stadnytskyi
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-[screenshot]: resources/app-screenshot.png
