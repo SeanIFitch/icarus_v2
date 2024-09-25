@@ -1,8 +1,8 @@
 from PySide6.QtCore import QThread, Signal
-from ring_buffer import RingBuffer, SPMCRingBufferReader
+from icarus_v2.backend.ring_buffer import RingBuffer, SPMCRingBufferReader
 import numpy as np
 import usb.core
-from logger import Logger
+from icarus_v2.backend.logger import Logger
 
 
 # This class is responsible for creating a buffer, reading from the device, processing the data, and putting it into the buffer.

@@ -2,7 +2,7 @@ import lzma
 import pickle
 import os
 from datetime import datetime
-from path_utils import get_base_directory
+from icarus_v2.utils.path_utils import get_base_directory
 
 
 # Logs files to logs/temp or logs/experiment depending on bit 4.

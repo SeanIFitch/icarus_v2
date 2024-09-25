@@ -1,6 +1,6 @@
 import numpy as np
 from PySide6.QtCore import QThread, Signal
-from src.icarus_v2.backend.event import get_channel, Channel
+from icarus_v2.backend.event import get_channel, Channel
 from time import localtime, strftime
 
 # Gets expected values for the experiment checks from the first example_events events of an experiment

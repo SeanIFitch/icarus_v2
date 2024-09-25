@@ -1,4 +1,4 @@
-from src.icarus_v2.backend.event import Channel, get_channel, Event
+from icarus_v2.backend.event import Channel, get_channel, Event
 from PySide6.QtCore import QObject
 
 

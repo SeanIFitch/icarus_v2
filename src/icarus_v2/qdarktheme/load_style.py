@@ -28,7 +28,7 @@ import os
 import re
 from dataclasses import dataclass
 from itertools import chain, zip_longest
-from src.icarus_v2.qdarktheme._color import Color, Svg
+from icarus_v2.qdarktheme._color import Color, Svg
 from pathlib import Path
 
 """Default color values."""
@@ -250,7 +250,7 @@ def color(color_info: str | dict[str, str | dict], state: str | None = None) -> 
 
 def url(color: Color, id: str, rotate: int = 0) -> str:
     """Filter for template engine. This filter create url for svg and output svg file."""
-    svg_path = Path(__file__).parent.parent / "resources" / "svg" / f"{id}_{color._to_hex()}_{rotate}.svg"
+    svg_path = Path(__file__).parent / "resources" / "svg" / f"{id}_{color._to_hex()}_{rotate}.svg"
     url = f"url({svg_path.as_posix()})"
     if svg_path.exists():
         return url
@@ -398,6 +398,6 @@ def load_stylesheet(theme: str = "dark", corner_shape: str = "rounded",) -> str:
 
 def load_base_stylesheet():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, '..', 'resources', 'styles.qss')
+    file_path = os.path.join(current_dir, 'resources', 'styles.qss')
     with open(file_path, 'r') as f:
         return f.read()

@@ -7,8 +7,9 @@ def get_base_directory():
     if getattr(sys, 'frozen', False):
         base_dir = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     else:
+        # Remove the last three components from the path
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        base_dir = os.path.join(base_dir, '..')  # Move up one directory
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(base_dir)))
 
     return base_dir
 

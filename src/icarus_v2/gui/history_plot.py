@@ -1,10 +1,10 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QSpacerItem, QSizePolicy
 import pyqtgraph as pg
-from src.icarus_v2.backend.event import Event, Channel
+from icarus_v2.backend.event import Event, Channel
 from bisect import bisect_right, bisect_left
 import numpy as np
-from styled_plot_widget import StyledPlotWidget
+from icarus_v2.gui.styled_plot_widget import StyledPlotWidget
 
 class HistoryPlot(QWidget):
     # Dictionary of pens to plot each line

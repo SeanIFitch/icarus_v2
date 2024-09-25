@@ -1,5 +1,5 @@
-from src.icarus_v2.backend.event_handler import EventHandler
-from src.icarus_v2.backend.event import Event
+from icarus_v2.backend.event_handler import EventHandler
+from icarus_v2.backend.event import Event
 
 
 # Sends pressure data constantly. Events always occur.

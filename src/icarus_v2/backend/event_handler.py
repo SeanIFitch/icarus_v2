@@ -1,6 +1,6 @@
 from PySide6.QtCore import QThread
 import traceback
-from src.icarus_v2.backend.event import Event
+from icarus_v2.backend.event import Event
 
 class EventHandler(QThread):
     def __init__(self, loader, signal, sample_rate, update_rate) -> None:
@@ -15,7 +15,7 @@ class EventHandler(QThread):
     # Loops to transmit data if an event occurs
     def run(self):
         self.running = True
-        while(self.running):
+        while self.running:
             data_to_get = int(self.sample_rate / self.update_rate)
             try:
                 data, buffer_index = self.reader.read(size=data_to_get, timeout=1)

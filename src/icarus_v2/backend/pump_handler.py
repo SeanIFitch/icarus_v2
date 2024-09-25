@@ -1,6 +1,6 @@
-from src.icarus_v2.backend.event_handler import EventHandler
+from icarus_v2.backend.event_handler import EventHandler
 import numpy as np
-from src.icarus_v2.backend.event import Channel, get_channel, Event
+from icarus_v2.backend.event import Channel, get_channel, Event
 
 
 # Detects pump strokes and sends to counter

@@ -1,6 +1,6 @@
 import lzma
 import pickle
-from src.icarus_v2.backend.event import Event
+from icarus_v2.backend.event import Event
 
 
 # Load events from logs

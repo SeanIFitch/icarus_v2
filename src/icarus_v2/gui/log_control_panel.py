@@ -14,13 +14,13 @@ from PySide6.QtWidgets import (
 import os
 from PySide6.QtGui import QDoubleValidator, QFontMetrics
 from PySide6.QtCore import Qt, Signal
-from error_dialog import open_error_dialog
+from icarus_v2.gui.error_dialog import open_error_dialog
 from bisect import bisect_right
-from src.icarus_v2.backend.event import Event
-from log_reader import LogReader
+from icarus_v2.backend.event import Event
+from icarus_v2.backend.log_reader import LogReader
 from math import ceil
-from path_utils import get_base_directory
-from sample_sensor_detector import SampleSensorDetector
+from icarus_v2.utils.path_utils import get_base_directory
+from icarus_v2.backend.sample_sensor_detector import SampleSensorDetector
 
 
 # Control panel for logs

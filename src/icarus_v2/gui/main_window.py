@@ -10,16 +10,16 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QSpacerItem
 )
-from event_plot import EventPlot
-from history_plot import HistoryPlot
-from device_control_panel import DeviceControlPanel
-from log_control_panel import LogControlPanel
-from counter_display import CounterDisplay
-from pressure_display import PressureDisplay
-from tool_bar import ToolBar
-from error_dialog import open_error_dialog
-from src.icarus_v2.backend.log_reader import LogReader
-from src.icarus_v2.backend.event import Event
+from icarus_v2.gui.event_plot import EventPlot
+from icarus_v2.gui.history_plot import HistoryPlot
+from icarus_v2.gui.device_control_panel import DeviceControlPanel
+from icarus_v2.gui.log_control_panel import LogControlPanel
+from icarus_v2.gui.counter_display import CounterDisplay
+from icarus_v2.gui.pressure_display import PressureDisplay
+from icarus_v2.gui.tool_bar import ToolBar
+from icarus_v2.gui.error_dialog import open_error_dialog
+from icarus_v2.backend.log_reader import LogReader
+from icarus_v2.backend.event import Event
 
 
 # Can be either in log reading or device mode.

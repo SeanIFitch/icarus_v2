@@ -1,7 +1,7 @@
 import json
 from copy import deepcopy
 from PySide6.QtCore import Signal, QObject
-from event import Channel
+from icarus_v2.backend.event import Channel
 
 
 # Responsible for loading and saving settings

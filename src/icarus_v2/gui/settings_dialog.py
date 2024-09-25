@@ -15,8 +15,8 @@ from PySide6.QtWidgets import (
     QToolBar
 )
 from PySide6.QtGui import QDoubleValidator, QIntValidator, QAction
-from src.icarus_v2.gui.error_dialog import open_error_dialog
-from src.icarus_v2.backend.event import Channel, get_channel
+from icarus_v2.gui.error_dialog import open_error_dialog
+from icarus_v2.backend.event import Channel, get_channel
 import numpy as np
 from PySide6.QtCore import Qt
 from time import sleep

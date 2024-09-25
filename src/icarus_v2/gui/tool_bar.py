@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
 from PySide6.QtGui import QIcon, QAction
-from settings_dialog import SettingsDialog
+from icarus_v2.gui.settings_dialog import SettingsDialog
 from PySide6.QtCore import Signal
-from scrollable_menu import ScrollableMenu
+from icarus_v2.gui.scrollable_menu import ScrollableMenu
 
 
 class ToolBar(QToolBar):

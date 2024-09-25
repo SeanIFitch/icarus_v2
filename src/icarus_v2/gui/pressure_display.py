@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QSizePolicy
 )
-from src.icarus_v2.backend.event import Channel
+from icarus_v2.backend.event import Channel
 
 
 # Panel for pressure

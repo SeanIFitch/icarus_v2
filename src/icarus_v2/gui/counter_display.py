@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QSizePolicy
 )
-from src.icarus_v2.backend.event import Event
+from icarus_v2.backend.event import Event
 from PySide6.QtCore import QCoreApplication
 import numpy as np
 

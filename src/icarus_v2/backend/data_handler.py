@@ -1,25 +1,25 @@
 # General utility imports
-from logger import Logger
+from icarus_v2.backend.logger import Logger
 from PySide6.QtCore import Signal, QThread
 from time import sleep
 from threading import Lock
-from path_utils import get_base_directory, setup_udev_rules
-from raw_log_reader import RawLogReader
+from icarus_v2.utils.path_utils import get_base_directory, setup_udev_rules
+from icarus_v2.utils.raw_log_reader import RawLogReader
 import os
 # Data collection & Device imports
-from dataq_interface import DataqInterface
-from buffer_loader import BufferLoader
-from pulse_generator import PulseGenerator
-from event import Event
+from icarus_v2.backend.dataq_interface import DataqInterface
+from icarus_v2.backend.buffer_loader import BufferLoader
+from icarus_v2.backend.pulse_generator import PulseGenerator
+from icarus_v2.backend.event import Event
 # Event handler imports
-from pressurize_handler import PressurizeHandler
-from depressurize_handler import DepressurizeHandler
-from period_handler import PeriodHandler
-from pressure_handler import PressureHandler
-from pump_handler import PumpHandler
-from log_handler import LogHandler
-from sentry import Sentry
-from sample_sensor_detector import SampleSensorDetector
+from icarus_v2.backend.pressurize_handler import PressurizeHandler
+from icarus_v2.backend.depressurize_handler import DepressurizeHandler
+from icarus_v2.backend.period_handler import PeriodHandler
+from icarus_v2.backend.pressure_handler import PressureHandler
+from icarus_v2.backend.pump_handler import PumpHandler
+from icarus_v2.backend.log_handler import LogHandler
+from icarus_v2.backend.sentry import Sentry
+from icarus_v2.backend.sample_sensor_detector import SampleSensorDetector
 
 
 # Define the DataHandler class

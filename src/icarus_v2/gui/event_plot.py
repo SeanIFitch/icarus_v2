@@ -1,9 +1,9 @@
 from PySide6.QtCore import Qt
 import pyqtgraph as pg
 import numpy as np
-from src.icarus_v2.backend.event import Event, Channel, get_channel
+from icarus_v2.backend.event import Event, Channel, get_channel
 from PySide6.QtWidgets import QLabel, QGridLayout, QWidget, QSpacerItem, QSizePolicy
-from styled_plot_widget import StyledPlotWidget
+from icarus_v2.gui.styled_plot_widget import StyledPlotWidget
 
 
 class EventPlot(QWidget):

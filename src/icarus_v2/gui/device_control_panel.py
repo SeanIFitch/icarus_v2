@@ -6,10 +6,10 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QPushButton,
 )
-from image_button import ImageButton
+from icarus_v2.gui.image_button import ImageButton
 from time import sleep
 import os
-from path_utils import get_base_directory
+from icarus_v2.utils.path_utils import get_base_directory
 
 
 # Control panel for manual and console operation

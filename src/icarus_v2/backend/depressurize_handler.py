@@ -1,6 +1,6 @@
-from event_handler import EventHandler
+from icarus_v2.backend.event_handler import EventHandler
 import numpy as np
-from event import Event, Channel, get_channel
+from icarus_v2.backend.event import Event, Channel, get_channel
 
 
 # Detects a depressurize event and transmits data to plot

@@ -1,6 +1,6 @@
-from event_handler import EventHandler
+from icarus_v2.backend.event_handler import EventHandler
 import numpy as np
-from src.icarus_v2.backend.event import Channel, get_channel
+from icarus_v2.backend.event import Channel, get_channel
 
 
 # Detects log bit change event and transmits to logger
