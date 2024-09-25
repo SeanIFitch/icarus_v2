@@ -3,6 +3,9 @@ logs/temp/
 logs/experiment/
 logs/recently_deleted/
 
+# ignore poetry.lock
+poetry.lock
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
