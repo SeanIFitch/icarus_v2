@@ -1,40 +1,42 @@
-[project]
+[tool.poetry]
 name = "icarus_v2"
 version = "0.1.0"
 description = "Monitoring software for the Icarus Pressure Jump apparatus"
-authors = [{name = "Sean Fitch", email = "fitchs2@rpi.edu"}]
-license = {file = "LICENSE.txt"}
+authors = ["Sean Fitch <fitchs2@rpi.edu>"]
+license = "LICENSE.txt"
 readme = "README.md"
-requires-python = ">=3.10"
+homepage = "https://github.com/SeanIFitch/icarus_v2"
+repository = "https://github.com/SeanIFitch/icarus_v2"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Operating System :: OS Independent",
 ]
-dependencies = [
-    "numpy == 2.0.1",
-    "pyqtgraph == 0.13.7",
-    "PySide6 == 6.7.2",
-    "PySide6_Addons == 6.7.2",
-    "PySide6_Essentials == 6.7.2",
-    "pyusb == 1.2.1",
-    "shiboken6 == 6.7.2",
+packages = [
+    { include = "icarus_v2", from = "src" }
+]
+include = [
+    "src/icarus_v2/settings.json",
+    "src/icarus_v2/resources/*",
+    "src/icarus_v2/logs/example/*"
 ]
 
-[project.urls]
-"Homepage" = "https://github.com/SeanIFitch/icarus_v2"
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+numpy = "2.0.1"
+pyqtgraph = "0.13.7"
+PySide6 = "6.7.2"
+PySide6_Addons = "6.7.2"
+PySide6_Essentials = "6.7.2"
+pyusb = "1.2.1"
+shiboken6 = "6.7.2"
+
+[tool.poetry.urls]
 "Bug Tracker" = "https://github.com/SeanIFitch/icarus_v2/issues"
 
-[build-system]
-requires = ["setuptools>=45", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["icarus_v2*"]
-
-[tool.setuptools.package-data]
-"icarus_v2" = ["settings.json", "resources/*", "logs/example/*"]
-
-[project.scripts]
+[tool.poetry.scripts]
 icarus = "icarus_v2.__main__:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
