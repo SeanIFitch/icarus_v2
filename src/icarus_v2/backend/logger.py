@@ -20,7 +20,7 @@ class Logger:
 
         self.current_path = temporary
         log_path = "logs/temp" if temporary else "logs/experiment"
-        log_path = "logs/raw" if raw else log_path
+        log_path = "logs/example" if raw else log_path
         base_dir = get_base_directory()
         log_path = os.path.join(base_dir, log_path)
 

@@ -1,0 +1,24 @@
+[project]
+name = "icarus_v2"
+version = "0.1.0"
+description = "Monitoring software for the Icarus Pressure Jump apparatus"
+authors = [{name = "Sean Fitch", email = "fitchs2@rpi.edu"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.10"
+
+[project.dependencies]
+numpy = "==2.0.1"
+pyqtgraph = "==0.13.7"
+PySide6 = "==6.7.2"
+PySide6_Addons = "==6.7.2"
+PySide6_Essentials = "==6.7.2"
+pyusb = "==1.2.1"
+shiboken6 = "==6.7.2"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+"icarus_v2" = ["settings.json", "resources/*", "logs/example/*"]

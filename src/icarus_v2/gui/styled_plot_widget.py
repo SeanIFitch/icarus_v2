@@ -1,5 +1,5 @@
 from pyqtgraph import PlotWidget
-from src.icarus_v2.gui.load_style import THEME_COLOR_VALUES
+from src.icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
 
 
 class StyledPlotWidget(PlotWidget):

@@ -28,7 +28,7 @@ import os
 import re
 from dataclasses import dataclass
 from itertools import chain, zip_longest
-from _color import Color, Svg
+from src.icarus_v2.qdarktheme._color import Color, Svg
 from pathlib import Path
 
 """Default color values."""

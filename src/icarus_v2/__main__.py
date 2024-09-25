@@ -1,11 +1,11 @@
-from src.icarus_v2.backend.configuration_manager import ConfigurationManager
+from icarus_v2.backend.configuration_manager import ConfigurationManager
 from src.icarus_v2.gui.main_window import MainWindow
 from src.icarus_v2.backend.data_handler import DataHandler
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 from src.icarus_v2.utils.path_utils import get_base_directory
 import os
-from src.icarus_v2.gui.load_style import load_stylesheet
+from src.icarus_v2.qdarktheme.load_style import load_stylesheet
 
 # Application entry point
 def main():

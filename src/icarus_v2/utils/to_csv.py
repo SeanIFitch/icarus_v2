@@ -6,7 +6,7 @@ import numpy as np
 import csv
 
 
-# Fake device to load raw data files
+# Fake device to load example data files
 # Used only for testing.
 class RawLogReader:
     def __init__(self, filename) -> None:
@@ -31,7 +31,7 @@ class RawLogReader:
             data = pickle.load(self.file)
             # Append the array if it matches the expected structure
             if not isinstance(data, array):
-                raise TypeError("Error parsing raw data file: Data is not an array.")
+                raise TypeError("Error parsing example data file: Data is not an array.")
             return data
         except EOFError:
             raise RuntimeError("End of file reached.")
@@ -75,7 +75,7 @@ def read_and_write_to_csv(raw_log_reader, output_filename):
 
 
 # Usage
-input_file = "logs/raw/log_2024-07-19_18-19-00.xz"
+input_file = "logs/example/log_2024-07-19_18-19-00.xz"
 output_file = "output.csv"
 
 reader = RawLogReader(input_file)

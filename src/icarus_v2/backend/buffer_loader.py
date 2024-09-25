@@ -16,7 +16,7 @@ class BufferLoader(QThread):
         self.buffer = RingBuffer((buffer_capacity, num_channels), np.int16)
         self.device = None
 
-        # TESTING ONLY. logs all raw data.
+        # TESTING ONLY. logs all example data.
         self.log_raw = False
 
 

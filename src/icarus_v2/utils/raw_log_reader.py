@@ -5,7 +5,7 @@ import lzma
 import pickle
 
 
-# Fake device to load raw data files
+# Fake device to load example data files
 # Used only for testing.
 class RawLogReader:
     def __init__(self, filename) -> None:
@@ -38,7 +38,7 @@ class RawLogReader:
             data = pickle.load(self.file)
             # Append the array if it matches the expected structure
             if not isinstance(data, array):
-                raise TypeError("Error parsing raw data file: Data is not an array.")
+                raise TypeError("Error parsing example data file: Data is not an array.")
             return data
         except EOFError:
             raise RuntimeError("End of file reached.")
