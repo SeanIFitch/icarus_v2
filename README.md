@@ -95,6 +95,8 @@ PySide6
 
 PyQtDarkTheme
 
+poetry
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
