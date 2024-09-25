@@ -93,6 +93,8 @@ Python >=3.10, <=3.12
 
 PySide6
 
+PyQtDarkTheme
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
