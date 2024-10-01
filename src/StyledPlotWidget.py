@@ -13,8 +13,6 @@ class StyledPlotWidget(PlotWidget):
         self.setMouseEnabled(x=x_zoom, y=False)  # Prevent zooming
         self.hideButtons()  # Remove autoScale button
 
-        #ViewBox.scene().contextMenu[0] #Apparently is the export
-
     def set_title(self, title):
         self.setTitle(title, color=self.text_color, size="17pt")
 
