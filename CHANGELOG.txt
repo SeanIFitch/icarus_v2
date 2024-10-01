@@ -1,6 +1,10 @@
 Changelog
 =========
 
+v0.3.0 (UPCOMING)
+-----------------
+Fixed:
+ - Fixed Windows "No backend found" error message
 
 v0.2.0 (2024-09-25)
 -----------------

@@ -151,10 +151,11 @@ class DataHandler(QThread):
                         "USB device not found" in str(e) or
                         "No such device (it may have been disconnected)" in str(e) or
                         "Operation timed out" in str(e) or
-                        "Input/Output Error" in str(e)
+                        "Input/Output Error" in str(e) or
+                        "No backend available" in str(e)
                         ):
                     self.quit_lock.release()
-                    sleep(0.1)
+                    sleep(0.5)
                     if not self.connecting:
                         return
                     self.quit_lock.acquire()
