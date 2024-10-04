@@ -1,0 +1,33 @@
+DEVELOPMENT
+
+install poetry:
+curl -sSL https://install.python-poetry.org | python3 -
+
+clone repo:
+git clone git@github.com:SeanIFitch/icarus_v2.git
+cd icarus_v2
+
+initialize poetry package:
+poetry install
+
+run app:
+poetry run icarus 
+
+
+INSTALLATION
+
+install pipx:
+sudo apt install pipx
+pipx ensurepath
+
+install icarus_v2:
+pipx install icarus_v2
+
+run icarus:
+icarus
+
+
+PUBLISHING
+
+poetry build
+poetry publish
