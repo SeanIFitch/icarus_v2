@@ -13,11 +13,6 @@ classifiers = [
 packages = [
     { include = "icarus_v2", from = "src" }
 ]
-include = [
-    "src/icarus_v2/settings.json",
-    "src/icarus_v2/resources/*",
-    "src/icarus_v2/logs/example/*"
-]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
