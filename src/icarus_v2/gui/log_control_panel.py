@@ -13,13 +13,12 @@ from PySide6.QtWidgets import (
 )
 import os
 from PySide6.QtGui import QDoubleValidator, QFontMetrics
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QStandardPaths
 from icarus_v2.gui.error_dialog import open_error_dialog
 from bisect import bisect_right
 from icarus_v2.backend.event import Event
 from icarus_v2.backend.log_reader import LogReader
 from math import ceil
-from icarus_v2.utils.path_utils import get_base_directory
 from icarus_v2.backend.sample_sensor_detector import SampleSensorDetector
 
 
@@ -116,8 +115,10 @@ class LogControlPanel(QGroupBox):
         self.open_log(filename)
 
     def choose_log(self):
-        base_dir = get_base_directory()
-        log_path = os.path.join(base_dir, "logs")
+        log_path = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation), 'icarus_v2', 'logs')
+
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
 
         file = QFileDialog.getOpenFileName(self, "Open File", log_path, "Log Files (*.xz)")[0]
         # No file selected

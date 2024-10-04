@@ -3,7 +3,7 @@ from icarus_v2.backend.logger import Logger
 from PySide6.QtCore import Signal, QThread
 from time import sleep
 from threading import Lock
-from icarus_v2.utils.path_utils import get_base_directory, setup_udev_rules
+from icarus_v2.utils.udev_setup import setup_udev_rules
 from icarus_v2.utils.raw_log_reader import RawLogReader
 import os
 # Data collection & Device imports
@@ -57,8 +57,9 @@ class DataHandler(QThread):
 
         # TESTING ONLY. reads a raw data file instead of connecting to a device
         self.load_raw = False
-        base_dir = get_base_directory()
-        self.raw_file = os.path.join(base_dir, "logs/raw/2.1_to_1.5kBar.xz")
+        if self.load_raw:
+            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            self.raw_file = os.path.join(project_root, 'logs', 'raw', "2.1_to_1.5kBar.xz")
 
         # Loads data from device into buffer
         self.loader = BufferLoader()

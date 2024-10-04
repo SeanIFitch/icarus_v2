@@ -4,7 +4,7 @@
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 group_name="dataq-di4108-users"
-udev_rule="$script_dir/udev_rules/70-dataq-di-4108.rules"
+udev_rule="$script_dir/70-dataq-di-4108.rules"
 udev_rule_destination="/etc/udev/rules.d/70-dataq-di-4108.rules"
 
 # Function to display error and exit

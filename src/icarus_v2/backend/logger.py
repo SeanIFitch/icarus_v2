@@ -2,7 +2,7 @@ import lzma
 import pickle
 import os
 from datetime import datetime
-from icarus_v2.utils.path_utils import get_base_directory
+from PySide6.QtCore import QStandardPaths
 
 
 # Logs files to logs/temp or logs/experiment depending on bit 4.
@@ -19,10 +19,13 @@ class Logger:
         self.close()
 
         self.current_path = temporary
-        log_path = "logs/temp" if temporary else "logs/experiment"
-        log_path = "logs/example" if raw else log_path
-        base_dir = get_base_directory()
-        log_path = os.path.join(base_dir, log_path)
+        base_dir = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation), 'icarus_v2', 'logs')
+        if raw:
+            log_path = os.path.join(base_dir, "example")
+        elif temporary:
+            log_path = os.path.join(base_dir, 'temp')
+        else:
+            log_path = os.path.join(base_dir, "experiment")
 
         if not os.path.exists(log_path):
             os.makedirs(log_path)

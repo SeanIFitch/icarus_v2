@@ -1,3 +1,4 @@
+import importlib
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
     QGroupBox,
@@ -8,8 +9,6 @@ from PySide6.QtWidgets import (
 )
 from icarus_v2.gui.image_button import ImageButton
 from time import sleep
-import os
-from icarus_v2.utils.path_utils import get_base_directory
 
 
 # Control panel for manual and console operation
@@ -20,9 +19,8 @@ class DeviceControlPanel(QGroupBox):
         self.pulse_generator = None
 
         # Initialize buttons
-        base_dir = get_base_directory()
-        shutdown_path = os.path.join(base_dir, "resources/shutdown.svg")
-        self.shutdown_button = ImageButton(shutdown_path, "Shutdown")
+        with importlib.resources.path('icarus_v2.resources', 'shutdown.svg') as shutdown_path:
+            self.shutdown_button = ImageButton(str(shutdown_path), "Shutdown")
         self.shutdown_button.clicked.connect(self.on_shutdown)
 
         self.mode_button = QPushButton("Manual")
