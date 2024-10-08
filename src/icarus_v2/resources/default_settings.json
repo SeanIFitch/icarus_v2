@@ -28,7 +28,7 @@
         "max_pump_rate_increase": 0.25,
         "pump_window": 2.0,
         "max_pumps_in_window": 5,
-        "example_events": 2,
-        "decrease_count_to_error": 1
+        "example_events": 10,
+        "decrease_count_to_error": 2
     }
 }
