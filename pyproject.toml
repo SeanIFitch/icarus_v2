@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "icarus_v2"
-version = "0.1.2"
+version = "0.1.5"
 description = "Monitoring software for the Icarus Pressure Jump apparatus"
 authors = ["Sean Fitch <fitchs2@rpi.edu>"]
 readme = "README.md"
@@ -16,13 +16,13 @@ packages = [
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-numpy = "2.0.1"
-pyqtgraph = "0.13.7"
-PySide6 = "6.7.2"
-PySide6_Addons = "6.7.2"
-PySide6_Essentials = "6.7.2"
-pyusb = "1.2.1"
-shiboken6 = "6.7.2"
+numpy = "^2.1"
+pyqtgraph = "^0.13"
+PySide6 = "~6.7"
+PySide6_Addons = "~6.7"
+PySide6_Essentials = "~6.7"
+pyusb = "^1.2"
+shiboken6 = "~6.7"
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/SeanIFitch/icarus_v2/issues"

@@ -115,7 +115,7 @@ class LogControlPanel(QGroupBox):
         self.open_log(filename)
 
     def choose_log(self):
-        log_path = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation), 'icarus_v2', 'logs')
+        log_path = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation), 'logs')
 
         if not os.path.exists(log_path):
             os.makedirs(log_path)

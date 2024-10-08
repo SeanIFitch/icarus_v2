@@ -16,7 +16,7 @@ class ConfigurationManager(QObject):
         super().__init__()
 
         # Get the application configuration path
-        self.config_path = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation), 'icarus_v2')
+        self.config_path = QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation)
         os.makedirs(self.config_path, exist_ok=True)  # Create the directory if it doesn't exist
 
         self.filename = os.path.join(self.config_path, self.FILENAME)

@@ -19,7 +19,7 @@ class Logger:
         self.close()
 
         self.current_path = temporary
-        base_dir = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation), 'icarus_v2', 'logs')
+        base_dir = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation), 'logs')
         if raw:
             log_path = os.path.join(base_dir, "example")
         elif temporary:

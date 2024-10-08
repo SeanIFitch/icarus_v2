@@ -55,7 +55,7 @@ class DataHandler(QThread):
         self.device = None
         self.logger = None
 
-        # TESTING ONLY. reads a raw data file instead of connecting to a device
+        # TESTING ONLY!!!. reads a raw data file instead of connecting to a device
         self.load_raw = False
         if self.load_raw:
             project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

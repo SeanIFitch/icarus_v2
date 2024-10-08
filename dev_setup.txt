@@ -27,6 +27,11 @@ run icarus:
 icarus
 
 
+UPDATING
+
+pipx upgrade icarus_v2
+
+
 PUBLISHING
 
 poetry build
