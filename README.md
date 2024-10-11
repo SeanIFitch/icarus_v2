@@ -5,10 +5,10 @@
 <br />
 <div align="center">
   <a href="https://github.com/SeanIFitch/icarus_v2">
-    <img src="resources/wing.png" alt="Logo" width="80" height="80">
+	<img src="https://raw.githubusercontent.com/SeanIFitch/icarus_v2/main/src/icarus_v2/resources/wing.png" alt="Logo" width="80" height="80">
   </a>
 
-<h3 align="center">Icarus v2</h3>
+<h3 align="center">icarus v2</h3>
 
   <p align="center">
     Monitoring software for the <a href="https://pubmed.ncbi.nlm.nih.gov/29666248/">Icarus</a> NMR pressure jump apparatus
@@ -48,7 +48,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-![Screen Shot][screenshot]
+![Screen Shot](https://raw.githubusercontent.com/SeanIFitch/icarus_v2/main/src/icarus_v2/resources/app-screenshot.png)
 
 The <a href="https://pubmed.ncbi.nlm.nih.gov/29666248/">Icarus</a> NMR Pressure Jump Apparatus is a novel device used to rapidly switch the pressure within an NMR sample cell. This enables study of the unfolded protein under native conditions and, vice versa, study of the native protein under denaturing conditions. This project is the <a href="https://github.com/vstadnytskyi/icarus-nmr">second</a> version of a monitoring software for the pressure sensors and digital controls. It is responsible for displaying device readings, controlling and testing hardware, and detecting faults. 
 
@@ -89,9 +89,16 @@ All events are transmitted to the GUI and are rendered in dedicated event plots,
 
 ### Built With
 
-Python >=3.10, <=3.12
+* Python >=3.10, <=3.12
 
-PySide6
+* PySide6
+
+* PyQtDarkTheme
+
+
+### Development tools
+
+* Poetry
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -103,57 +110,52 @@ PySide6
 ### Prerequisites
 
 #### System Requirements
-These instructions are tailored for Ubuntu 24, which is the only operating system tested and supported for this setup.
+* Ubuntu 22.04 LTS or later (primary supported OS)
+* Other Linux distributions with Python 3.10-3.12 support may work but are not officially supported
+* macOS 11 (Big Sur) or later may work but is not officially supported
+* Windows 10 or later may work but is not officially supported
 
 #### Installing Python
-Ensure you have Python 3.10-3.12 installed on your system. If you do not have Python installed, you can install it using the following commands:
+Ensure you have Python 3.10-3.12 installed on your system by running the following command. 
+```sh
+python3 --version
+```
+
+If you do not have Python installed, you can install it using the following commands:
 ```sh
 sudo apt update
 sudo apt install python3.12
 ```
-#### Cloning the Repository
-Before you can start setting up your environment, you'll need to clone the repository containing the project. Open your terminal and execute the following command:
-```sh
-git clone https://github.com/SeanIFitch/Icarus_v2
-cd Icarus_v2
-```
 
 ### Installation
+The recommended method for installation is to install the application globally using pipx. First, install pipx:
+```sh
+sudo apt install pipx
+pipx ensurepath
+```
+Now, you can install the icarus_v2 package:
+```sh
+pipx install icarus_v2
+```
 
-#### Setting Up Your Environment
-1. Create a Virtual Environment:
-Use a virtual environment to manage dependencies effectively and avoid conflicts between package versions. Run the following command in your project directory to create a virtual environment:
-   ```sh
-   python3.12 -m venv icarus_venv
-   ```
-2. Activate the Virtual Environment:
-Once the virtual environment is created, activate it with:
-   ```sh
-   source icarus_venv/bin/activate
-   ```
-#### Installing Dependencies
-With the virtual environment activated, you can now install all required packages from required-packages.txt. Install these packages by running:
-   ```sh
-   pip install -r requirements.txt
-   ```
-
+### Updating
+To update the application to the latest version, use:
+```sh
+pipx upgrade icarus_v2
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-To start the application, ensure you have activated the virtual environment:
-   ```sh
-   source icarus_venv/bin/activate
-   ```
-And then, launch the application using:
-   ```sh
-   python3 src/main.py
-   ```
-Note: the first time the application is run with a DATAQ connected, it will attempt to install a udev rule to allow access to the USB device. This requires admin permissions. If the application fails to connect to the device after a few seconds, reboot your computer to ensure the udev rules are fully reloaded.
+To start the application, run the following command from any directory:
+```sh
+icarus
+```
+* Note: The first time the application is run with a DATAQ connected, it will attempt to install a udev rule to allow access to the USB device. This requires admin permissions. If the application fails to connect to the device after a few seconds, reboot your computer to ensure the udev rules are fully reloaded.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -161,7 +163,7 @@ Note: the first time the application is run with a DATAQ connected, it will atte
 <!-- ROADMAP -->
 ## Roadmap
 
-See the [open issues](https://github.com/SeanIFitch/Icarus_v2/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/SeanIFitch/icarus_v2/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -181,6 +183,31 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+### Environment Setup
+#### Installing Poetry
+This project uses poetry to manage dependencies. Install it using:
+```sh
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+#### Cloning the Repository
+Before you can start setting up your environment, you'll need to clone the repository containing the project. Open your terminal and execute the following command:
+```sh
+git clone https://github.com/YOUR-USERNAME-HERE/icarus_v2
+cd icarus_v2
+```
+#### Installing Dependencies
+Now you can initialize the poetry package:
+```sh
+poetry install
+```
+#### Run Icarus
+To run the main script, you can use the following command from the directory into which you cloned the repository:
+```sh
+poetry run icarus
+```
+
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -199,7 +226,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 Sean Fitch - seanifitch@gmail.com
 
-Project Link: [https://github.com/SeanIFitch/Icarus_v2](https://github.com/SeanIFitch/Icarus_v2)
+Project Link: [https://github.com/SeanIFitch/icarus_v2](https://github.com/SeanIFitch/icarus_v2)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -212,6 +239,3 @@ Project Link: [https://github.com/SeanIFitch/Icarus_v2](https://github.com/SeanI
 * [icarus-nmr](https://github.com/vstadnytskyi/icarus-nmr) by Valentyn Stadnytskyi
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-[screenshot]: resources/app-screenshot.png

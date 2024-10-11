@@ -8,7 +8,7 @@ Fixed:
 
 v0.2.0 (2024-09-25)
 -----------------
-Added: 
+Added:
  - Setting to hide valve sensors
  - Hide sample sensor when it is disconnected
  - Sentry shuts device down if in experiment mode and:
@@ -18,6 +18,10 @@ Added:
  - Log files store coefficients, so they can be correctly viewed on other machines
  - Warning and Error history
  - Python 3.12+ support
+ - Distribution as pip package:
+   - Added pyproject.toml for package configuration
+   - Created PyPI release for easy installation
+   - Updated installation instructions in README.md
 
 Changed:
  - Shutdown button is now momentary contact
