@@ -95,6 +95,9 @@ All events are transmitted to the GUI and are rendered in dedicated event plots,
 
 * PyQtDarkTheme
 
+
+### Development tools
+
 * Poetry
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

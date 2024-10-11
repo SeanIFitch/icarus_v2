@@ -12,4 +12,4 @@ def setup_udev_rules():
             if result.returncode != 0:
                 raise RuntimeError(f"Command failed: {result.stderr.decode().strip()}")
         except Exception as e:
-            raise RuntimeError(f"Command execution failed: {str(e)}")
+            raise RuntimeError(f"Command execution failed: {str(e)}") from e
