@@ -28,7 +28,7 @@ import os
 import re
 from dataclasses import dataclass
 from itertools import chain, zip_longest
-from icarus_v2.qdarktheme._color import Color, Svg
+from color_class import Color
 from pathlib import Path
 
 """Default color values."""
@@ -250,12 +250,8 @@ def color(color_info: str | dict[str, str | dict], state: str | None = None) -> 
 
 def url(color: Color, id: str, rotate: int = 0) -> str:
     """Filter for template engine. This filter create url for svg and output svg file."""
-    svg_path = Path(__file__).parent / "resources" / "svg" / f"{id}_{color._to_hex()}_{rotate}.svg"
+    svg_path = Path(__file__).parent.parent / "resources" / "svg" / f"{id}_{color._to_hex()}_{rotate}.svg"
     url = f"url({svg_path.as_posix()})"
-    if svg_path.exists():
-        return url
-    svg = Svg(id).colored(color).rotate(rotate)
-    svg_path.write_text(str(svg))
     return url
 
 
@@ -291,7 +287,7 @@ class Template:
     """Class that handles template text like jinja2."""
 
     _PLACEHOLDER_RE = re.compile(r"{{.*?}}")
-    _STRING_RE = re.compile(r"""('([^'\\]*(?:\\.[^'\\]*)*)'|"([^"\\]*(?:\\.[^"\\]*)*)")""", re.S)
+    _STRING_RE = re.compile(r"""(('([^'\\]*(?:\\.[^'\\]*)*)'|"([^"\\]*(?:\\.[^"\\]*)*)"){1,3})""", re.S)
 
     def __init__(self, text: str, filters: dict):
         """Initialize Template class."""
@@ -321,20 +317,33 @@ class Template:
     def _run_filter(self, value: str | int | float, filter_text: str):
         contents = filter_text.split("(")
         if len(contents) == 1:
-            return self._filters[contents[0]](value)
+            filter_name = contents[0]
+            # Ignore 'url' filter or any other missing filters
+            if filter_name not in self._filters:
+                return value  # Simply return the value as-is
+            return self._filters[filter_name](value)
 
-        filter_name, arg_text = contents
-        py_strings = [match.group() for match in Template._STRING_RE.finditer(arg_text)]
-        if len(py_strings) == 0:
-            json_text = '{"' + arg_text.replace("=", '":').replace(",", ',"').replace(")", "}")
-        else:
-            py_strings_escaped = [re.escape(py_string) for py_string in py_strings]
-            words = re.split("|".join(py_strings_escaped), arg_text)
-            words = [word.replace("=", '":').replace(",", ',"').replace(")", "}") for word in words]
-            json_text = '{"' + "".join(
-                chain.from_iterable(zip_longest(words, py_strings, fillvalue=""))
-            )
-        arguments: dict = json.loads(json_text)
+        filter_name, arg_text = contents[0], contents[1].rstrip(")")
+
+        # Ignore 'url' filter or any other missing filters
+        if filter_name not in self._filters:
+            return value  # Simply return the value as-is
+
+        # Split arguments by commas, then key-value pairs by '='
+        arguments = {}
+        if arg_text:
+            for arg in arg_text.split(","):
+                arg = arg.strip()
+                if "=" in arg:
+                    # Ensure there is exactly one '=' and split by it
+                    key_val_pair = arg.split("=", 1)
+                    key = key_val_pair[0].strip()
+                    val = key_val_pair[1].strip().strip('"').strip("'")  # Handle string values
+                    arguments[key] = val
+                else:
+                    # Handle positional arguments if needed
+                    arguments[arg] = True
+
         return self._filters[filter_name](value, **arguments)
 
     def render(self, replacements: dict) -> str:
@@ -390,7 +399,7 @@ def load_stylesheet(theme: str = "dark", corner_shape: str = "rounded",) -> str:
     # Build stylesheet
     template = Template(
         stylesheet,
-        {"color": color, "corner": corner, "env": env, "url": url},
+        {"color": color, "corner": corner, "env": env},
     )
     replacements = dict(color_values, **{"corner-shape": corner_shape})
     return template.render(replacements)
@@ -398,6 +407,6 @@ def load_stylesheet(theme: str = "dark", corner_shape: str = "rounded",) -> str:
 
 def load_base_stylesheet():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, 'resources', 'styles.qss')
+    file_path = os.path.join(current_dir, '..', 'resources', 'styles.qss')
     with open(file_path, 'r') as f:
         return f.read()

@@ -1,36 +1,33 @@
 Changelog
 =========
 
+v0.3.0 (UPCOMING)
+-----------------
+Fixed:
+ - Fixed Windows "No backend found" error message
 
-v0.2.0 (UPCOMING)
-# NOTICE: REMEMBER TO REVERT SENTRY CURRENT_EXPERIMENT AND DATAHANDLER LOAD_RAW BEFORE RELEASE
+v0.2.0 (2024-09-25)
 -----------------
 Added: 
  - Setting to hide valve sensors
- - Prevent plotting of sample pressure when it is far from origin pressure
  - Hide sample sensor when it is disconnected
  - Sentry shuts device down if in experiment mode and:
-    - pressure does not increase after rapid pump events
-    - average pressure difference over periods exceeds 25% twice in a row
+    - pump activates n times in m times decreases from the expected value
+    - pressure before depressurize events decreases from expected value n times in a row
+ - Valves open for 1 second when the software shuts down
  - Log files store coefficients, so they can be correctly viewed on other machines
  - Warning and Error history
+ - Python 3.12+ support
 
 Changed:
- - Reset history plots when new log starts
  - Shutdown button is now momentary contact
- - Update README
+ - Valves close again 3 seconds after a shutdown
  - Prevent multiple pressurizes per depressurize on history plot
- - Sentry only compares pressure right before events rather than looking for slope changes
- - Remove mouse coordinates when mouse leaves a plot
- - Add colors to the device control panel buttons
+ - GUI updates
 
 Fixed:
  - Significantly increase accuracy of pump stroke detection
- - When loading raw data files, replay file rather than raising an exception at EOF
- - Fixed pump stroke rate being multiplied by 2
  - Allow deletion of open log files
- - Catch exception when opening log file of improper format
- - Prevent deleting a log file twice if no events are logged
  - Handle exception when USB device is disconnected after the device sleeps
  - Touchpad event error on MacBooks
 
