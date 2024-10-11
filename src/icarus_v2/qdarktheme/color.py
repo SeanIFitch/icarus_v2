@@ -1,9 +1,8 @@
-"""Module for color code."""
 from __future__ import annotations
-
 import math
-from rgba_class import RGBA
-from hsla_class import HSLA
+from icarus_v2.qdarktheme.rgba import RGBA
+from icarus_v2.qdarktheme.hsla import HSLA
+
 
 class Color:
     """Class handling color code(RGBA and HSLA)."""

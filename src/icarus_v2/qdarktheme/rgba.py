@@ -1,9 +1,10 @@
-"""Module for color code."""
 from __future__ import annotations
+
 
 def _round_float(number: float, decimal_points: int = 3) -> float:
     decimal = 10**decimal_points
     return round(number * decimal) / decimal
+
 
 class RGBA:
     """Class handling RGBA color code."""

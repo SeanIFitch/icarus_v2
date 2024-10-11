@@ -1,8 +1,7 @@
-"""Module for color code."""
 from __future__ import annotations
-
 import colorsys
-from rgba_class import RGBA
+from icarus_v2.qdarktheme.rgba import RGBA
+
 
 def _round_float(number: float, decimal_points: int = 3) -> float:
     decimal = 10**decimal_points
