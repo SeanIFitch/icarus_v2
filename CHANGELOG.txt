@@ -1,8 +1,14 @@
 Changelog
 =========
 
-v0.3.0 (UPCOMING)
+v1.0.0 (UPCOMING)
 -----------------
+Added:
+ -Distribution as pip package:
+   - Added pyproject.toml for package configuration
+   - Created PyPI release for easy installation
+   - Updated installation instructions in README.md
+
 Fixed:
  - Fixed Windows "No backend found" error message
 
@@ -18,10 +24,7 @@ Added:
  - Log files store coefficients, so they can be correctly viewed on other machines
  - Warning and Error history
  - Python 3.12+ support
- - Distribution as pip package:
-   - Added pyproject.toml for package configuration
-   - Created PyPI release for easy installation
-   - Updated installation instructions in README.md
+
 
 Changed:
  - Shutdown button is now momentary contact
