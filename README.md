@@ -52,7 +52,7 @@
 
 The <a href="https://pubmed.ncbi.nlm.nih.gov/29666248/">Icarus</a> NMR Pressure Jump Apparatus is a novel device used to rapidly switch the pressure within an NMR sample cell. This enables study of the unfolded protein under native conditions and, vice versa, study of the native protein under denaturing conditions. This project is the <a href="https://github.com/vstadnytskyi/icarus-nmr">second</a> version of a monitoring software for the pressure sensors and digital controls. It is responsible for displaying device readings, controlling and testing hardware, and detecting faults. 
 
-Once a DATAQ DI-4108 USB device is detected by the monitoring software, it establishes a connection and begins reading data from the USB device at 4000Hz. The analog and digital channels monitored are as follows:
+Once a DATAQ DI-4108 USB device (check out its protocol [here](https://www.dataq.com/resources/pdfs/misc/Dataq-Instruments-Protocol.pdf)) is detected by the monitoring software, it establishes a connection and begins reading data from the USB device at 4000Hz. The analog and digital channels monitored are as follows:
 * Analog:\
 	CH0: target pressure sensor\
 	CH1: depressurization valve lower sensor\
@@ -120,19 +120,11 @@ Ensure you have Python 3.10-3.12 installed on your system by running the followi
 ```sh
 python3 --version
 ```
-
-If you do not have Python installed, you can install it using the following commands:
-```sh
-sudo apt update
-sudo apt install python3.12
-```
+If Python is not installed, or you need a different version, follow the installation instructions for your operating system from the official Python documentation: https://www.python.org/downloads/.
 
 ### Installation
-The recommended method for installation is to install the application globally using pipx. First, install pipx:
-```sh
-sudo apt install pipx
-pipx ensurepath
-```
+The recommended method for installation is to install the application globally using pipx. If pipx is not installed on your system, follow the official installation instructions here: https://pypa.github.io/pipx/installation/
+
 Now, you can install the icarus_v2 package:
 ```sh
 pipx install icarus_v2
@@ -185,15 +177,12 @@ Don't forget to give the project a star! Thanks again!
 
 ### Environment Setup
 #### Installing Poetry
-This project uses poetry to manage dependencies. Install it using:
-```sh
-curl -sSL https://install.python-poetry.org | python3 -
-```
+This project uses poetry to manage dependencies. To install it, follow the instructions found in the documentation at [https://python-poetry.org/docs](https://python-poetry.org/docs).
 
 #### Cloning the Repository
 Before you can start setting up your environment, you'll need to clone the repository containing the project. Open your terminal and execute the following command:
 ```sh
-git clone https://github.com/YOUR-USERNAME-HERE/icarus_v2
+git clone https://github.com/SeanIFitch/icarus_v2
 cd icarus_v2
 ```
 #### Installing Dependencies

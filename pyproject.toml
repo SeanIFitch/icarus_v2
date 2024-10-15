@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "icarus_v2"
-version = "0.1.6"
+version = "0.2.1"
 description = "Monitoring software for the Icarus Pressure Jump apparatus"
 authors = ["Sean Fitch <fitchs2@rpi.edu>"]
 readme = "README.md"
