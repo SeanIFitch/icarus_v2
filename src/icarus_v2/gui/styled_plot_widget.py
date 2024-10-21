@@ -1,17 +1,14 @@
 from pyqtgraph import PlotWidget
-
 from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
 
 import pyqtgraph as pg
-
 from pyqtgraph.graphicsItems.ButtonItem import ButtonItem
-
 from pyqtgraph import icons
-
 from pyqtgraph import PlotItem
-
+import PySide6
+from PySide6.QtCore import QEvent
+from PySide6.QtGui import Qt
 # import pyqtgraph.exporters
-
 from icarus_v2.backend.custom_csv_exporter import CustomCSVExporter
 
 
@@ -37,14 +34,14 @@ class StyledPlotWidget(PlotWidget):
 
         self.getPlotItem().getViewBox().setMenuEnabled(False) # Remove right click menu
 
+        #Setup the export button
         self.exportBtn = ButtonItem(icons.getGraphPixmap('auto'), 14,self.plotItem)
         self.exportBtn.clicked.connect(self.exportBtnClicked)
         self.exportBtn.setPos(30,210)
         self.exportBtn.hide()
-        # self.scene.sigMouseMoved
 
-        self.btn_proxy = pg.SignalProxy(self.scene().sigMouseHover, rateLimit=120, slot=self.hovering)
-
+        #Enable hover events. Needed so that button is only visible when hovering over graph
+        self.setAttribute(Qt.WA_Hover)
 
         self.csv_header = None
 
@@ -76,8 +73,13 @@ class StyledPlotWidget(PlotWidget):
 
         self.csv_header = csv_header
 
-    def hovering(self):  
-        self.exportBtn.show()
+    #Tracks the hover enter and leave events
+    def event(self, event):
+        if event.type() == QEvent.HoverEnter:
+            self.exportBtn.show()
+        elif event.type() == QEvent.HoverLeave:
+            self.exportBtn.hide()
+        return super().event(event)
 
     def exportBtnClicked(self):
 
