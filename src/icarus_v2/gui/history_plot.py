@@ -36,6 +36,10 @@ class HistoryPlot(QWidget):
             "depress sample slope",
             "depress origin switch",
             "depress sample switch"
+        ],
+        Event.PRESSURE: [
+            "origin pressure",
+            "sample pressure"
         ]
     }
 
@@ -50,8 +54,10 @@ class HistoryPlot(QWidget):
         self.data = None
         self.initial_time = None
         self.can_plot_pressurize = None
+        self.last_pressure_update = None
         self.limits = None
         self.min_zoom = None
+        self.pressure_max_interval = 60  # max time to wait before plotting a pressure event on the pressure plots
 
         # Dictionary of line references
         self.lines = {}
@@ -272,6 +278,7 @@ class HistoryPlot(QWidget):
         }
         self.initial_time = None
         self.can_plot_pressurize = True
+        self.last_pressure_update = None
 
         for line in self.lines.values():
             line.setData([], [])
@@ -316,7 +323,9 @@ class HistoryPlot(QWidget):
         hi_diff = self.limits[1] - current_x_range[1]
         currently_zoomed_out = low_diff + hi_diff < 1
 
-        self.process_data(event)
+        if not self.process_data(event):
+            return
+
         for update in self.EVENT_LINES[event.event_type]:
             self.lines[update].setData(self.data["time"][event.event_type], self.data[update])
 
@@ -363,10 +372,16 @@ class HistoryPlot(QWidget):
         self.pressure_plot.setXRange(self.limits[0], self.limits[1])
         self.set_text()
 
+    # Returns bool according to whether any data was updated
     def process_data(self, event):
         # Define start time of plots
         if self.initial_time is None:
             self.initial_time = event.event_time
+
+        # skip if pressure event and pressure has been recently updated
+        if event.event_type == Event.PRESSURE and self.last_pressure_update is not None:
+            if event.event_time - self.last_pressure_update < self.pressure_max_interval:
+                return False
 
         # Update data
         self.data["time"][event.event_type].append(event.event_time - self.initial_time)
@@ -374,6 +389,12 @@ class HistoryPlot(QWidget):
         for update in self.EVENT_LINES[event.event_type]:
             # Add event to data dict
             self.data[update].append(event.get_event_info(update) * coefficients[update])
+
+            # update self.last_pressure_update if updating pressure
+            if update == "origin pressure":
+                self.last_pressure_update = event.event_time
+
+        return True
 
     # Sets all text to the data in view
     def set_text(self):
