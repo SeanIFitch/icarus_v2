@@ -8,6 +8,7 @@ from icarus_v2.gui.styled_plot_widget import StyledPlotWidget
 
 class EventPlot(QWidget):
     # Dictionary of color to plot each channel
+    # Light Theme Color: #0B8FA1 #FFD100
     LINE_STYLES = {
         Channel.TARGET: ('#45BF55', Qt.SolidLine),          # light green
         Channel.DEPRE_LOW: ('#AB47BC', Qt.SolidLine),       # magenta

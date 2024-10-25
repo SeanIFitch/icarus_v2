@@ -8,6 +8,7 @@ from icarus_v2.gui.styled_plot_widget import StyledPlotWidget
 
 class HistoryPlot(QWidget):
     # Dictionary of pens to plot each line
+    # Light Theme Color: #0B8FA1 #FFD100
     LINE_STYLES = {
         "origin pressure": ('#FFDC00', Qt.SolidLine),  # yellow
         "sample pressure": ('#FFDC00', Qt.DashLine),  # yellow dashed
