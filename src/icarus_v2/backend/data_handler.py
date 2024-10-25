@@ -5,7 +5,7 @@ from time import sleep
 from threading import Lock
 from icarus_v2.utils.udev_setup import setup_udev_rules
 from icarus_v2.utils.raw_log_reader import RawLogReader
-import os
+from pathlib import Path
 # Data collection & Device imports
 from icarus_v2.backend.dataq_interface import DataqInterface
 from icarus_v2.backend.buffer_loader import BufferLoader
@@ -56,10 +56,12 @@ class DataHandler(QThread):
         self.logger = None
 
         # TESTING ONLY!!!. reads a raw data file instead of connecting to a device
+        # edit raw_file to change the playback to a different file
         self.load_raw = False
         if self.load_raw:
-            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            self.raw_file = os.path.join(project_root, 'logs', 'raw', "2.1_to_1.5kBar.xz")
+            raw_file = "2.1_to_1.5kBar.xz"
+            project_root = Path(__file__).resolve().parents[3]
+            self.raw_file = project_root / 'logs' / 'raw' / raw_file
 
         # Loads data from device into buffer
         self.loader = BufferLoader()

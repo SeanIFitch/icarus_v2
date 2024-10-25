@@ -8,7 +8,8 @@ from PySide6.QtWidgets import (
     QWidget,
     QGroupBox,
     QSizePolicy,
-    QSpacerItem
+    QSpacerItem,
+    QStackedWidget
 )
 from icarus_v2.gui.event_plot import EventPlot
 from icarus_v2.gui.history_plot import HistoryPlot
@@ -46,6 +47,7 @@ class MainWindow(QMainWindow):
         self.period_plot = EventPlot(Event.PERIOD, self.config_manager, parent=self)
         self.history_plot = HistoryPlot(config_manager)
         self.device_control_panel = DeviceControlPanel()
+        self.device_control_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.counter_display = CounterDisplay(config_manager)
         self.pressure_display = PressureDisplay(config_manager)
 
@@ -62,6 +64,7 @@ class MainWindow(QMainWindow):
         self.log_control_panel.log_coefficients_signal.connect(self.depressurize_plot.set_log_coefficients)
         self.log_control_panel.log_coefficients_signal.connect(self.period_plot.set_log_coefficients)
         self.log_control_panel.log_coefficients_signal.connect(self.history_plot.set_log_coefficients)
+        self.log_control_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # ToolBar
         self.toolbar = ToolBar(config_manager, self)
@@ -76,15 +79,27 @@ class MainWindow(QMainWindow):
         box_layout = QVBoxLayout()
         box_layout.addItem(spacer)
         self.bounding_box.setLayout(box_layout)
+        self.bounding_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.bounding_box.setMinimumWidth(287)  # Width of DeviceControlPanel
 
         # Control layout
         control_layout = QGridLayout()
         control_layout.addWidget(self.pressure_display, 0, 0)
-        control_layout.addWidget(self.device_control_panel, 1, 0)
-        control_layout.addWidget(self.log_control_panel, 1, 0)
-        control_layout.addWidget(self.bounding_box, 1, 0)
+
+        #Stacked Widget
+        self.stacked_widget = QStackedWidget()
+        self.stacked_widget.addWidget(self.device_control_panel)
+        self.stacked_widget.addWidget(self.log_control_panel)
+        self.stacked_widget.addWidget(self.bounding_box)
+        self.stacked_widget.setCurrentWidget(self.bounding_box)
+        self.stacked_widget.setFixedWidth(329)
+        self.stacked_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.stacked_widget.setContentsMargins(0, 0, 0, 0)
+        control_layout.addWidget(self.stacked_widget)
+
         control_layout.addWidget(self.counter_display, 2, 0)
+        control_layout.setContentsMargins(0, 0, 0, 0)
+        control_layout.setColumnStretch(0, 1)
 
         # Event plot layout
         event_layout = QVBoxLayout()
@@ -135,9 +150,8 @@ class MainWindow(QMainWindow):
     def set_mode(self, mode):
         self.mode = mode
         if mode == "log":
-            self.device_control_panel.hide()
-            self.bounding_box.hide()
-            self.log_control_panel.show()
+            
+            self.stacked_widget.setCurrentWidget(self.log_control_panel)
 
             # Disconnect device signals from gui elements (excludes pressure display and counter display)
             if self.data_handler is not None:
@@ -154,13 +168,9 @@ class MainWindow(QMainWindow):
 
         elif mode == "device":
             if self.connected:
-                self.log_control_panel.hide()
-                self.bounding_box.hide()
-                self.device_control_panel.show()
+                self.stacked_widget.setCurrentWidget(self.device_control_panel)
             else:
-                self.log_control_panel.hide()
-                self.device_control_panel.hide()
-                self.bounding_box.show()
+                self.stacked_widget.setCurrentWidget(self.bounding_box)
 
             # Connect device event signals to GUI elements
             if self.data_handler is not None:
@@ -206,13 +216,11 @@ class MainWindow(QMainWindow):
         if connected:
             self.device_control_panel.reset()
             if self.mode == "device":
-                self.bounding_box.hide()
-                self.device_control_panel.show()
+                self.stacked_widget.setCurrentWidget(self.device_control_panel)
         else:
             self.pressure_display.reset()
             if self.mode == "device":
-                self.bounding_box.show()
-                self.device_control_panel.hide()
+                self.stacked_widget.setCurrentWidget(self.bounding_box)
 
     def set_sample_sensor_connected(self, connected):
         self.history_plot.set_sample_sensor(connected)
