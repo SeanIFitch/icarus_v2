@@ -65,7 +65,8 @@ class DeviceControlPanel(QGroupBox):
         self.layout.addWidget(self.depressurize_button)
         self.layout.addWidget(self.pulse_button)
 
-        self.setMinimumWidth(288)  # Width of depressurize button.Without this the panel shrinks when buttons are hidden
+        # Width of depressurize button.Without this the panel shrinks when buttons are hidden
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setStyleSheet("font-size: 21pt;")
 
     def toggle_mode(self, checked):

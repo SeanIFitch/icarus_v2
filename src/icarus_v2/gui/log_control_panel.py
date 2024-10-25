@@ -106,7 +106,7 @@ class LogControlPanel(QGroupBox):
         layout.addWidget(self.edit_button)
 
         self.set_logging(False)
-        self.setFixedWidth(287)  # Width of device control panel
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # Width of device control panel
 
     def open_current(self):
         if not self.currently_logging:

@@ -58,7 +58,7 @@ class DataHandler(QThread):
         # TESTING ONLY!!!. reads a raw data file instead of connecting to a device
         self.load_raw = False
         if self.load_raw:
-            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
             self.raw_file = os.path.join(project_root, 'logs', 'raw', "2.1_to_1.5kBar.xz")
 
         # Loads data from device into buffer
@@ -137,9 +137,11 @@ class DataHandler(QThread):
 
             # TESTING ONLY
             if self.load_raw:
+                sleep(5)
                 self.device = RawLogReader(self.raw_file)
                 self.connecting = False
                 self.connected = True
+
                 break
 
             try:
