@@ -193,7 +193,7 @@ THEME_COLOR_VALUES = {
             "light_green": '#45BF55',
             "magenta": '#AB47BC',
             "blue": '#004B8D',
-            "yellow": '#ff7800',
+            "yellow": '#ff8307',
             "cyan": '#0B8FA1',
             "red": '#B9121B',
         },
