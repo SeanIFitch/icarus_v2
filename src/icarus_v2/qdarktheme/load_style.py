@@ -181,6 +181,9 @@ THEME_COLOR_VALUES = {
         "tree.inactiveIndentGuidesStroke": "#00000030",
         "tree.indentGuidesStroke": "#00000050",
         "treeSectionHeader.background": "#dadce0",
+
+        #line colors
+
     },
 }
 ACCENT_COLORS = {

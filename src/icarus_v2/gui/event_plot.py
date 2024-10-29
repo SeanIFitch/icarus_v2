@@ -4,6 +4,7 @@ import numpy as np
 from icarus_v2.backend.event import Event, Channel, get_channel
 from PySide6.QtWidgets import QLabel, QGridLayout, QWidget, QSpacerItem, QSizePolicy
 from icarus_v2.gui.styled_plot_widget import StyledPlotWidget
+from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
 
 
 class EventPlot(QWidget):
