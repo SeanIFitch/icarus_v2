@@ -5,21 +5,22 @@ from icarus_v2.backend.event import Event, Channel
 from bisect import bisect_right, bisect_left
 import numpy as np
 from icarus_v2.gui.styled_plot_widget import StyledPlotWidget
+from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
+from icarus_v2.gui.styled_plot_widget import theme
 
 class HistoryPlot(QWidget):
     # Dictionary of pens to plot each line
-    # Light Theme Color: #0B8FA1 #FFD100
     LINE_STYLES = {
-        "origin pressure": ('#FFDC00', Qt.SolidLine),  # yellow
-        "sample pressure": ('#FFDC00', Qt.DashLine),  # yellow dashed
-        "depress origin slope": ('#59D8E6', Qt.SolidLine),  # cyan
-        "depress sample slope": ('#59D8E6', Qt.DashLine),  # cyan dashed
-        "press origin slope": ('#B9121B', Qt.SolidLine),  # red
-        "press sample slope": ('#B9121B', Qt.DashLine),  # red dashed
-        "depress origin switch": ('#59D8E6', Qt.SolidLine),  # cyan
-        "depress sample switch": ('#59D8E6', Qt.DashLine),  # cyan dashed
-        "press origin switch": ('#B9121B', Qt.SolidLine),  # red
-        "press sample switch": ('#B9121B', Qt.DashLine),  # red dashed
+        "origin pressure": (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine),  # yellow
+        "sample pressure": (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.DashLine),  # yellow dashed
+        "depress origin slope": (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine),  # cyan
+        "depress sample slope": (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.DashLine),  # cyan dashed
+        "press origin slope": (THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine),  # red
+        "press sample slope": (THEME_COLOR_VALUES[theme]['line']['red'], Qt.DashLine),  # red dashed
+        "depress origin switch": (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine),  # cyan
+        "depress sample switch": (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.DashLine),  # cyan dashed
+        "press origin switch": (THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine),  # red
+        "press sample switch": (THEME_COLOR_VALUES[theme]['line']['red'], Qt.DashLine),  # red dashed
     }
 
     # Dictionary of lines updated on certain events

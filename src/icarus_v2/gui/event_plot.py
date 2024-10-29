@@ -5,21 +5,22 @@ from icarus_v2.backend.event import Event, Channel, get_channel
 from PySide6.QtWidgets import QLabel, QGridLayout, QWidget, QSpacerItem, QSizePolicy
 from icarus_v2.gui.styled_plot_widget import StyledPlotWidget
 from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
+from icarus_v2.gui.styled_plot_widget import theme
 
 
 class EventPlot(QWidget):
     # Dictionary of color to plot each channel
-    # Light Theme Color: #0B8FA1 #FFD100
+    # Light Theme Color:  #FFD100
     LINE_STYLES = {
-        Channel.TARGET: ('#45BF55', Qt.SolidLine),          # light green
-        Channel.DEPRE_LOW: ('#AB47BC', Qt.SolidLine),       # magenta
-        Channel.DEPRE_UP: ('#004B8D', Qt.SolidLine),        # blue
-        Channel.PRE_LOW: ('#AB47BC', Qt.SolidLine),         # magenta
-        Channel.PRE_UP: ('#004B8D', Qt.SolidLine),          # blue
-        Channel.HI_PRE_ORIG: ('#FFDC00', Qt.SolidLine),     # yellow
-        Channel.HI_PRE_SAMPLE: ('#FFDC00', Qt.DashLine),    # yellow dashed
-        Channel.DEPRE_VALVE: ('#59D8E6', Qt.SolidLine),     # cyan
-        Channel.PRE_VALVE: ('#B9121B', Qt.SolidLine),       # red
+        Channel.TARGET: (THEME_COLOR_VALUES[theme]['line']['light_green'], Qt.SolidLine),          # light green
+        Channel.DEPRE_LOW: (THEME_COLOR_VALUES[theme]['line']['magenta'], Qt.SolidLine),           # magenta
+        Channel.DEPRE_UP: (THEME_COLOR_VALUES[theme]['line']['blue'], Qt.SolidLine),               # blue
+        Channel.PRE_LOW: (THEME_COLOR_VALUES[theme]['line']['magenta'], Qt.SolidLine),             # magenta
+        Channel.PRE_UP: (THEME_COLOR_VALUES[theme]['line']['blue'], Qt.SolidLine),                 # blue
+        Channel.HI_PRE_ORIG: (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine),          # yellow
+        Channel.HI_PRE_SAMPLE: (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.DashLine),         # yellow dashed
+        Channel.DEPRE_VALVE: (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine),            # cyan
+        Channel.PRE_VALVE: (THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine),               # red
     }
 
     def __init__(self, event_type, config_manager, parent=None):

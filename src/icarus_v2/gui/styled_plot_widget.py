@@ -1,10 +1,10 @@
 from pyqtgraph import PlotWidget
 from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
 
+theme = 'dark'
 
 class StyledPlotWidget(PlotWidget):
     def __init__(self, x_zoom=False):
-        theme = 'light'
         background = THEME_COLOR_VALUES[theme]['background']['base']
         self.text_color = THEME_COLOR_VALUES[theme]['foreground']['base']
         PlotWidget.__init__(self, background=background)

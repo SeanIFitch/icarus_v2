@@ -94,6 +94,14 @@ THEME_COLOR_VALUES = {
         "tree.inactiveIndentGuidesStroke": "#ffffff35",
         "tree.indentGuidesStroke": "#ffffff60",
         "treeSectionHeader.background": "#3f4042",
+        "line": {
+            "light_green": '#45BF55',
+            "magenta": '#AB47BC',
+            "blue": '#004B8D',
+            "yellow": '#FFDC00',
+            "cyan": '#59D8E6',
+            "red": '#B9121B',
+        },
     },
     "light": {
         "background": {
@@ -181,9 +189,14 @@ THEME_COLOR_VALUES = {
         "tree.inactiveIndentGuidesStroke": "#00000030",
         "tree.indentGuidesStroke": "#00000050",
         "treeSectionHeader.background": "#dadce0",
-
-        #line colors
-
+        "line": {
+            "light_green": '#45BF55',
+            "magenta": '#AB47BC',
+            "blue": '#004B8D',
+            "yellow": '#ff7800',
+            "cyan": '#0B8FA1',
+            "red": '#B9121B',
+        },
     },
 }
 ACCENT_COLORS = {

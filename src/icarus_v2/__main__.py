@@ -10,7 +10,7 @@ from icarus_v2.qdarktheme.load_style import load_stylesheet
 # Application entry point
 def main():
     app = QApplication([])
-    app.setStyleSheet(load_stylesheet(theme='light'))
+    app.setStyleSheet(load_stylesheet(theme='dark'))
     app.setApplicationName("Icarus")
 
     config_manager = ConfigurationManager()
