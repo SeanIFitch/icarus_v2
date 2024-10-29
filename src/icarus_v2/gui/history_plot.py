@@ -5,6 +5,7 @@ from icarus_v2.backend.event import Event, Channel
 from bisect import bisect_right, bisect_left
 import numpy as np
 from icarus_v2.gui.styled_plot_widget import StyledPlotWidget
+from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 class HistoryPlot(QWidget):
     # Dictionary of pens to plot each line
@@ -39,10 +40,10 @@ class HistoryPlot(QWidget):
         ]
     }
 
-    def __init__(self, config_manager):
+    def __init__(self):
         super().__init__()
 
-        self.config_manager = config_manager
+        self.config_manager = ConfigurationManager()
         self.coefficients = None
         self.log_coefficients = None
         self.update_settings("plotting_coefficients")

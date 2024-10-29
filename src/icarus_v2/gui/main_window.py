@@ -27,11 +27,10 @@ from icarus_v2.backend.event import Event
 class MainWindow(QMainWindow):
 
     # Initializes all widgets and sets layout
-    def __init__(self, config_manager):
+    def __init__(self):
         super(MainWindow, self).__init__()
         self.mode = None
 
-        self.config_manager = config_manager
         self.data_handler = None
 
         # Window settings
@@ -42,16 +41,16 @@ class MainWindow(QMainWindow):
 
         # Initialize all widgets
         self.pressure_event_display_range = (-10, 140)  # How much data to view around pressurize events
-        self.pressurize_plot = EventPlot(Event.PRESSURIZE, self.config_manager, parent=self)
-        self.depressurize_plot = EventPlot(Event.DEPRESSURIZE, self.config_manager, parent=self)
-        self.period_plot = EventPlot(Event.PERIOD, self.config_manager, parent=self)
-        self.history_plot = HistoryPlot(config_manager)
+        self.pressurize_plot = EventPlot(Event.PRESSURIZE, parent=self)
+        self.depressurize_plot = EventPlot(Event.DEPRESSURIZE, parent=self)
+        self.period_plot = EventPlot(Event.PERIOD, parent=self)
+        self.history_plot = HistoryPlot()
         self.device_control_panel = DeviceControlPanel()
         self.device_control_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.counter_display = CounterDisplay(config_manager)
-        self.pressure_display = PressureDisplay(config_manager)
+        self.counter_display = CounterDisplay()
+        self.pressure_display = PressureDisplay()
 
-        self.log_control_panel = LogControlPanel(self.config_manager)
+        self.log_control_panel = LogControlPanel()
         self.log_control_panel.pressurize_event_signal.connect(self.pressurize_plot.update_data)
         self.log_control_panel.pressurize_event_signal.connect(self.history_plot.render_pressurize_time)
         self.log_control_panel.depressurize_event_signal.connect(self.depressurize_plot.update_data)
@@ -67,7 +66,7 @@ class MainWindow(QMainWindow):
         self.log_control_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # ToolBar
-        self.toolbar = ToolBar(config_manager, self)
+        self.toolbar = ToolBar(self)
         self.addToolBar(self.toolbar)
         self.toolbar.set_mode_signal.connect(self.set_mode)
         self.toolbar.history_reset_action.triggered.connect(self.reset_history)

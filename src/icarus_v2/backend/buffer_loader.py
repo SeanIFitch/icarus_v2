@@ -28,8 +28,8 @@ class BufferLoader(QThread):
         if self.device is None: return
 
         if self.log_raw:
-            self.raw_logger = Logger()
-            self.raw_logger.new_log_file(raw = True)
+            self.raw_logger = Logger(is_raw=True)
+            self.raw_logger.new_log_file()
 
         self.device.start_scan()
 

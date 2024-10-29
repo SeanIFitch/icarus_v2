@@ -3,26 +3,25 @@ import pickle
 import os
 from datetime import datetime
 from PySide6.QtCore import QStandardPaths
+from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
 # Logs files to logs/temp or logs/experiment depending on bit 4.
 # Files are deleted if no events are logged.
 class Logger:
-    def __init__(self, config_manager=None) -> None:
-        self.config_manager = config_manager
+    def __init__(self, is_raw=False) -> None:
         self.file = None
         self.filename = None
         self.current_path = None
         self.event_count = None
+        self.is_raw = is_raw
 
-    def new_log_file(self, temporary=True, raw=False):
+    def new_log_file(self, temporary=True):
         self.close()
 
         self.current_path = temporary
         base_dir = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation), 'logs')
-        if raw:
-            log_path = os.path.join(base_dir, "example")
-        elif temporary:
+        if temporary:
             log_path = os.path.join(base_dir, 'temp')
         else:
             log_path = os.path.join(base_dir, "experiment")
@@ -31,11 +30,15 @@ class Logger:
             os.makedirs(log_path)
 
         current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        self.filename = f"{log_path}/log_{current_datetime}.xz"
+        name = f"{'raw_' if self.is_raw else ''}log_{current_datetime}.xz"
+        self.filename = os.path.join(log_path, name)
         self.file = lzma.open(self.filename, "ab")  # Opening file in append binary mode with LZMA compression
         self.event_count = 0
 
     def log_event(self, event):
+        if self.is_raw:
+            raise RuntimeError("Error: Adding a processed event to a raw log.")
+
         event_dict = {
             'event_type': event.event_type,
             'data': event.data,
@@ -46,6 +49,9 @@ class Logger:
         self.log_raw(event_dict)
 
     def log_raw(self, data):
+        if not self.is_raw:
+            raise RuntimeError("Error: Adding raw data to an event log.")
+
         self.event_count += 1
         pickle.dump(data, self.file, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -55,11 +61,14 @@ class Logger:
 
     def close(self):
         if self.file is not None:
-            if self.config_manager is not None:
-                settings = {"plotting_coefficients": self.config_manager.get_settings("plotting_coefficients")}
+            if not self.is_raw:
+                config_manager = ConfigurationManager()
+                settings = {"plotting_coefficients": config_manager.get_settings("plotting_coefficients")}
                 pickle.dump(settings, self.file, protocol=pickle.HIGHEST_PROTOCOL)
+
             self.file.close()
             self.file = None
+
             if self.event_count == 0:
                 try:
                     os.remove(self.filename)

@@ -1,37 +1,52 @@
 import json
 import os
 import importlib
+import threading
 from copy import deepcopy
 from PySide6.QtCore import Signal, QObject, QStandardPaths
 from icarus_v2.backend.event import Channel
 
 
 # Responsible for loading and saving settings
+# Thread-safe singleton
 class ConfigurationManager(QObject):
+    _instance = None
+    _lock = threading.Lock()  # Lock for thread safety
     FILENAME = "settings.json"
     # Signal to let subscribers know that settings[key] was changed
     settings_updated = Signal(str)
 
+    def __new__(cls, *args, **kwargs):
+        # Double-checked locking to ensure thread-safe singleton instantiation
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super(ConfigurationManager, cls).__new__(cls)
+        return cls._instance
+
     def __init__(self) -> None:
-        super().__init__()
+        # Ensure initialization only occurs once
+        if not hasattr(self, "initialized"):
+            super().__init__()
+            self.initialized = True  # Flag to prevent re-initialization
 
-        # Get the application configuration path
-        self.config_path = QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation)
-        os.makedirs(self.config_path, exist_ok=True)  # Create the directory if it doesn't exist
+            # Get the application configuration path
+            self.config_path = QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation)
+            os.makedirs(self.config_path, exist_ok=True)  # Create the directory if it doesn't exist
 
-        self.filename = os.path.join(self.config_path, self.FILENAME)
+            self.filename = os.path.join(self.config_path, self.FILENAME)
 
-        # Load application settings
-        if not os.path.isfile(self.filename):
-            # Load default settings from icarus_v2.resources
-            with importlib.resources.path('icarus_v2.resources', 'default_settings.json') as path:
-                with open(path, 'r') as file:
+            # Load application settings
+            if not os.path.isfile(self.filename):
+                # Load default settings from icarus_v2.resources
+                with importlib.resources.path('icarus_v2.resources', 'default_settings.json') as path:
+                    with open(path, 'r') as file:
+                        self.settings = json.load(file)
+                self.save_settings()  # Save default settings to the config file
+            else:
+                with open(self.filename, "r") as file:
+                    # Dictionary
                     self.settings = json.load(file)
-            self.save_settings()  # Save default settings to the config file
-        else:
-            with open(self.filename, "r") as file:
-                # Dictionary
-                self.settings = json.load(file)
 
     def get_settings(self, key):
         value = deepcopy(self.settings[key])

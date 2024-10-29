@@ -32,7 +32,7 @@ class LogControlPanel(QGroupBox):
     sample_sensor_connected = Signal(bool)
     log_coefficients_signal = Signal(object)
 
-    def __init__(self, config_manager, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent=parent)
 
         self.log_reader = LogReader()
@@ -43,7 +43,7 @@ class LogControlPanel(QGroupBox):
         self.edit_dialog = None
         self.name_edit = None
         self.currently_logging = None
-        self.sample_sensor_detector = SampleSensorDetector(config_manager, self.sample_sensor_connected)
+        self.sample_sensor_detector = SampleSensorDetector(self.sample_sensor_connected)
 
         # Title
         title = QLabel("Viewing Log")

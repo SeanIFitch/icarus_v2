@@ -1,6 +1,7 @@
 import numpy as np
 from PySide6.QtCore import QThread, Signal
 from icarus_v2.backend.event import get_channel, Channel
+from icarus_v2.backend.configuration_manager import ConfigurationManager
 from time import localtime, strftime
 
 # Gets expected values for the experiment checks from the first example_events events of an experiment
@@ -8,11 +9,11 @@ class Sentry(QThread):
     warning_signal = Signal(str)
     error_signal = Signal(str)
 
-    def __init__(self, config_manager):
+    def __init__(self):
         super().__init__()
 
-        self.config_manager = config_manager
-        self.settings = config_manager.get_settings('sentry_settings')
+        self.config_manager = ConfigurationManager()
+        self.settings = self.config_manager.get_settings('sentry_settings')
         self.config_manager.settings_updated.connect(self.update_settings)
         self.current_example_events = None
 
