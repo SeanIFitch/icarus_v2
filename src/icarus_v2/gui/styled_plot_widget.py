@@ -126,7 +126,6 @@ class StyledPlotWidget(PlotWidget):
 
         # save to file
         if(self.folder is not None and self.folder!=""):
-            print(self.csv_header)
             exporter.export(self.folder+"/"+filename+'.csv',self.csv_header)
         else:
             exporter.export(filename+'.csv',self.csv_header)

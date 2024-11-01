@@ -95,7 +95,6 @@ class CustomCSVExporter(pg.exporters.CSVExporter):
                 ]
                 writer.writerow(row_to_write)
 
-        self.header.clear()
         self.data.clear()
 
 # CustomCSVExporter.register()
