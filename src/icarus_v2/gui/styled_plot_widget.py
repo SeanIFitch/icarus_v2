@@ -9,7 +9,7 @@ from pyqtgraph import PlotItem
 import PySide6
 from PySide6.QtCore import QEvent
 from PySide6.QtGui import Qt
-from PySide6.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout
+from PySide6.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QFileDialog
 from icarus_v2.backend.custom_csv_exporter import CustomCSVExporter
 
 class StyledPlotWidget(PlotWidget):
@@ -25,14 +25,17 @@ class StyledPlotWidget(PlotWidget):
         self.getPlotItem().getViewBox().setMenuEnabled(False) # Remove right click menu
 
         #Setup the export button
-        self.exportBtn = ButtonItem(icons.getGraphPixmap('auto'), 14,self.plotItem)
+        self.exportBtn = ButtonItem("src/icarus_v2/resources/export_icon.svg", 20,self.plotItem)
         self.exportBtn.clicked.connect(self.exportBtnClicked)
         self.exportBtn.setPos(30,210)
         self.exportBtn.hide()
 
         #Enable hover events. Needed so that button is only visible when hovering over graph
         self.setAttribute(Qt.WA_Hover)
+
         self.csv_header = None
+        self.default_filename = "icarus_graph"
+        self.folder = None
 
 
     def set_title(self, title):
@@ -61,15 +64,15 @@ class StyledPlotWidget(PlotWidget):
         return super().event(event)
 
     def exportBtnClicked(self):
-        #TODO: make it so that directory can be picked
-
         self.edit_dialog = QDialog(self)
 
         self.export_file = QLineEdit()
-        basename = ""
-        self.export_file.setText(basename)
-        extension_length = len(basename.split('.')[-1]) + 1
-        self.export_file.setSelection(0, len(basename) - extension_length)
+        self.export_file.setText(self.default_filename)
+        extension_length = len(self.default_filename.split('.')[-1]) + 1
+        self.export_file.setSelection(0, len(self.default_filename) - extension_length)
+
+        folder_button = QPushButton("Choose Folder")
+        folder_button.clicked.connect(self.export_folder)
 
         png_button = QPushButton("Export as PNG")
         csv_button = QPushButton("Export as CSV")
@@ -78,18 +81,24 @@ class StyledPlotWidget(PlotWidget):
 
         layout = QVBoxLayout()
         layout.addWidget(self.export_file)
+        layout.addWidget(folder_button)
         layout.addWidget(png_button)
         layout.addWidget(csv_button)
 
-        self.edit_dialog.setWindowTitle("Edit File")
+        self.edit_dialog.setWindowTitle("Export Graph")
         self.edit_dialog.setFixedSize(500, 200)
         self.edit_dialog.setLayout(layout)
         self.edit_dialog.show()
 
+    #Allows the user to choose the directory for the export
+    def export_folder(self):
+        #This is how to get the folder
+        self.folder = QFileDialog.getExistingDirectory(self, 'Select Folder')
+
     def export_png(self, filename=None):
         if(not filename):
             if(self.export_file is None):
-                filename = "graph" #TODO: might want a customizable default
+                filename = self.default_filename 
             else:
                 filename = self.export_file.text()
                 self.edit_dialog.done(0)
@@ -97,16 +106,18 @@ class StyledPlotWidget(PlotWidget):
         exporter = pg.exporters.ImageExporter(self.plotItem)
 
         # set export parameters if needed
-        #TODO: figure out dimensions for graph
         exporter.parameters()['width'] = 650   # (note this also affects height parameter)
 
         # save to file
-        exporter.export(filename+'.png')
+        if(self.folder is not None and self.folder!=""):
+            exporter.export(self.folder+"/"+filename+'.png')
+        else:
+            exporter.export(filename+'.png')
 
     def export_csv(self, filename):
         if(not filename):
             if(self.export_file is None):
-                filename = "graph" #TODO: might want a customizable default
+                filename = self.default_filename
             else:
                 filename = self.export_file.text()
                 self.edit_dialog.done(0)
@@ -114,4 +125,8 @@ class StyledPlotWidget(PlotWidget):
         exporter = CustomCSVExporter(self.plotItem)
 
         # save to file
-        exporter.export(filename+'.csv',self.csv_header)
+        if(self.folder is not None and self.folder!=""):
+            print(self.csv_header)
+            exporter.export(self.folder+"/"+filename+'.csv',self.csv_header)
+        else:
+            exporter.export(filename+'.csv',self.csv_header)
