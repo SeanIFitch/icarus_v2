@@ -4,6 +4,10 @@ Changelog
 v1.0.0 (UPCOMING)
 -----------------
 Added:
+ - Export functionality for graphs
+   - Each graph has its own button to open an export window
+   - PNG and CSV export are both functional
+   - Directory for exported files can be selected by user
  -Distribution as pip package:
    - Added pyproject.toml for package configuration
    - Created PyPI release for easy installation

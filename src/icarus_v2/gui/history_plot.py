@@ -75,6 +75,8 @@ class HistoryPlot(QWidget):
         self.lines["sample pressure"] = self.pressure_plot.plot([], [], pen=pen)
         self.pressure_plot.getPlotItem().getViewBox().sigStateChanged.connect(self.set_text)
 
+        self.pressure_plot.set_csv_header(["Time", "Origin High Pressure", "Sample High Pressure"])
+
         # Slope plot
         self.slope_plot = StyledPlotWidget(x_zoom=True)
         self.slope_plot.set_title("Pressure Change Slope")
@@ -96,6 +98,8 @@ class HistoryPlot(QWidget):
         # Connect the x-axis of all plots for zooming and panning
         self.slope_plot.setXLink(self.pressure_plot)
 
+        self.slope_plot.set_csv_header(["Time", "Origin Depressurization Slope", "Sample Depressurization Slope", "Origin Pressurization Slope", "Sample Pressurization Slope"])
+
         # Switch time plot
         self.switch_time_plot = StyledPlotWidget(x_zoom=True)
         self.switch_time_plot.set_title("Switch Time")
@@ -116,6 +120,8 @@ class HistoryPlot(QWidget):
         self.lines["press sample switch"] = self.switch_time_plot.plot([], [], pen=pen)
         # Connect the x-axis of all plots for zooming and panning
         self.switch_time_plot.setXLink(self.pressure_plot)
+
+        self.switch_time_plot.set_csv_header(["Time","Origin Depressurization Switch Time", "Sample Depressurization Switch Time", "Origin Pressurization Switch Time", "Sample Pressurization Switch Time"])
 
         # Statistics labels
         size = 14
