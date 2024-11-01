@@ -3,6 +3,12 @@ Changelog
 
 v0.3.0 (UPCOMING)
 -----------------
+Added:
+ - Export functionality for graphs
+   - Each graph has its own button to open an export window
+   - PNG and CSV export are both functional
+   - Directory for exported files can be selected by user
+
 Fixed:
  - Fixed Windows "No backend found" error message
 
