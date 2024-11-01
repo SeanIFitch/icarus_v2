@@ -60,19 +60,21 @@ class Logger:
         self.file = lzma.open(self.filename, "ab")
 
     def close(self):
-        if self.file is not None:
-            if not self.is_raw:
-                config_manager = ConfigurationManager()
-                settings = {"plotting_coefficients": config_manager.get_settings("plotting_coefficients")}
-                pickle.dump(settings, self.file, protocol=pickle.HIGHEST_PROTOCOL)
+        if self.file is None:
+            return
 
-            self.file.close()
-            self.file = None
+        if not self.is_raw:
+            config_manager = ConfigurationManager()
+            settings = {"plotting_coefficients": config_manager.get_settings("plotting_coefficients")}
+            pickle.dump(settings, self.file, protocol=pickle.HIGHEST_PROTOCOL)
 
-            if self.event_count == 0:
-                try:
-                    os.remove(self.filename)
-                except FileNotFoundError:
-                    pass
+        self.file.close()
+        self.file = None
 
-            self.filename = None
+        if self.event_count == 0:
+            try:
+                os.remove(self.filename)
+            except FileNotFoundError:
+                pass
+
+        self.filename = None
