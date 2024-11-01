@@ -25,8 +25,8 @@ class ScrollableMenu(QMenu):
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
         # Setting the size of the scroll area
-        self.scroll_area.setFixedWidth(900)
-        self.scroll_area.setFixedHeight(300)
+        #self.scroll_area.setFixedWidth(900)
+        #self.scroll_area.setFixedHeight(300)
 
         # Add the scroll area to the menu
         scroll_area_widget_action = QWidgetAction(self)

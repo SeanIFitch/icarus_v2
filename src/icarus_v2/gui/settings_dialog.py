@@ -20,6 +20,7 @@ from icarus_v2.backend.event import Channel, get_channel
 import numpy as np
 from PySide6.QtCore import Qt
 from time import sleep
+from icarus_v2.gui.scrollable_menu import ScrollableMenu
 
 
 class SettingsDialog(QDialog):
@@ -74,6 +75,11 @@ class SettingsDialog(QDialog):
         edit_width = 190
 
         # View section
+        self.theme_button = QPushButton(self)
+        self.theme_button.setFixedWidth(edit_width)
+        self.themes_menu = ScrollableMenu(parent=self.theme_button)
+        self.theme_button.setMenu(self.themes_menu)
+
         self.hide_valve_checkbox = QCheckBox()
         hide_valve = self.config_manager.get_settings('hide_valve_sensors')
         self.hide_valve_checkbox.setCheckState(Qt.Checked if hide_valve else Qt.Unchecked)
@@ -83,11 +89,24 @@ class SettingsDialog(QDialog):
                         width: 23px;
                         height: 23px;
                     }
+                    QCheckBox::indicator:unchecked {
+                        border: 2px solid gray;
+                        border-radius: 4px;
+                    }
+                    QCheckBox::indicator:checked {
+                        border: 2px solid gray;
+                        border-radius: 4px;
+                        background-color: #3A7BD5;
+                    }
                     """)
         view_layout = QGridLayout()
-        view_layout.addWidget(QLabel("Hide Valve Sensors:"), 0, 0)
+        view_layout.addWidget(QLabel("Select Theme:"), 0, 0)
         view_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Preferred), 0, 1)
-        view_layout.addWidget(self.hide_valve_checkbox, 0, 2)
+        view_layout.addWidget(self.theme_button, 0, 2)
+
+        view_layout.addWidget(QLabel("Hide Valve Sensors:"), 1, 0)
+        view_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Preferred), 1, 1)
+        view_layout.addWidget(self.hide_valve_checkbox, 1, 2)
         view_group = QGroupBox("View")
         view_group.setLayout(view_layout)
 
