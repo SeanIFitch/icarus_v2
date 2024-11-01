@@ -7,16 +7,17 @@ from PySide6.QtWidgets import (
 from icarus_v2.backend.event import Event
 from PySide6.QtCore import QCoreApplication
 import numpy as np
+from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
 # Panel for counts of valves and such
 class CounterDisplay(QGroupBox):
-    def __init__(self, config_manager):
+    def __init__(self):
         super().__init__()
 
-        self.config_manager = config_manager
+        self.config_manager = ConfigurationManager()
         self.config_manager.settings_updated.connect(self.update_settings)
-        self.counts = config_manager.get_settings("counter_settings")
+        self.counts = self.config_manager.get_settings("counter_settings")
         QCoreApplication.instance().aboutToQuit.connect(self.save_settings)
 
         self.pump_times = []

@@ -20,13 +20,14 @@ from icarus_v2.backend.event import Channel, get_channel
 import numpy as np
 from PySide6.QtCore import Qt
 from time import sleep
+from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, config_manager, connected, pressure_signal, sentry, parent=None):
+    def __init__(self, connected, pressure_signal, sentry, parent=None):
         super().__init__(parent=parent)
 
-        self.config_manager = config_manager
+        self.config_manager = ConfigurationManager()
         self.pressure_signal = pressure_signal
         self.sentry = sentry
 

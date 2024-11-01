@@ -5,14 +5,15 @@ from PySide6.QtWidgets import (
     QSizePolicy
 )
 from icarus_v2.backend.event import Channel
+from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
 # Panel for pressure
 class PressureDisplay(QGroupBox):
-    def __init__(self, config_manager):
+    def __init__(self):
         super().__init__()
 
-        self.config_manager = config_manager
+        self.config_manager = ConfigurationManager()
         self.coefficients = self.config_manager.get_settings("plotting_coefficients")
         self.config_manager.settings_updated.connect(self.update_settings)
 

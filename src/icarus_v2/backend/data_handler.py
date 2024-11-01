@@ -45,11 +45,10 @@ class DataHandler(QThread):
     # Tell GUI whether the sample sensor is connected
     sample_sensor_connected = Signal(bool)
 
-    def __init__(self, config_manager):
+    def __init__(self):
         super().__init__()
 
-        self.config_manager = config_manager
-        self.pulse_generator = PulseGenerator(self.config_manager)
+        self.pulse_generator = PulseGenerator()
         self.connecting = False
         self.connected = False
         self.device = None
@@ -103,14 +102,14 @@ class DataHandler(QThread):
 
         # Logger
         if not self.load_raw:
-            self.logger = Logger(self.config_manager)
+            self.logger = Logger()
             self.pressurize_event_signal.connect(self.logger.log_event)
             self.depressurize_event_signal.connect(self.logger.log_event)
             self.period_event_signal.connect(self.logger.log_event)
             self.log_signal.connect(self.logger.new_log_file)
 
         # Sentry
-        self.sentry = Sentry(config_manager)
+        self.sentry = Sentry()
         self.log_signal.connect(self.sentry.handle_experiment)
         self.pump_event_signal.connect(self.sentry.handle_pump)
         self.depressurize_event_signal.connect(self.sentry.handle_depressurize)
@@ -120,7 +119,7 @@ class DataHandler(QThread):
         self.sentry.error_signal.connect(lambda x: self.shutdown_signal.emit())
 
         # Sample sensor detector
-        self.sample_sensor_detector = SampleSensorDetector(self.config_manager, self.sample_sensor_connected)
+        self.sample_sensor_detector = SampleSensorDetector(self.sample_sensor_connected)
         self.depressurize_event_signal.connect(self.sample_sensor_detector.detect)
 
         # Prevents another thread from quitting this while it is initializing the device.

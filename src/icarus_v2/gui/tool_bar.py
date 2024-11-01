@@ -8,10 +8,9 @@ from icarus_v2.gui.scrollable_menu import ScrollableMenu
 class ToolBar(QToolBar):
     set_mode_signal = Signal(str)
 
-    def __init__(self, config_manager, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        self.config_manager = config_manager
         self.setMovable(False)
 
         # Settings button
@@ -48,7 +47,7 @@ class ToolBar(QToolBar):
 
     def open_settings(self):
         # Open the settings dialog
-        self.settings_dialog = SettingsDialog(self.config_manager, self.connected, self.pressure_signal, self.sentry)
+        self.settings_dialog = SettingsDialog(self.connected, self.pressure_signal, self.sentry)
 
         def on_dialog_finished():
             self.settings_dialog = None
