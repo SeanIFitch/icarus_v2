@@ -20,14 +20,14 @@ class ConfigurationManager(QObject):
         with cls._lock:
             if cls._instance is None:
                 cls._instance = super().__new__(cls)
-                cls._instance._initialize()
         return cls._instance
 
-    def _initialize(self):
-        if hasattr(self, "initialized"):
-            return
+    def __init__(self):
+        if not hasattr(self, "initialized"):
+            super().__init__()
+            self._initialize()
 
-        super().__init__()
+    def _initialize(self):
         self.initialized = True
 
         # Get the application configuration path
