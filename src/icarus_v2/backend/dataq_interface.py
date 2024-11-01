@@ -31,19 +31,6 @@ class DataqInterface:
         self.setup_device()
 
     def find_device(self):
-        """
-        Finds the usb device.
-        
-        :return: True if connection is successful, False otherwise.
-        """
-        devices = usb.core.find(find_all=True)
-        if devices is None:
-            print("No USB devices found.")
-        else:
-            # Print details of each found device
-            for device in devices:
-                print(f"Device: Vendor ID = {hex(device.idVendor)}, Product ID = {hex(device.idProduct)}")
-
         try:
             # Find the USB device
             self.device = usb.core.find(idVendor=DI_4108_VENDOR_ID, idProduct=DI_4108_PRODUCT_ID)

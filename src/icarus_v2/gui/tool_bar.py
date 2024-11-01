@@ -44,6 +44,7 @@ class ToolBar(QToolBar):
 
         # Scrollable Menu to show past messages
         self.messages_menu = ScrollableMenu(parent=self.warning_button)
+        self.messages_menu.setScrollAreaSize(900, 300)
         self.warning_button.setMenu(self.messages_menu)
 
     def open_settings(self):

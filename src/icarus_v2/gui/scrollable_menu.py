@@ -24,14 +24,14 @@ class ScrollableMenu(QMenu):
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
-        # Setting the size of the scroll area
-        #self.scroll_area.setFixedWidth(900)
-        #self.scroll_area.setFixedHeight(300)
-
         # Add the scroll area to the menu
         scroll_area_widget_action = QWidgetAction(self)
         scroll_area_widget_action.setDefaultWidget(self.scroll_area)
         self.addAction(scroll_area_widget_action)
+
+    def setScrollAreaSize(self, width, height):
+        self.scroll_area.setFixedWidth(width)
+        self.scroll_area.setFixedHeight(height)
 
     def add_message(self, message, color):
         label = WrappedLabel(message, color, self)

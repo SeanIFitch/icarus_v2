@@ -77,7 +77,12 @@ class SettingsDialog(QDialog):
         # View section
         self.theme_button = QPushButton(self)
         self.theme_button.setFixedWidth(edit_width)
+        self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
         self.themes_menu = ScrollableMenu(parent=self.theme_button)
+        self.themes_menu.setScrollAreaSize(edit_width, 85)
+        self.themes_menu.add_message("System Default", "white")
+        self.themes_menu.add_message("Dark Theme", "white")
+        self.themes_menu.add_message("Light Theme", "white")
         self.theme_button.setMenu(self.themes_menu)
 
         self.hide_valve_checkbox = QCheckBox()
