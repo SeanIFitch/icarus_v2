@@ -20,6 +20,17 @@ class EventPlot(QWidget):
         Channel.DEPRE_VALVE: ('#59D8E6', Qt.SolidLine),     # cyan
         Channel.PRE_VALVE: ('#B9121B', Qt.SolidLine),       # red
     }
+    CSV_HEADERS = {
+        Channel.TARGET: "Target Pressure",
+        Channel.DEPRE_LOW: "Depressurization Valve Lower",      # magenta
+        Channel.DEPRE_UP: "Depressurization Valve Upper",       # blue
+        Channel.PRE_LOW: "Pressurization Valve Lower",          # magenta
+        Channel.PRE_UP: "Pressurization Valve Upper",           # blue
+        Channel.HI_PRE_ORIG: "Origin High Pressure",            # yellow
+        Channel.HI_PRE_SAMPLE: "Sample High Pressure",          # yellow dashed
+        Channel.DEPRE_VALVE: "Depressurize Valve Control",      # cyan
+        Channel.PRE_VALVE: "Pressurize Valve Control",          # red
+    }
 
     def __init__(self, event_type, parent=None):
         super().__init__(parent=parent)
@@ -61,11 +72,16 @@ class EventPlot(QWidget):
         # Create a dictionary of lines for each channel listed in display_channels
         self.line_references = {}
         self.line_currently_shown = {}
+
+        csv_header = ["Time"]
         for channel in display_channels:
             style = self.LINE_STYLES[channel]
             pen = pg.mkPen(color=style[0], style=style[1])
             self.line_references[channel] = self.plot.plot([], [], pen=pen)
             self.line_currently_shown[channel] = True
+
+            csv_header.append(self.CSV_HEADERS[channel])
+        self.plot.set_csv_header(csv_header)
 
         labels = self.init_labels()
         self.hide_valve_sensors(self.hide_valve_setting)
