@@ -456,6 +456,8 @@ class HistoryPlot(QWidget):
             self.switch_time_plot.addItem(self.depress_time_switch)
 
     def mouse_moved(self, plot, event):
+        #TODO: Remove: Functionality moved to styled plot widget
+        return
         mouse_point = plot.getViewBox().mapSceneToView(event[0])
         view_range = plot.getViewBox().viewRange()
 
