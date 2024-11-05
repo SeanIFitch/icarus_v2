@@ -22,7 +22,6 @@ from PySide6.QtCore import Qt
 from time import sleep
 from icarus_v2.gui.scrollable_menu import ScrollableMenu
 
-
 class SettingsDialog(QDialog):
     def __init__(self, config_manager, connected, pressure_signal, sentry, parent=None):
         super().__init__(parent=parent)
@@ -75,14 +74,27 @@ class SettingsDialog(QDialog):
         edit_width = 190
 
         # View section
-        self.theme_button = QPushButton(self)
+        self.theme_button = QPushButton("Select Theme", self)
         self.theme_button.setFixedWidth(edit_width)
         self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
         self.themes_menu = ScrollableMenu(parent=self.theme_button)
         self.themes_menu.setScrollAreaSize(edit_width, 85)
-        self.themes_menu.add_message("System Default", "white")
-        self.themes_menu.add_message("Dark Theme", "white")
-        self.themes_menu.add_message("Light Theme", "white")
+
+        def set_default():
+            self.theme_button.setText("System Default")
+            self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
+
+        def set_dark():
+            self.theme_button.setText("Dark Theme")
+            self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
+
+        def set_light():
+            self.theme_button.setText("Light Theme")
+            self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
+
+        self.themes_menu.add_option("System Default", "white", on_click=set_default)
+        self.themes_menu.add_option("Dark Theme", "white", on_click=set_dark)
+        self.themes_menu.add_option("Light Theme", "white", on_click=set_light)
         self.theme_button.setMenu(self.themes_menu)
 
         self.hide_valve_checkbox = QCheckBox()
@@ -454,3 +466,4 @@ class SettingsDialog(QDialog):
 
     def enable_sentry(self):
         self.sentry.handle_experiment(False)
+

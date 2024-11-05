@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget, QMenu, QScrollArea, QVBoxLayout, QWidgetAction, QLabel
+from PySide6.QtWidgets import QWidget, QMenu, QScrollArea, QVBoxLayout, QWidgetAction, QLabel, QPushButton
 from PySide6.QtCore import Qt, QSize, QPointF, QRectF
-from PySide6.QtGui import QFont, QFontMetrics, QPainter, QColor
+from PySide6.QtGui import QFont, QFontMetrics, QPainter, QColor, QAction
 
 
 class ScrollableMenu(QMenu):
@@ -32,6 +32,22 @@ class ScrollableMenu(QMenu):
     def setScrollAreaSize(self, width, height):
         self.scroll_area.setFixedWidth(width)
         self.scroll_area.setFixedHeight(height)
+
+    def add_option(self, option_text, color, on_click):
+        option_button = QPushButton(option_text)
+        option_button.setStyleSheet(f"color: {color}; text-align: left; font-size: 12pt; border: none;")
+        option_button.clicked.connect(on_click)
+
+        self.layout.addWidget(option_button)
+
+        self.messages += 1
+        if self.messages > self.max_messages:
+            item = self.layout.takeAt(0)
+            if item:
+                widget = item.widget()
+                if widget:
+                    widget.deleteLater()
+            self.messages -= 1
 
     def add_message(self, message, color):
         label = WrappedLabel(message, color, self)
