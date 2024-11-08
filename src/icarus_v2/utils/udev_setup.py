@@ -1,11 +1,18 @@
 import importlib
 import subprocess
 import os
-import pwd
+import platform
+
+# Conditionally import `pwd` only on Unix-based systems
+if platform.system() == "Linux":
+    import pwd
 
 
 # Adds permissions for the user to access the USB device
 def setup_udev_rules():
+    if platform.system() != "Linux":
+        raise RuntimeError("This script must be run on Linux systems.")
+
     with importlib.resources.path('icarus_v2.resources.setup', 'install_udev_rules.sh') as script_path:
         try:
             # Run the script with 'pkexec'
