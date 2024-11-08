@@ -175,6 +175,8 @@ class EventPlot(QWidget):
             line_reference.setData([], [])
 
     def mouse_moved(self, event):
+        #TODO: Remove: Functionality moved to styled plot widget
+        return
         mouse_point = self.plot.getViewBox().mapSceneToView(event[0])
         view_range = self.plot.getViewBox().viewRange()
 

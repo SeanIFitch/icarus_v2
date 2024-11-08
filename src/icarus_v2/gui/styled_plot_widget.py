@@ -9,7 +9,7 @@ from pyqtgraph import PlotItem
 import PySide6
 from PySide6.QtCore import QEvent
 from PySide6.QtGui import Qt
-from PySide6.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QFileDialog
+from PySide6.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QFileDialog, QLabel, QGridLayout, QSpacerItem, QSizePolicy
 from icarus_v2.backend.custom_csv_exporter import CustomCSVExporter
 
 class StyledPlotWidget(PlotWidget):
@@ -17,6 +17,7 @@ class StyledPlotWidget(PlotWidget):
         theme = 'dark' #TODO: know that this is here
         background = THEME_COLOR_VALUES[theme]['background']['base']
         self.text_color = THEME_COLOR_VALUES[theme]['foreground']['base']
+        self.full_init=False
         PlotWidget.__init__(self, background=background)
 
         self.showGrid(x=True, y=True)
@@ -26,7 +27,7 @@ class StyledPlotWidget(PlotWidget):
 
         #Setup the export button
         self.exportBtn = ButtonItem("src/icarus_v2/resources/export_icon.svg", 20,self.plotItem)
-        self.exportBtn.clicked.connect(self.exportBtnClicked)
+        self.exportBtn.clicked.connect(self.export_btn_clicked)
         self.exportBtn.setPos(30,210)
         self.exportBtn.hide()
 
@@ -36,6 +37,20 @@ class StyledPlotWidget(PlotWidget):
         self.csv_header = None
         self.default_filename = "icarus_graph"
         self.folder = None
+
+        #Mouse coordinates
+        self.mouse_label = QLabel("")
+        size = 14
+        self.mouse_label.setStyleSheet(f"font-size: {size}px;")
+        self.mouse_label.setFixedSize(70, 16)  # Locks label at specific size. Removal will cause UI errors
+
+        layout = QGridLayout()
+        layout.addWidget(self.mouse_label, 3, 0, 1, 2, Qt.AlignRight | Qt.AlignBottom)
+        layout.setContentsMargins(0, 35, 5, 45)
+
+        self.setLayout(layout)
+
+        self.full_init=True
 
 
     def set_title(self, title):
@@ -55,15 +70,33 @@ class StyledPlotWidget(PlotWidget):
     def set_csv_header(self,csv_header):
         self.csv_header = csv_header
 
-    #Tracks the hover enter and leave events
+    '''
+    #Activates whenever the mouse hovers over or leaves the graph
+    - Makes the export button visible only when the mouse is hovering over the graph
+    - Makes the mouse coordinates appear when the mouse is hovering over the graph
+    '''
     def event(self, event):
+        if(not self.full_init):
+            return super().event(event)
+
         if event.type() == QEvent.HoverEnter:
             self.exportBtn.show()
         elif event.type() == QEvent.HoverLeave:
+            self.mouse_label.setText("")
             self.exportBtn.hide()
+        elif event.type() == QEvent.HoverMove:
+            mouse_point = self.getPlotItem().getViewBox().mapSceneToView(event.position())
+            view_range = self.getPlotItem().getViewBox().viewRange()
+
+            if (view_range[0][0] <= mouse_point.x() <= view_range[0][1] and
+                view_range[1][0] <= mouse_point.y() <= view_range[1][1]):
+                self.mouse_label.setText(f"{mouse_point.x():.2f}, {mouse_point.y():.2f}")
+            else:
+                self.mouse_label.setText("")
+
         return super().event(event)
 
-    def exportBtnClicked(self):
+    def export_btn_clicked(self):
         self.edit_dialog = QDialog(self)
 
         self.export_file = QLineEdit()
