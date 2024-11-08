@@ -21,6 +21,8 @@ from icarus_v2.gui.tool_bar import ToolBar
 from icarus_v2.gui.error_dialog import open_error_dialog
 from icarus_v2.backend.log_reader import LogReader
 from icarus_v2.backend.event import Event
+from icarus_v2.qdarktheme.load_style import load_stylesheet
+from icarus_v2.gui.settings_dialog import SettingsDialog
 
 
 # Can be either in log reading or device mode.

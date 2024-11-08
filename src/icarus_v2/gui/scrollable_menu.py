@@ -33,12 +33,12 @@ class ScrollableMenu(QMenu):
         self.scroll_area.setFixedWidth(width)
         self.scroll_area.setFixedHeight(height)
 
-    def add_option(self, option_text, color, on_click):
+    def add_option(self, option_text, on_click):
         option_button = QPushButton(option_text)
-        option_button.setStyleSheet(f"color: {color}; text-align: left; font-size: 12pt; border: none;")
+        option_button.setStyleSheet(f"text-align: left; font-size: 12pt; border: none;")
         option_button.clicked.connect(on_click)
 
-        self.layout.addWidget(option_button)
+        self.layout.insertWidget(0, option_button, alignment=Qt.AlignTop)
 
         self.messages += 1
         if self.messages > self.max_messages:

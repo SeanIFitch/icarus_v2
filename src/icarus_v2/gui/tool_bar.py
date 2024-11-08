@@ -1,8 +1,9 @@
-from PySide6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
+from PySide6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton, QApplication
 from PySide6.QtGui import QIcon, QAction
 from icarus_v2.gui.settings_dialog import SettingsDialog
 from PySide6.QtCore import Signal
 from icarus_v2.gui.scrollable_menu import ScrollableMenu
+from icarus_v2.qdarktheme.load_style import load_stylesheet
 
 
 class ToolBar(QToolBar):
@@ -50,6 +51,7 @@ class ToolBar(QToolBar):
     def open_settings(self):
         # Open the settings dialog
         self.settings_dialog = SettingsDialog(self.config_manager, self.connected, self.pressure_signal, self.sentry)
+        self.settings_dialog.theme_changed.connect(self.update_theme)
 
         def on_dialog_finished():
             self.settings_dialog = None
@@ -57,6 +59,10 @@ class ToolBar(QToolBar):
         self.settings_dialog.finished.connect(on_dialog_finished)
 
         self.settings_dialog.show()
+
+    def update_theme(self, theme):
+        app = QApplication.instance()  # Get the running QApplication instance
+        app.setStyleSheet(load_stylesheet(theme=theme))
 
     def change_log_mode(self):
         if self.change_mode_action.text() == "Open Logs":
