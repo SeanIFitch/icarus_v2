@@ -22,7 +22,8 @@ from PySide6.QtCore import Qt
 from time import sleep
 from icarus_v2.gui.scrollable_menu import ScrollableMenu
 from PySide6.QtCore import Signal
-import icarus_v2.gui.styled_plot_widget as styled_plot_widget
+from icarus_v2.gui.styled_plot_widget import theme
+
 
 class SettingsDialog(QDialog):
     theme_changed = Signal(str)  # Signal to emit when the theme changes
@@ -88,19 +89,22 @@ class SettingsDialog(QDialog):
         def set_default():
             self.theme_button.setText("System Default")
             self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
-            styled_plot_widget.theme = 'system_default'
+            global theme
+            theme = 'system_default'
             self.theme_changed.emit('system_default')
 
         def set_dark():
             self.theme_button.setText("Dark Theme")
             self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
-            styled_plot_widget.theme = 'dark'
+            global theme
+            theme = 'dark'
             self.theme_changed.emit('dark')
 
         def set_light():
             self.theme_button.setText("Light Theme")
             self.theme_button.setStyleSheet("font-size: 12pt; text-align: left; background-color: white; color: black")
-            styled_plot_widget.theme = 'light'
+            global theme
+            theme = 'light'
             self.theme_changed.emit('light')
 
         self.themes_menu.add_option("System Default", on_click=set_default)

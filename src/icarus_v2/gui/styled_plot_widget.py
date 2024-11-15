@@ -13,6 +13,10 @@ class StyledPlotWidget(PlotWidget):
         self.setMouseEnabled(x=x_zoom, y=False)  # Prevent zooming
         self.hideButtons()  # Remove autoScale button
 
+    def test(self):
+        print('testing')
+        print(theme)
+
     def set_title(self, title):
         self.setTitle(title, color=self.text_color, size="17pt")
 
