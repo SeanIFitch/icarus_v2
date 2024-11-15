@@ -57,6 +57,7 @@ class DataHandler(QThread):
         # TESTING ONLY!!!. reads a raw data file instead of connecting to a device
         # edit raw_file to change the playback to a different file
         self.load_raw = False
+        # self.load_raw = True #This is for testing adding errors to log files
         if self.load_raw:
             raw_file = "2.1_to_1.5kBar.xz"
             project_root = Path(__file__).resolve().parents[3]
@@ -100,23 +101,29 @@ class DataHandler(QThread):
         self.pump_handler = PumpHandler(self.loader, self.pump_event_signal, sample_rate)
         self.log_handler = LogHandler(self.loader, self.log_signal, sample_rate, pressure_update_hz)
 
-        # Logger
-        if not self.load_raw:
-            self.logger = Logger()
-            self.pressurize_event_signal.connect(self.logger.log_event)
-            self.depressurize_event_signal.connect(self.logger.log_event)
-            self.period_event_signal.connect(self.logger.log_event)
-            self.log_signal.connect(self.logger.new_log_file)
-
         # Sentry
         self.sentry = Sentry()
         self.log_signal.connect(self.sentry.handle_experiment)
         self.pump_event_signal.connect(self.sentry.handle_pump)
         self.depressurize_event_signal.connect(self.sentry.handle_depressurize)
         self.sentry.warning_signal.connect(lambda x: self.toolbar_warning.emit(x))
-        self.sentry.error_signal.connect(lambda x: self.toolbar_warning.emit(x))
-        self.sentry.error_signal.connect(lambda x: self.display_error.emit(x))
+        self.sentry.error_signal.connect(lambda x: self.toolbar_warning.emit(str(x))) #TODO: Determine whether to cast as string or convert to new class
+        self.sentry.error_signal.connect(lambda x: self.display_error.emit(str(x))) 
         self.sentry.error_signal.connect(lambda x: self.shutdown_signal.emit())
+
+        # Logger
+        if not self.load_raw:#TODO: uncomment
+            self.logger = Logger()
+            self.pressurize_event_signal.connect(self.logger.log_event)
+            self.depressurize_event_signal.connect(self.logger.log_event)
+            self.period_event_signal.connect(self.logger.log_event)
+            self.log_signal.connect(self.logger.new_log_file)
+
+        # self.display_error.connect(self.logger.log_error)
+        # self.toolbar_warning.connect(self.logger.log_error)
+
+        self.sentry.warning_signal.connect(self.logger.log_error)
+        self.sentry.error_signal.connect(self.logger.log_error)
 
         # Sample sensor detector
         self.sample_sensor_detector = SampleSensorDetector(self.sample_sensor_connected)
