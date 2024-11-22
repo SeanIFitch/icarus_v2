@@ -5,17 +5,19 @@ from PySide6.QtCore import Signal
 from icarus_v2.gui.scrollable_menu import ScrollableMenu
 from icarus_v2.qdarktheme.load_style import load_stylesheet
 
-from src.icarus_v2.gui.styled_plot_widget import StyledPlotWidget
+from src.icarus_v2.gui.styled_plot_widget import change_theme
+from src.icarus_v2.gui.event_plot import EventPlot
 
 
 class ToolBar(QToolBar):
     set_mode_signal = Signal(str)
 
-    def __init__(self, config_manager, parent=None):
+    def __init__(self, config_manager, parent):
         super().__init__(parent=parent)
 
         self.config_manager = config_manager
         self.setMovable(False)
+        self.main_window = parent
 
         # Settings button
         self.connected = False
@@ -54,7 +56,7 @@ class ToolBar(QToolBar):
         # Open the settings dialog
         self.settings_dialog = SettingsDialog(self.config_manager, self.connected, self.pressure_signal, self.sentry)
         self.settings_dialog.theme_changed.connect(self.update_theme)
-        self.settings_dialog.theme_changed.connect(StyledPlotWidget.test)
+        self.settings_dialog.theme_changed.connect(self.main_window.update_plots)
 
         def on_dialog_finished():
             self.settings_dialog = None
@@ -66,6 +68,7 @@ class ToolBar(QToolBar):
     def update_theme(self, theme_):
         app = QApplication.instance()  # Get the running QApplication instance
         app.setStyleSheet(load_stylesheet(theme=theme_))
+        change_theme(theme_)
 
     def change_log_mode(self):
         if self.change_mode_action.text() == "Open Logs":

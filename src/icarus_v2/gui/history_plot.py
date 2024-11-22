@@ -482,6 +482,21 @@ class HistoryPlot(QWidget):
     def set_log_coefficients(self, coefficients):
         self.log_coefficients = self.define_coefficients(coefficients)
 
+    def update_theme(self):
+        self.pressure_plot.update_theme()
+        self.pressure_plot.set_title("Pressure")
+        self.pressure_plot.set_y_label('Pressure (kBar)')
+        self.pressure_plot.set_x_label('Time (s)')
+
+        self.slope_plot.update_theme()
+        self.slope_plot.set_title("Pressure Change Slope")
+        self.slope_plot.set_y_label('Slope (kBar/ms)')
+        self.slope_plot.set_x_label('Time (s)')
+
+        self.switch_time_plot.update_theme()
+        self.switch_time_plot.set_title("Switch Time")
+        self.switch_time_plot.set_y_label('Time (ms)')
+        self.switch_time_plot.set_x_label('Time (s)')
     # Dictionary of coefficient to apply when plotting each channel
     @staticmethod
     def define_coefficients(plotting_coefficients):

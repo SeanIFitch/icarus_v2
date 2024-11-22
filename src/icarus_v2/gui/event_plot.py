@@ -156,6 +156,18 @@ class EventPlot(QWidget):
             self.hide_valve_setting = self.config_manager.get_settings(key)
             self.hide_valve_sensors(self.hide_valve_setting)
 
+    def update_theme(self, event):
+        self.plot.update_theme()
+        if event == 'pressure':
+            title = "Pressurize"
+        elif event == 'depressure':
+            title = "Depressurize"
+        else:
+            title = "Period"
+        self.plot.set_title(title)
+        self.plot.set_y_label('Pressure (kbar)')
+        self.plot.set_x_label(f'Time ({self.x_unit})')
+
     def reset_history(self):
         for line_reference in self.line_references.values():
             line_reference.setData([], [])

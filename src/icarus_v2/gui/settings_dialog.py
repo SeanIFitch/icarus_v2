@@ -22,7 +22,7 @@ from PySide6.QtCore import Qt
 from time import sleep
 from icarus_v2.gui.scrollable_menu import ScrollableMenu
 from PySide6.QtCore import Signal
-from icarus_v2.gui.styled_plot_widget import theme
+import icarus_v2.gui.styled_plot_widget as styled_plot_widget
 
 
 class SettingsDialog(QDialog):
@@ -86,28 +86,26 @@ class SettingsDialog(QDialog):
         self.themes_menu = ScrollableMenu(parent=self.theme_button)
         self.themes_menu.setScrollAreaSize(edit_width, 85)
 
-        def set_default():
-            self.theme_button.setText("System Default")
-            self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
-            global theme
-            theme = 'system_default'
-            self.theme_changed.emit('system_default')
+        # Implement later
+        # def set_default():
+        #   self.theme_button.setText("System Default")
+        #   self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
+        #   styled_plot_widget.theme = 'system_default'
+        #   self.theme_changed.emit('system_default')
 
         def set_dark():
             self.theme_button.setText("Dark Theme")
             self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
-            global theme
-            theme = 'dark'
+            styled_plot_widget.theme = 'dark'
             self.theme_changed.emit('dark')
 
         def set_light():
             self.theme_button.setText("Light Theme")
             self.theme_button.setStyleSheet("font-size: 12pt; text-align: left; background-color: white; color: black")
-            global theme
-            theme = 'light'
+            styled_plot_widget.theme = 'light'
             self.theme_changed.emit('light')
 
-        self.themes_menu.add_option("System Default", on_click=set_default)
+        # self.themes_menu.add_option("System Default", on_click=set_default)
         self.themes_menu.add_option("Dark Theme", on_click=set_dark)
         self.themes_menu.add_option("Light Theme", on_click=set_light)
         self.theme_button.setMenu(self.themes_menu)

@@ -3,6 +3,11 @@ from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
 
 theme = 'dark'
 
+
+def change_theme(new_theme):
+    global theme
+    theme = new_theme
+
 class StyledPlotWidget(PlotWidget):
     def __init__(self, x_zoom=False):
         background = THEME_COLOR_VALUES[theme]['background']['base']
@@ -13,9 +18,10 @@ class StyledPlotWidget(PlotWidget):
         self.setMouseEnabled(x=x_zoom, y=False)  # Prevent zooming
         self.hideButtons()  # Remove autoScale button
 
-    def test(self):
-        print('testing')
-        print(theme)
+    def update_theme(self):
+        background = THEME_COLOR_VALUES[theme]['background']['base']
+        self.text_color = THEME_COLOR_VALUES[theme]['foreground']['base']
+        self.setBackground(background)
 
     def set_title(self, title):
         self.setTitle(title, color=self.text_color, size="17pt")

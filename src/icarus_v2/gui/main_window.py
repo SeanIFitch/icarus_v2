@@ -41,6 +41,8 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(QSize(1000, 760))
         self.setStyleSheet("font-size: 17pt;")
         self.setAttribute(Qt.WA_AcceptTouchEvents, False)
+        self.settings_dialog = SettingsDialog(self.config_manager, connected=False, pressure_signal=None, sentry=None)
+        self.settings_dialog.theme_changed.connect(self.update_plots)
 
         # Initialize all widgets
         self.pressure_event_display_range = (-10, 140)  # How much data to view around pressurize events
@@ -237,6 +239,13 @@ class MainWindow(QMainWindow):
         self.pressurize_plot.reset_history()
         self.depressurize_plot.reset_history()
         self.period_plot.reset_history()
+
+    def update_plots(self):
+        self.pressurize_plot.update_theme('pressure')
+        self.depressurize_plot.update_theme('depressure')
+        self.period_plot.update_theme('period')
+
+        self.history_plot.update_theme()
 
     # Runs on quitting the application
     def closeEvent(self, event):
