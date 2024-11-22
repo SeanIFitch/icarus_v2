@@ -1,3 +1,5 @@
+from time import strftime
+
 class SentryWarning(Warning):
     def __init__(self, error_type, time, info=None):
         self.error_type = error_type

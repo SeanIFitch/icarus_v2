@@ -105,13 +105,13 @@ class Sentry(QThread):
 
                             self.last_error_time = event.event_time
                         else:
-                            self.warning_signal.emit(SentryError("Pressure Decreasing",localtime(event.event_time)))
+                            self.warning_signal.emit(SentryWarning("Pressure Decreasing",localtime(event.event_time)))
                 else:
                     self.num_pressure_decreases = 0
 
                 if event.event_time - self.last_error_time > self.suppress_errors:
                     if percent_change > self.settings["max_pressure_before_depress_increase"]:
-                        self.error_signal.emit(SentryError("Pressure Increasing",localtime(event.event_time)))
+                        self.warning_signal.emit(SentryWarning("Pressure Increasing",localtime(event.event_time)))
 
     # On device disconnect
     def reset(self):

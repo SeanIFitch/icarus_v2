@@ -80,6 +80,7 @@ class ToolBar(QToolBar):
         if self.settings_dialog is not None:
             self.settings_dialog.set_connected(connected)
 
-    def display_warning(self, warning):
+    def display_warning(self, warning, color="orange"):
+        self.warning_button.setStyleSheet("color: "+color+"; font-size: 12pt; text-align: left;")
         self.warning_button.setText(warning)
-        self.messages_menu.add_message(warning, color="orange")
+        self.messages_menu.add_message(warning, color)
