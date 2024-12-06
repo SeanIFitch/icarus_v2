@@ -65,6 +65,8 @@ class ToolBar(QToolBar):
             self.change_mode_action.setText("Open Logs")
             self.set_mode_signal.emit("device")
 
+            self.clear_log_toolbar()
+
     def set_pressure_signal(self, pressure_signal):
         self.pressure_signal = pressure_signal
         if self.settings_dialog is not None:
@@ -84,3 +86,9 @@ class ToolBar(QToolBar):
         self.warning_button.setStyleSheet("color: "+color+"; font-size: 12pt; text-align: left;")
         self.warning_button.setText(warning)
         self.messages_menu.add_message(warning, color)
+
+    def clear_log_toolbar(self):
+        logs = self.messages_menu.return_matching("LOG:")
+        self.messages_menu.remove_items(logs)
+        if("LOG:" in self.warning_button.text()):
+            self.warning_button.setText("")
