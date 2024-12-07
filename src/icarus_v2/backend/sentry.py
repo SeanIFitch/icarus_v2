@@ -45,9 +45,6 @@ class Sentry(QThread):
         # update this only here so it is not changed for an ongoing experiment
         self.current_example_events = self.settings['example_events']
 
-        #TODO: Get rid of
-        # self.current_experiment = True
-
     def handle_pump(self, event):
         if self.current_experiment:
             self.example_pump_times.append(event.event_time)

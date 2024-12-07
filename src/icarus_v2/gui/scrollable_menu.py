@@ -69,8 +69,9 @@ class ScrollableMenu(QMenu):
     def return_matching(self, seq):
         matching = []
         for i in range(self.layout.count()):
-            label=self.layout.itemAt(i).widget().text() #TODO: should test response for if a non label object gets added to the list
-            if(label is not None):
+            widget=self.layout.itemAt(i).widget()
+            if(hasattr(widget,'text')):
+                label = widget.text() 
                 if(seq in label):
                     matching += [self.layout.itemAt(i)]
         return matching
@@ -89,8 +90,6 @@ class ScrollableMenu(QMenu):
             
             #Remove from the layout
             self.layout.removeItem(item)
-            
-        #TODO: fix issue where items are still visible even if removed
 
 class WrappedLabel(QLabel):
     def __init__(self, text, color, parent=None):

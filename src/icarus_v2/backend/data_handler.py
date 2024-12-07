@@ -57,7 +57,6 @@ class DataHandler(QThread):
         # TESTING ONLY!!!. reads a raw data file instead of connecting to a device
         # edit raw_file to change the playback to a different file
         self.load_raw = False
-        # self.load_raw = True #This is for testing adding errors to log files
         if self.load_raw:
             raw_file = "2.1_to_1.5kBar.xz"
             project_root = Path(__file__).resolve().parents[3]
@@ -112,7 +111,7 @@ class DataHandler(QThread):
         self.sentry.error_signal.connect(lambda x: self.shutdown_signal.emit())
 
         # Logger
-        if not self.load_raw:#TODO: uncomment
+        if not self.load_raw:
             self.logger = Logger()
             self.pressurize_event_signal.connect(self.logger.log_event)
             self.depressurize_event_signal.connect(self.logger.log_event)
