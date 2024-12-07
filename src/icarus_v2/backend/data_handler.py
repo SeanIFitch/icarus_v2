@@ -35,7 +35,7 @@ class DataHandler(QThread):
     # display error dialog
     display_error = Signal(str)
     # Show warning or error in toolbar
-    toolbar_warning = Signal(str)
+    toolbar_warning = Signal(str,str)
     # Signal to tell device control panel to shut down
     # Ideally this is unnecessary as the signal should be directly sent to the pulse_generator
     # But currently the control panel can not check the state of the device. This is a workaround.
@@ -100,6 +100,16 @@ class DataHandler(QThread):
         self.pump_handler = PumpHandler(self.loader, self.pump_event_signal, sample_rate)
         self.log_handler = LogHandler(self.loader, self.log_signal, sample_rate, pressure_update_hz)
 
+        # Sentry
+        self.sentry = Sentry()
+        self.log_signal.connect(self.sentry.handle_experiment)
+        self.pump_event_signal.connect(self.sentry.handle_pump)
+        self.depressurize_event_signal.connect(self.sentry.handle_depressurize)
+        self.sentry.warning_signal.connect(lambda x: self.toolbar_warning.emit(str(x),"orange"))
+        self.sentry.error_signal.connect(lambda x: self.toolbar_warning.emit(str(x),"red")) 
+        self.sentry.error_signal.connect(lambda x: self.display_error.emit(str(x))) 
+        self.sentry.error_signal.connect(lambda x: self.shutdown_signal.emit())
+
         # Logger
         if not self.load_raw:
             self.logger = Logger()
@@ -108,15 +118,11 @@ class DataHandler(QThread):
             self.period_event_signal.connect(self.logger.log_event)
             self.log_signal.connect(self.logger.new_log_file)
 
-        # Sentry
-        self.sentry = Sentry()
-        self.log_signal.connect(self.sentry.handle_experiment)
-        self.pump_event_signal.connect(self.sentry.handle_pump)
-        self.depressurize_event_signal.connect(self.sentry.handle_depressurize)
-        self.sentry.warning_signal.connect(lambda x: self.toolbar_warning.emit(x))
-        self.sentry.error_signal.connect(lambda x: self.toolbar_warning.emit(x))
-        self.sentry.error_signal.connect(lambda x: self.display_error.emit(x))
-        self.sentry.error_signal.connect(lambda x: self.shutdown_signal.emit())
+            # self.display_error.connect(self.logger.log_error)
+            # self.toolbar_warning.connect(self.logger.log_error)
+
+            self.sentry.warning_signal.connect(self.logger.log_error)
+            self.sentry.error_signal.connect(self.logger.log_error)
 
         # Sample sensor detector
         self.sample_sensor_detector = SampleSensorDetector(self.sample_sensor_connected)

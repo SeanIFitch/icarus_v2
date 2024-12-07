@@ -50,7 +50,13 @@ class MainWindow(QMainWindow):
         self.counter_display = CounterDisplay()
         self.pressure_display = PressureDisplay()
 
-        self.log_control_panel = LogControlPanel()
+        # ToolBar
+        self.toolbar = ToolBar(self)
+        self.addToolBar(self.toolbar)
+        self.toolbar.set_mode_signal.connect(self.set_mode)
+        self.toolbar.history_reset_action.triggered.connect(self.reset_history)
+
+        self.log_control_panel = LogControlPanel(tool_bar=self.toolbar)
         self.log_control_panel.pressurize_event_signal.connect(self.pressurize_plot.update_data)
         self.log_control_panel.pressurize_event_signal.connect(self.history_plot.render_pressurize_time)
         self.log_control_panel.depressurize_event_signal.connect(self.depressurize_plot.update_data)
@@ -64,12 +70,6 @@ class MainWindow(QMainWindow):
         self.log_control_panel.log_coefficients_signal.connect(self.period_plot.set_log_coefficients)
         self.log_control_panel.log_coefficients_signal.connect(self.history_plot.set_log_coefficients)
         self.log_control_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-        # ToolBar
-        self.toolbar = ToolBar(self)
-        self.addToolBar(self.toolbar)
-        self.toolbar.set_mode_signal.connect(self.set_mode)
-        self.toolbar.history_reset_action.triggered.connect(self.reset_history)
 
         # Control and value layout
         # Show bounding box even when no controls are displayed
