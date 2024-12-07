@@ -191,7 +191,6 @@ class EventPlot(QWidget):
 
         labels_layout = self.init_labels()
 
-        # Remove the existing label layout and add the updated one
         existing_layout = self.layout()
         for i in reversed(range(existing_layout.count())):
             item = existing_layout.itemAt(i)
@@ -203,15 +202,6 @@ class EventPlot(QWidget):
                     item.removeItem(widget_item)
                 existing_layout.removeItem(item)
         existing_layout.addLayout(labels_layout, 0, 0, Qt.AlignRight | Qt.AlignTop)
-
-        for channel, line_reference in self.line_references.items():
-            if channel in self.line_currently_shown:  # Only update visible channels
-                style = self.get_line_styles(theme)[channel]
-                pen = pg.mkPen(color=style[0], style=style[1])
-                self.line_currently_shown[channel] = self.plot.plot([], [], pen=pen)
-                self.line_currently_shown[channel] = True
-
-
 
     def reset_history(self):
         for line_reference in self.line_references.values():

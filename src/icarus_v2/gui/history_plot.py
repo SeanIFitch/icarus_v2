@@ -124,13 +124,13 @@ class HistoryPlot(QWidget):
         # Pressure plot
         self.last_pressure_display = QLabel("0.000")
         self.avg_pressure_display = QLabel("0.000")
-        last_pressure_label = QLabel("Last:")
-        avg_pressure_label = QLabel("Avg:")
+        self.last_pressure_label = QLabel("Last:")
+        self.avg_pressure_label = QLabel("Avg:")
         color = self.LINE_STYLES["origin pressure"][0]
         self.last_pressure_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
         self.avg_pressure_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        last_pressure_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        avg_pressure_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.last_pressure_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_pressure_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         # Mouse label
         self.mouse_labels[self.pressure_plot] = QLabel("")
         self.mouse_labels[self.pressure_plot].setStyleSheet(f"font-size: {size}px;")
@@ -144,8 +144,8 @@ class HistoryPlot(QWidget):
         spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
         pressure_labels = QGridLayout()
         pressure_labels.setContentsMargins(0, 35, 5, 45)
-        pressure_labels.addWidget(last_pressure_label, 0, 1)
-        pressure_labels.addWidget(avg_pressure_label, 1, 1)
+        pressure_labels.addWidget(self.last_pressure_label, 0, 1)
+        pressure_labels.addWidget(self.avg_pressure_label, 1, 1)
         pressure_labels.addWidget(self.last_pressure_display, 0, 2)
         pressure_labels.addWidget(self.avg_pressure_display, 1, 2)
         pressure_labels.addItem(spacer, 2, 0)
@@ -153,22 +153,22 @@ class HistoryPlot(QWidget):
         # Slope plot
         self.last_press_slope_display = QLabel("0.00")
         self.avg_press_slope_display = QLabel("0.00")
-        last_press_slope_label = QLabel("Last:")
-        avg_press_slope_label = QLabel("Avg:")
+        self.last_press_slope_label = QLabel("Last:")
+        self.avg_press_slope_label = QLabel("Avg:")
         color = self.LINE_STYLES["press origin slope"][0]
         self.last_press_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
         self.avg_press_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        last_press_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        avg_press_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.last_press_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_press_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         self.last_depress_slope_display = QLabel("0.00")
         self.avg_depress_slope_display = QLabel("0.00")
-        last_depress_slope_label = QLabel("Last:")
-        avg_depress_slope_label = QLabel("Avg:")
+        self.last_depress_slope_label = QLabel("Last:")
+        self.avg_depress_slope_label = QLabel("Avg:")
         color = self.LINE_STYLES["depress origin slope"][0]
         self.last_depress_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
         self.avg_depress_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        last_depress_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        avg_depress_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.last_depress_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_depress_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         # Mouse label
         self.mouse_labels[self.slope_plot] = QLabel("")
         self.mouse_labels[self.slope_plot].setStyleSheet(f"font-size: {size}px;")
@@ -182,12 +182,12 @@ class HistoryPlot(QWidget):
         spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
         slope_labels = QGridLayout()
         slope_labels.setContentsMargins(0, 35, 5, 45)
-        slope_labels.addWidget(last_press_slope_label, 0, 1)
-        slope_labels.addWidget(avg_press_slope_label, 1, 1)
+        slope_labels.addWidget(self.last_press_slope_label, 0, 1)
+        slope_labels.addWidget(self.avg_press_slope_label, 1, 1)
         slope_labels.addWidget(self.last_press_slope_display, 0, 2)
         slope_labels.addWidget(self.avg_press_slope_display, 1, 2)
-        slope_labels.addWidget(last_depress_slope_label, 2, 1)
-        slope_labels.addWidget(avg_depress_slope_label, 3, 1)
+        slope_labels.addWidget(self.last_depress_slope_label, 2, 1)
+        slope_labels.addWidget(self.avg_depress_slope_label, 3, 1)
         slope_labels.addWidget(self.last_depress_slope_display, 2, 2)
         slope_labels.addWidget(self.avg_depress_slope_display, 3, 2)
         slope_labels.addItem(spacer, 4, 0)
@@ -195,22 +195,22 @@ class HistoryPlot(QWidget):
         # Switch Time Plot
         self.last_press_switch_display = QLabel("0.00")
         self.avg_press_switch_display = QLabel("0.00")
-        last_press_switch_label = QLabel("Last:")
-        avg_press_switch_label = QLabel("Avg:")
+        self.last_press_switch_label = QLabel("Last:")
+        self.avg_press_switch_label = QLabel("Avg:")
         color = self.LINE_STYLES["press origin switch"][0]
         self.last_press_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
         self.avg_press_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        last_press_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        avg_press_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.last_press_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_press_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         self.last_depress_switch_display = QLabel("0.00")
         self.avg_depress_switch_display = QLabel("0.00")
-        last_depress_switch_label = QLabel("Last:")
-        avg_depress_switch_label = QLabel("Avg:")
+        self.last_depress_switch_label = QLabel("Last:")
+        self.avg_depress_switch_label = QLabel("Avg:")
         color = self.LINE_STYLES["depress origin switch"][0]
         self.last_depress_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
         self.avg_depress_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        last_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        avg_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.last_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         # Mouse label
         self.mouse_labels[self.switch_time_plot] = QLabel("")
         self.mouse_labels[self.switch_time_plot].setStyleSheet(f"font-size: {size}px;")
@@ -223,12 +223,12 @@ class HistoryPlot(QWidget):
         spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)
         switch_labels = QGridLayout()
         switch_labels.setContentsMargins(0, 35, 5, 45)
-        switch_labels.addWidget(last_press_switch_label, 0, 1)
-        switch_labels.addWidget(avg_press_switch_label, 1, 1)
+        switch_labels.addWidget(self.last_press_switch_label, 0, 1)
+        switch_labels.addWidget(self.avg_press_switch_label, 1, 1)
         switch_labels.addWidget(self.last_press_switch_display, 0, 2)
         switch_labels.addWidget(self.avg_press_switch_display, 1, 2)
-        switch_labels.addWidget(last_depress_switch_label, 2, 1)
-        switch_labels.addWidget(avg_depress_switch_label, 3, 1)
+        switch_labels.addWidget(self.last_depress_switch_label, 2, 1)
+        switch_labels.addWidget(self.avg_depress_switch_label, 3, 1)
         switch_labels.addWidget(self.last_depress_switch_display, 2, 2)
         switch_labels.addWidget(self.avg_depress_switch_display, 3, 2)
         switch_labels.addItem(spacer, 4, 0)
@@ -497,6 +497,53 @@ class HistoryPlot(QWidget):
         self.switch_time_plot.set_title("Switch Time")
         self.switch_time_plot.set_y_label('Time (ms)')
         self.switch_time_plot.set_x_label('Time (s)')
+
+        from icarus_v2.gui.styled_plot_widget import theme
+        color = self.get_line_styles(theme)["origin pressure"][0]
+        size = 14
+        self.last_pressure_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_pressure_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.last_pressure_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_pressure_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+
+        color = self.get_line_styles(theme)["press origin slope"][0]
+        self.last_press_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_press_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.last_press_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_press_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+
+        color = self.get_line_styles(theme)["press origin switch"][0]
+        self.last_press_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_press_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.last_press_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_press_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+
+        color = self.get_line_styles(theme)["depress origin slope"][0]
+        self.last_depress_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_depress_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.last_depress_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_depress_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+
+        color = self.get_line_styles(theme)["depress origin switch"][0]
+        self.last_depress_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_depress_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.last_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        self.avg_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+
+    def get_line_styles(self, theme):
+        return {
+            "origin pressure": (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine),  # yellow
+            "sample pressure": (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.DashLine),  # yellow dashed
+            "depress origin slope": (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine),  # cyan
+            "depress sample slope": (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.DashLine),  # cyan dashed
+            "press origin slope": (THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine),  # red
+            "press sample slope": (THEME_COLOR_VALUES[theme]['line']['red'], Qt.DashLine),  # red dashed
+            "depress origin switch": (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine),  # cyan
+            "depress sample switch": (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.DashLine),  # cyan dashed
+            "press origin switch": (THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine),  # red
+            "press sample switch": (THEME_COLOR_VALUES[theme]['line']['red'], Qt.DashLine),  # red dashed
+        }
+
     # Dictionary of coefficient to apply when plotting each channel
     @staticmethod
     def define_coefficients(plotting_coefficients):
