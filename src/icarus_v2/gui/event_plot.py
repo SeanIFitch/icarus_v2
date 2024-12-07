@@ -11,6 +11,7 @@ from icarus_v2.gui.styled_plot_widget import theme
 class EventPlot(QWidget):
     # Dictionary of color to plot each channel
     # Light Theme Color:  #FFD100
+
     LINE_STYLES = {
         Channel.TARGET: (THEME_COLOR_VALUES[theme]['line']['light_green'], Qt.SolidLine),          # light green
         Channel.DEPRE_LOW: (THEME_COLOR_VALUES[theme]['line']['magenta'], Qt.SolidLine),           # magenta
@@ -64,7 +65,7 @@ class EventPlot(QWidget):
         self.line_references = {}
         self.line_currently_shown = {}
         for channel in display_channels:
-            style = self.LINE_STYLES[channel]
+            style = self.get_line_styles(theme)[channel]
             pen = pg.mkPen(color=style[0], style=style[1])
             self.line_references[channel] = self.plot.plot([], [], pen=pen)
             self.line_currently_shown[channel] = True
@@ -79,10 +80,24 @@ class EventPlot(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
+    def get_line_styles(self, theme):
+        return {
+            Channel.TARGET: (THEME_COLOR_VALUES[theme]['line']['light_green'], Qt.SolidLine),  # light green
+            Channel.DEPRE_LOW: (THEME_COLOR_VALUES[theme]['line']['magenta'], Qt.SolidLine),  # magenta
+            Channel.DEPRE_UP: (THEME_COLOR_VALUES[theme]['line']['blue'], Qt.SolidLine),  # blue
+            Channel.PRE_LOW: (THEME_COLOR_VALUES[theme]['line']['magenta'], Qt.SolidLine),  # magenta
+            Channel.PRE_UP: (THEME_COLOR_VALUES[theme]['line']['blue'], Qt.SolidLine),  # blue
+            Channel.HI_PRE_ORIG: (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine),  # yellow
+            Channel.HI_PRE_SAMPLE: (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.DashLine),  # yellow dashed
+            Channel.DEPRE_VALVE: (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine),  # cyan
+            Channel.PRE_VALVE: (THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine),  # red
+        }
+
     def init_labels(self):
         layout = QGridLayout()
-        press_color = self.LINE_STYLES[Channel.PRE_VALVE][0]
-        depress_color = self.LINE_STYLES[Channel.DEPRE_VALVE][0]
+        from icarus_v2.gui.styled_plot_widget import theme
+        press_color = self.get_line_styles(theme)[Channel.PRE_VALVE][0]
+        depress_color = self.get_line_styles(theme)[Channel.DEPRE_VALVE][0]
         size = 14
         if self.event_type == Event.PRESSURIZE or self.event_type == Event.DEPRESSURIZE:
             color = press_color if self.event_type == Event.PRESSURIZE else depress_color
@@ -156,17 +171,47 @@ class EventPlot(QWidget):
             self.hide_valve_setting = self.config_manager.get_settings(key)
             self.hide_valve_sensors(self.hide_valve_setting)
 
+
     def update_theme(self, event):
+        display_channels = [
+            Channel.TARGET, Channel.HI_PRE_SAMPLE, Channel.HI_PRE_ORIG, Channel.DEPRE_VALVE, Channel.PRE_VALVE
+        ]
         self.plot.update_theme()
         if event == 'pressure':
+            display_channels += [Channel.PRE_LOW, Channel.PRE_UP]
             title = "Pressurize"
         elif event == 'depressure':
+            display_channels += [Channel.DEPRE_LOW, Channel.DEPRE_UP]
             title = "Depressurize"
         else:
             title = "Period"
         self.plot.set_title(title)
         self.plot.set_y_label('Pressure (kbar)')
         self.plot.set_x_label(f'Time ({self.x_unit})')
+
+        labels_layout = self.init_labels()
+
+        # Remove the existing label layout and add the updated one
+        existing_layout = self.layout()
+        for i in reversed(range(existing_layout.count())):
+            item = existing_layout.itemAt(i)
+            if isinstance(item, QGridLayout):
+                for j in reversed(range(item.count())):
+                    widget_item = item.itemAt(j)
+                    if widget_item.widget():
+                        widget_item.widget().deleteLater()
+                    item.removeItem(widget_item)
+                existing_layout.removeItem(item)
+        existing_layout.addLayout(labels_layout, 0, 0, Qt.AlignRight | Qt.AlignTop)
+
+        for channel, line_reference in self.line_references.items():
+            if channel in self.line_currently_shown:  # Only update visible channels
+                style = self.get_line_styles(theme)[channel]
+                pen = pg.mkPen(color=style[0], style=style[1])
+                self.line_currently_shown[channel] = self.plot.plot([], [], pen=pen)
+                self.line_currently_shown[channel] = True
+
+
 
     def reset_history(self):
         for line_reference in self.line_references.values():

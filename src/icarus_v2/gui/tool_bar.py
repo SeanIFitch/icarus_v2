@@ -68,7 +68,7 @@ class ToolBar(QToolBar):
     def update_theme(self, theme_):
         app = QApplication.instance()  # Get the running QApplication instance
         app.setStyleSheet(load_stylesheet(theme=theme_))
-        change_theme(theme_)
+
 
     def change_log_mode(self):
         if self.change_mode_action.text() == "Open Logs":
