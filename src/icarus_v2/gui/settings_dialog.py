@@ -84,7 +84,7 @@ class SettingsDialog(QDialog):
         self.theme_button.setFixedWidth(edit_width)
         self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
         self.themes_menu = ScrollableMenu(parent=self.theme_button)
-        self.themes_menu.setScrollAreaSize(edit_width, 60)
+        self.themes_menu.setScrollAreaSize(edit_width, 60   )
 
         # Implement later
         # def set_default():

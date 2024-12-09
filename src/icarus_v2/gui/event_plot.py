@@ -203,6 +203,13 @@ class EventPlot(QWidget):
                 existing_layout.removeItem(item)
         existing_layout.addLayout(labels_layout, 0, 0, Qt.AlignRight | Qt.AlignTop)
 
+        for channel in display_channels:
+            style = self.get_line_styles(theme)[channel]
+            pen = pg.mkPen(color=style[0], style=style[1])
+            line_reference = self.plot.plot([], [], pen=pen)
+            self.line_references[channel] = line_reference
+            self.line_currently_shown[channel] = True
+
     def reset_history(self):
         for line_reference in self.line_references.values():
             line_reference.setData([], [])
