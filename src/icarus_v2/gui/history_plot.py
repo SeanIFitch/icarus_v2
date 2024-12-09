@@ -530,6 +530,46 @@ class HistoryPlot(QWidget):
         self.last_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
         self.avg_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
 
+        style = self.LINE_STYLES["depress origin switch"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["depress origin switch"] = self.switch_time_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["depress sample switch"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["depress sample switch"] = self.switch_time_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["press origin switch"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["press origin switch"] = self.switch_time_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["press sample switch"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["press sample switch"] = self.switch_time_plot.plot([], [], pen=pen)
+
+        style = self.LINE_STYLES["depress origin slope"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["depress origin slope"] = self.slope_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["depress sample slope"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["depress sample slope"] = self.slope_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["press origin slope"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["press origin slope"] = self.slope_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["press sample slope"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["press sample slope"] = self.slope_plot.plot([], [], pen=pen)
+
+        style = self.LINE_STYLES["origin pressure"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["origin pressure"] = self.pressure_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["sample pressure"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["sample pressure"] = self.pressure_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["origin pressure"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["origin pressure"] = self.pressure_plot.plot([], [], pen=pen)
+        style = self.LINE_STYLES["sample pressure"]
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines["sample pressure"] = self.pressure_plot.plot([], [], pen=pen)
+
+
     def get_line_styles(self, theme):
         return {
             "origin pressure": (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine),  # yellow
