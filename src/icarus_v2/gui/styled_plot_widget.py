@@ -1,15 +1,10 @@
 from pyqtgraph import PlotWidget
 from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
-
-import os
 import pyqtgraph as pg
 from pyqtgraph.graphicsItems.ButtonItem import ButtonItem
-from pyqtgraph import icons
-from pyqtgraph import PlotItem
-import PySide6
 from PySide6.QtCore import QEvent
 from PySide6.QtGui import Qt
-from PySide6.QtWidgets import QDialog, QLineEdit, QPushButton, QVBoxLayout, QFileDialog, QLabel, QGridLayout, QSpacerItem, QSizePolicy
+from PySide6.QtWidgets import QDialog, QPushButton, QVBoxLayout, QFileDialog, QLabel, QGridLayout, QSizePolicy
 from icarus_v2.backend.custom_csv_exporter import CustomCSVExporter
 
 class StyledPlotWidget(PlotWidget):
@@ -25,10 +20,10 @@ class StyledPlotWidget(PlotWidget):
         self.hideButtons()  # Remove autoScale button
         self.getPlotItem().getViewBox().setMenuEnabled(False) # Remove right click menu
 
-        #Setup the export button
+        # Set up the export button
         self.exportBtn = ButtonItem("src/icarus_v2/resources/export_icon.svg", 20,self.plotItem)
-        self.exportBtn.clicked.connect(self.export_btn_clicked)
-        self.exportBtn.setPos(30,210)
+        self.exportBtn.clicked.connect(self.export_clicked)
+        self.exportBtn.setPos(0,210)
         self.exportBtn.hide()
 
         #Enable hover events. Needed so that button is only visible when hovering over graph
@@ -37,6 +32,7 @@ class StyledPlotWidget(PlotWidget):
         self.csv_header = None
         self.default_filename = "icarus_graph"
         self.folder = None
+        self.edit_dialog = None
 
         #Mouse coordinates
         self.mouse_label = QLabel("")
@@ -63,18 +59,14 @@ class StyledPlotWidget(PlotWidget):
     def set_x_label(self, label):
         self.setLabel('bottom', label, **{'color': self.text_color})
 
-    '''
-    #Formatting for header is array of strings with x as the first values
-    #Ex: ["X","Graph1","Graph2","Graph3"]
-    '''
+    # Formatting for header is array of strings with x as the first values
+    # Ex: ["X","Graph1","Graph2","Graph3"]
     def set_csv_header(self,csv_header):
         self.csv_header = csv_header
 
-    '''
-    #Activates whenever the mouse hovers over or leaves the graph
-    - Makes the export button visible only when the mouse is hovering over the graph
-    - Makes the mouse coordinates appear when the mouse is hovering over the graph
-    '''
+    # Activates whenever the mouse hovers over or leaves the graph
+    # - Makes the export button visible only when the mouse is hovering over the graph
+    # - Makes the mouse coordinates appear when the mouse is hovering over the graph
     def event(self, event):
         if(not self.full_init):
             return super().event(event)
@@ -96,69 +88,84 @@ class StyledPlotWidget(PlotWidget):
 
         return super().event(event)
 
-    def export_btn_clicked(self):
+    def export_clicked(self):
         self.edit_dialog = QDialog(self)
-
-        self.export_file = QLineEdit()
-        self.export_file.setText(self.default_filename)
-        extension_length = len(self.default_filename.split('.')[-1]) + 1
-        self.export_file.setSelection(0, len(self.default_filename) - extension_length)
-
-        folder_button = QPushButton("Choose Folder")
-        folder_button.clicked.connect(self.export_folder)
 
         png_button = QPushButton("Export as PNG")
         csv_button = QPushButton("Export as CSV")
         png_button.clicked.connect(self.export_png)
         csv_button.clicked.connect(self.export_csv)
+        png_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        csv_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        # Ensure no button is selected by default
+        png_button.setAutoDefault(False)
+        csv_button.setAutoDefault(False)
 
         layout = QVBoxLayout()
-        layout.addWidget(self.export_file)
-        layout.addWidget(folder_button)
         layout.addWidget(png_button)
         layout.addWidget(csv_button)
 
         self.edit_dialog.setWindowTitle("Export Graph")
-        self.edit_dialog.setFixedSize(500, 200)
+        self.edit_dialog.setFixedSize(300, 150)
         self.edit_dialog.setLayout(layout)
         self.edit_dialog.show()
 
-    #Allows the user to choose the directory for the export
-    def export_folder(self):
-        #This is how to get the folder
-        self.folder = QFileDialog.getExistingDirectory(self, 'Select Folder')
+    def export_png(self):
+        self.edit_dialog.close()
 
-    def export_png(self, filename=None):
-        if(not filename):
-            if(self.export_file is None):
-                filename = self.default_filename 
-            else:
-                filename = self.export_file.text()
-                self.edit_dialog.done(0)
+        options = QFileDialog.Options()
+        filename, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save PNG",
+            self.default_filename + ".png",
+            "PNG Files (*.png)",
+            options=options
+        )
+
+        if not filename:
+            self.edit_dialog.close()
+            return
+
+        if not filename.endswith('.png'):
+            filename += '.png'
 
         exporter = pg.exporters.ImageExporter(self.plotItem)
+        exporter.parameters()['width'] = 650
+        exporter.export(filename)
+        self.edit_dialog.close()
 
-        # set export parameters if needed
-        exporter.parameters()['width'] = 650   # (note this also affects height parameter)
+    def export_csv(self):
+        self.edit_dialog.close()
 
-        # save to file
-        if(self.folder is not None and self.folder!=""):
-            exporter.export(self.folder+"/"+filename+'.png')
-        else:
-            exporter.export(filename+'.png')
+        options = QFileDialog.Options()
+        filename, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save CSV",
+            self.default_filename + ".csv",
+            "CSV Files (*.csv)",
+            options=options
+        )
 
-    def export_csv(self, filename):
-        if(not filename):
-            if(self.export_file is None):
-                filename = self.default_filename
-            else:
-                filename = self.export_file.text()
-                self.edit_dialog.done(0)
+        if not filename:
+            self.edit_dialog.close()
+            return
+
+        if not filename.endswith('.csv'):
+            filename += '.csv'
 
         exporter = CustomCSVExporter(self.plotItem)
+        exporter.export(filename, self.csv_header)
+        self.edit_dialog.close()
 
-        # save to file
-        if(self.folder is not None and self.folder!=""):
-            exporter.export(self.folder+"/"+filename+'.csv',self.csv_header)
-        else:
-            exporter.export(filename+'.csv',self.csv_header)
+    def resizeEvent(self, event):
+        """Update the export button position based on the plot's size."""
+        super().resizeEvent(event)
+
+        if hasattr(self, 'exportBtn'):
+            plot_height = self.height()
+
+            button_y = plot_height - 24  # 85% from the top
+
+            # Update button position and size
+            self.exportBtn.setPos(0, button_y)
