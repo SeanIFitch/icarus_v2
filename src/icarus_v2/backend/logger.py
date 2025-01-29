@@ -48,10 +48,21 @@ class Logger:
         }   
         self.log_raw(event_dict)
 
-    def log_raw(self, data):
-        if not self.is_raw:
-            raise RuntimeError("Error: Adding raw data to an event log.")
+    def log_error(self, event): 
+        #Should take in an instance of either sentry_error or sentry_warning
+        if self.is_raw:
+            raise RuntimeError("Error: Adding a processed error to a raw log.")
 
+        event_dict = {
+            'class_type' : type(event),     #This serves as a flag so that when the log is read it will know if it is a warning or error
+            'error_type' : event.error_type,
+            'event_time': event.time,
+            'data': event.info
+        }   
+
+        self.log_raw(event_dict)
+
+    def log_raw(self, data):
         self.event_count += 1
         pickle.dump(data, self.file, protocol=pickle.HIGHEST_PROTOCOL)
 

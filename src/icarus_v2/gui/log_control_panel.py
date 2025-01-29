@@ -32,10 +32,10 @@ class LogControlPanel(QGroupBox):
     sample_sensor_connected = Signal(bool)
     log_coefficients_signal = Signal(object)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, tool_bar=None):
         super().__init__(parent=parent)
 
-        self.log_reader = LogReader()
+        self.log_reader = LogReader(tool_bar=tool_bar)
         self.press_index = None
         self.depress_index = None
         self.period_index = None
