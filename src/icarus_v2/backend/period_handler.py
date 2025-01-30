@@ -21,22 +21,22 @@ class PeriodHandler(EventHandler):
         # valve array with prior value inserted and last value popped
         valve_offset = np.insert(depre_valve, 0, self.last_depressurize_bit)[:-1]
 
-        # Find indeces where there is a low bit preceeded by a high bit
+        # Find indices where there is a low bit preceded by a high bit
         # np.where returns a tuple, so take the first element
-        low_indeces = np.where(valve_offset & ~depre_valve)[0]
+        low_indices = np.where(valve_offset & ~depre_valve)[0]
 
         # All values are high. No event.
-        if len(low_indeces) == 0:
+        if len(low_indices) == 0:
             event = False
             index = -1
 
-        # Event occured
+        # Event occurred
         else:
             event = True
-            index = low_indeces[0]
+            index = low_indices[0]
 
             # Raise warning if 2 low pulses detected in same chunk. Under default settings this will never happen unless 2 pulses are made within 16ms of each other
-            if len(low_indeces) > 1:
+            if len(low_indices) > 1:
                 raise RuntimeError("Depressurize event dropped on period handler. Two events occured in same data chunk.")
 
         self.last_depressurize_bit = depre_valve[-1]

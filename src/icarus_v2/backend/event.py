@@ -41,6 +41,20 @@ class Channel(Enum):
             return "Log DIO"
 
 
+# Enum for history statistics
+class HistStat(Enum):
+    O_PRESS = "Origin Pressure"
+    S_PRESS = "Sample Pressure"
+    DO_SLOPE = "Origin Depressurization Slope"
+    DS_SLOPE = "Sample Depressurization Slope"
+    PO_SLOPE = "Origin Pressurization Slope"
+    PS_SLOPE = "Sample Pressurization Slope"
+    DO_SWITCH = "Origin Depressurization Switch Time"
+    DS_SWITCH = "Sample Depressurization Switch Time"
+    PO_SWITCH = "Origin Pressurization Switch Time"
+    PS_SWITCH = "Sample Pressurization Switch Time"
+
+
 # Returns a view of the selected channel
 # Can be used on data that has not been wrapped in an event
 def get_channel(data, channel):
@@ -111,27 +125,20 @@ class Event:
             self.data = data # np.ndarray (?,8) np.int16
 
     # used to call all info functions
-    def get_event_info(self, info_type):
-        if info_type == "origin pressure":
-            return self.get_initial_origin()
-        elif info_type == "sample pressure":
-            return self.get_initial_sample()
-        elif info_type == "depress origin slope":
-            return self.get_origin_slope()
-        elif info_type == "depress sample slope":
-            return self.get_sample_slope()
-        elif info_type == "press origin slope":
-            return self.get_origin_slope()
-        elif info_type == "press sample slope":
-            return self.get_sample_slope()
-        elif info_type == "depress origin switch":
-            return self.get_origin_switch_time()
-        elif info_type == "depress sample switch":
-            return self.get_sample_switch_time()
-        elif info_type == "press origin switch":
-            return self.get_origin_switch_time()
-        elif info_type == "press sample switch":
-            return self.get_sample_switch_time()
+    def get_event_info(self, hist_stat):
+        match hist_stat:
+            case HistStat.O_PRESS:
+                return self.get_initial_origin()
+            case HistStat.S_PRESS:
+                return self.get_initial_sample()
+            case HistStat.DO_SLOPE | HistStat.PO_SLOPE:
+                return self.get_slope(Channel.HI_PRE_ORIG)
+            case HistStat.DS_SLOPE | HistStat.PS_SLOPE:
+                return self.get_slope(Channel.HI_PRE_SAMPLE)
+            case HistStat.DO_SWITCH | HistStat.PO_SWITCH:
+                return self.get_origin_switch_time()
+            case HistStat.DS_SWITCH | HistStat.PS_SWITCH:
+                return self.get_sample_switch_time()
 
     # Decrease size of data. Takes every nth data point, making sure not to lose valve events.
     def compress_data(self, data, num_points):
@@ -166,7 +173,6 @@ class Event:
 
         sample_pressure = np.average(get_channel(self, Channel.HI_PRE_ORIG))
         return sample_pressure
-
 
     # Average of entire event
     def get_target_pressure(self):
@@ -225,12 +231,6 @@ class Event:
         half_max_index = np.argmin(np.abs(data - half_max))
 
         return half_max_index - self.event_index
-
-    def get_origin_slope(self):
-        return self.get_slope(Channel.HI_PRE_ORIG)
-
-    def get_sample_slope(self):
-        return self.get_slope(Channel.HI_PRE_SAMPLE)
 
     # Returns max slope of pressurization or depressurization
     def get_slope(self, channel):
