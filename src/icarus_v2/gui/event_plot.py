@@ -4,23 +4,10 @@ from icarus_v2.backend.event import Event, Channel, get_channel
 from PySide6.QtWidgets import QGridLayout, QWidget
 from icarus_v2.gui.styled_plot_widget import StyledPlotWidget
 from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
-from icarus_v2.gui.styled_plot_widget import theme
 from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
 class EventPlot(QWidget):
-    # Dictionary of color to plot each channel
-    LINE_STYLES = {
-        Channel.TARGET: (THEME_COLOR_VALUES[theme]['line']['light_green'], Qt.SolidLine),          # light green
-        Channel.DEPRE_LOW: (THEME_COLOR_VALUES[theme]['line']['magenta'], Qt.SolidLine),           # magenta
-        Channel.DEPRE_UP: (THEME_COLOR_VALUES[theme]['line']['blue'], Qt.SolidLine),               # blue
-        Channel.PRE_LOW: (THEME_COLOR_VALUES[theme]['line']['magenta'], Qt.SolidLine),             # magenta
-        Channel.PRE_UP: (THEME_COLOR_VALUES[theme]['line']['blue'], Qt.SolidLine),                 # blue
-        Channel.HI_PRE_ORIG: (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine),          # yellow
-        Channel.HI_PRE_SAMPLE: (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.DashLine),         # yellow dashed
-        Channel.DEPRE_VALVE: (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine),            # cyan
-        Channel.PRE_VALVE: (THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine),               # red
-    }
     DISPLAY_CHANNELS = {
         Event.PRESSURIZE: [
             Channel.TARGET,
@@ -122,19 +109,6 @@ class EventPlot(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
-    def get_line_styles(self, theme):
-        return {
-            Channel.TARGET: (THEME_COLOR_VALUES[theme]['line']['light_green'], Qt.SolidLine),  # light green
-            Channel.DEPRE_LOW: (THEME_COLOR_VALUES[theme]['line']['magenta'], Qt.SolidLine),  # magenta
-            Channel.DEPRE_UP: (THEME_COLOR_VALUES[theme]['line']['blue'], Qt.SolidLine),  # blue
-            Channel.PRE_LOW: (THEME_COLOR_VALUES[theme]['line']['magenta'], Qt.SolidLine),  # magenta
-            Channel.PRE_UP: (THEME_COLOR_VALUES[theme]['line']['blue'], Qt.SolidLine),  # blue
-            Channel.HI_PRE_ORIG: (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine),  # yellow
-            Channel.HI_PRE_SAMPLE: (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.DashLine),  # yellow dashed
-            Channel.DEPRE_VALVE: (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine),  # cyan
-            Channel.PRE_VALVE: (THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine),  # red
-        }
-
     def update_data(self, event):
         if event is None:
             self.plot.reset()
@@ -177,3 +151,23 @@ class EventPlot(QWidget):
 
     def set_log_coefficients(self, coefficients):
         self.log_coefficients = coefficients
+
+    @staticmethod
+    def get_line_style(theme, channel):
+        match channel:
+            case Channel.TARGET:
+                return THEME_COLOR_VALUES[theme]['line']['light_green'], Qt.SolidLine
+            case Channel.DEPRE_LOW | Channel.PRE_LOW:
+                return THEME_COLOR_VALUES[theme]['line']['magenta'], Qt.SolidLine
+            case Channel.DEPRE_UP | Channel.PRE_UP:
+                return THEME_COLOR_VALUES[theme]['line']['blue'], Qt.SolidLine
+            case Channel.HI_PRE_ORIG:
+                return THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine
+            case Channel.HI_PRE_SAMPLE:
+                return THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.DashLine
+            case Channel.DEPRE_VALVE:
+                return THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine
+            case Channel.PRE_VALVE:
+                return THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine
+            case _:
+                raise ValueError(f"Unknown channel: {channel}")

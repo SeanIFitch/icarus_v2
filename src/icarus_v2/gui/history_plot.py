@@ -5,25 +5,10 @@ from icarus_v2.backend.event import Event, Channel, HistStat
 import numpy as np
 from icarus_v2.gui.styled_plot_widget import StyledPlotWidget
 from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
-from icarus_v2.gui.styled_plot_widget import theme
 from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
 class HistoryPlot(QWidget):
-    # Dictionary of pens to plot each line
-    LINE_STYLES = {
-        HistStat.O_PRESS: (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine),
-        HistStat.S_PRESS: (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.DashLine),
-        HistStat.DO_SLOPE: (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine),
-        HistStat.DS_SLOPE: (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.DashLine),
-        HistStat.PO_SLOPE: (THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine),
-        HistStat.PS_SLOPE: (THEME_COLOR_VALUES[theme]['line']['red'], Qt.DashLine),
-        HistStat.DO_SWITCH: (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine),
-        HistStat.DS_SWITCH: (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.DashLine),
-        HistStat.PO_SWITCH: (THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine),
-        HistStat.PS_SWITCH: (THEME_COLOR_VALUES[theme]['line']['red'], Qt.DashLine),
-    }
-
     def __init__(self):
         super().__init__()
 
@@ -262,19 +247,23 @@ class HistoryPlot(QWidget):
     def set_log_coefficients(self, coefficients):
         self.log_coefficients = self.define_coefficients(coefficients)
 
-    def get_line_styles(self, theme):
-        return {
-            "origin pressure": (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine),  # yellow
-            "sample pressure": (THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.DashLine),  # yellow dashed
-            "depress origin slope": (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine),  # cyan
-            "depress sample slope": (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.DashLine),  # cyan dashed
-            "press origin slope": (THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine),  # red
-            "press sample slope": (THEME_COLOR_VALUES[theme]['line']['red'], Qt.DashLine),  # red dashed
-            "depress origin switch": (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine),  # cyan
-            "depress sample switch": (THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.DashLine),  # cyan dashed
-            "press origin switch": (THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine),  # red
-            "press sample switch": (THEME_COLOR_VALUES[theme]['line']['red'], Qt.DashLine),  # red dashed
-        }
+    @staticmethod
+    def get_line_styles(theme, channel):
+        match channel:
+            case HistStat.O_PRESS:
+                return THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine
+            case HistStat.S_PRESS:
+                return THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.DashLine
+            case HistStat.DO_SLOPE | HistStat.DO_SWITCH:
+                return THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine
+            case HistStat.DS_SLOPE | HistStat.DS_SWITCH:
+                return THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.DashLine
+            case HistStat.PO_SLOPE | HistStat.PO_SWITCH:
+                return THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine
+            case HistStat.PS_SLOPE | HistStat.PS_SWITCH:
+                return THEME_COLOR_VALUES[theme]['line']['red'], Qt.DashLine
+            case _:
+                raise ValueError(f"Unknown channel: {channel}")
 
     # Dictionary of coefficient to apply when plotting each channel
     @staticmethod
