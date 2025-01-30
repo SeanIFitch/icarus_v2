@@ -54,6 +54,9 @@ class HistStat(Enum):
     PO_SWITCH = "Origin Pressurization Switch Time"
     PS_SWITCH = "Sample Pressurization Switch Time"
 
+    def __str__(self):
+        return self.value
+
 
 # Returns a view of the selected channel
 # Can be used on data that has not been wrapped in an event
