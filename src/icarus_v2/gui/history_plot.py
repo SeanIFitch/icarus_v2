@@ -1,10 +1,8 @@
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 import pyqtgraph as pg
 from icarus_v2.backend.event import Event, Channel, HistStat
 import numpy as np
 from icarus_v2.gui.styled_plot_widget import StyledPlotWidget
-from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
 from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
@@ -28,10 +26,8 @@ class HistoryPlot(QWidget):
         self.pressure_plot.set_x_label('Time (s)')
         self.pressure_plot.setYRange(0, 3)
         self.pressure_plot.getPlotItem().getAxis("left").setWidth(45)
-        style = self.LINE_STYLES[HistStat.O_PRESS]
-        self.pressure_plot.add_line(HistStat.O_PRESS, style[0], style[1])
-        style = self.LINE_STYLES[HistStat.S_PRESS]
-        self.pressure_plot.add_line(HistStat.S_PRESS, style[0], style[1])
+        self.pressure_plot.add_line(HistStat.O_PRESS)
+        self.pressure_plot.add_line(HistStat.S_PRESS)
         self.pressure_plot.add_statistic(HistStat.O_PRESS, lambda x: x[-1], "Last: {:.3f}")
         self.pressure_plot.add_statistic(HistStat.O_PRESS, np.mean, "Avg: {:.3f}")
 
@@ -42,14 +38,10 @@ class HistoryPlot(QWidget):
         self.slope_plot.set_x_label('Time (s)')
         self.slope_plot.setYRange(-1.1, 1.1)
         self.slope_plot.getPlotItem().getAxis("left").setWidth(45)
-        style = self.LINE_STYLES[HistStat.DO_SLOPE]
-        self.slope_plot.add_line(HistStat.DO_SLOPE, style[0], style[1])
-        style = self.LINE_STYLES[HistStat.DS_SLOPE]
-        self.slope_plot.add_line(HistStat.DS_SLOPE, style[0], style[1])
-        style = self.LINE_STYLES[HistStat.PO_SLOPE]
-        self.slope_plot.add_line(HistStat.PO_SLOPE, style[0], style[1])
-        style = self.LINE_STYLES[HistStat.PS_SLOPE]
-        self.slope_plot.add_line(HistStat.PS_SLOPE, style[0], style[1])
+        self.slope_plot.add_line(HistStat.DO_SLOPE)
+        self.slope_plot.add_line(HistStat.DS_SLOPE)
+        self.slope_plot.add_line(HistStat.PO_SLOPE)
+        self.slope_plot.add_line(HistStat.PS_SLOPE)
         # Connect the x-axis of all plots for zooming and panning
         self.slope_plot.setXLink(self.pressure_plot)
         self.slope_plot.add_statistic(HistStat.PO_SLOPE, lambda x: x[-1], "Last: {:.2f}")
@@ -64,14 +56,10 @@ class HistoryPlot(QWidget):
         self.switch_time_plot.set_x_label('Time (s)')
         self.switch_time_plot.setYRange(0, 45)
         self.switch_time_plot.getPlotItem().getAxis("left").setWidth(45)
-        style = self.LINE_STYLES[HistStat.DO_SWITCH]
-        self.switch_time_plot.add_line(HistStat.DO_SWITCH, style[0], style[1])
-        style = self.LINE_STYLES[HistStat.DS_SWITCH]
-        self.switch_time_plot.add_line(HistStat.DS_SWITCH, style[0], style[1])
-        style = self.LINE_STYLES[HistStat.PO_SWITCH]
-        self.switch_time_plot.add_line(HistStat.PO_SWITCH, style[0], style[1])
-        style = self.LINE_STYLES[HistStat.PS_SWITCH]
-        self.switch_time_plot.add_line(HistStat.PS_SWITCH, style[0], style[1])
+        self.switch_time_plot.add_line(HistStat.DO_SWITCH)
+        self.switch_time_plot.add_line(HistStat.DS_SWITCH)
+        self.switch_time_plot.add_line(HistStat.PO_SWITCH)
+        self.switch_time_plot.add_line(HistStat.PS_SWITCH)
         # Connect the x-axis of all plots for zooming and panning
         self.switch_time_plot.setXLink(self.pressure_plot)
         self.switch_time_plot.add_statistic(HistStat.PO_SWITCH, lambda x: x[-1], "Last: {:.2f}")
@@ -195,47 +183,10 @@ class HistoryPlot(QWidget):
             self.coefficients = self.define_coefficients(plotting_coefficients)
 
     def render_event_time(self, event):
-        """
-        Renders either pressurization or depressurization time based on event type.
-        """
-        # Determine whether the event is pressurization or depressurization
-        if event.event_type == Event.PRESSURIZE:
-            self.pressure_plot.removeItem(self.press_time_press)
-            self.slope_plot.removeItem(self.press_time_slope)
-            self.switch_time_plot.removeItem(self.press_time_switch)
-
-            hist_stat = HistStat.PO_SLOPE
-        else:
-            self.pressure_plot.removeItem(self.depress_time_press)
-            self.slope_plot.removeItem(self.depress_time_slope)
-            self.switch_time_plot.removeItem(self.depress_time_switch)
-
-            hist_stat = HistStat.DO_SLOPE
-
-        # Compute time and style
         time = event.event_time - self.initial_time
-        style = self.LINE_STYLES[hist_stat]
-        pen = pg.mkPen(color=style[0], style=style[1])
-
-        # Create new lines
-        new_time_press = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
-        new_time_slope = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
-        new_time_switch = pg.InfiniteLine(pos=time, angle=90, movable=False, pen=pen)
-
-        # Assign new lines to attributes
-        if event.event_type == Event.PRESSURIZE:
-            self.press_time_press = new_time_press
-            self.press_time_slope = new_time_slope
-            self.press_time_switch = new_time_switch
-        else:
-            self.depress_time_press = new_time_press
-            self.depress_time_slope = new_time_slope
-            self.depress_time_switch = new_time_switch
-
-        # Add new lines to plots
-        self.pressure_plot.addItem(new_time_press)
-        self.slope_plot.addItem(new_time_slope)
-        self.switch_time_plot.addItem(new_time_switch)
+        self.pressure_plot.add_vertical_line(event.event_type, time)
+        self.slope_plot.add_vertical_line(event.event_type, time)
+        self.switch_time_plot.add_vertical_line(event.event_type, time)
 
     def set_sample_sensor(self, connected):
         self.pressure_plot.toggle_line_visibility(HistStat.S_PRESS, connected)
@@ -246,24 +197,6 @@ class HistoryPlot(QWidget):
 
     def set_log_coefficients(self, coefficients):
         self.log_coefficients = self.define_coefficients(coefficients)
-
-    @staticmethod
-    def get_line_styles(theme, channel):
-        match channel:
-            case HistStat.O_PRESS:
-                return THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine
-            case HistStat.S_PRESS:
-                return THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.DashLine
-            case HistStat.DO_SLOPE | HistStat.DO_SWITCH:
-                return THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine
-            case HistStat.DS_SLOPE | HistStat.DS_SWITCH:
-                return THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.DashLine
-            case HistStat.PO_SLOPE | HistStat.PO_SWITCH:
-                return THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine
-            case HistStat.PS_SLOPE | HistStat.PS_SWITCH:
-                return THEME_COLOR_VALUES[theme]['line']['red'], Qt.DashLine
-            case _:
-                raise ValueError(f"Unknown channel: {channel}")
 
     # Dictionary of coefficient to apply when plotting each channel
     @staticmethod

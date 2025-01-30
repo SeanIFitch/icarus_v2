@@ -65,8 +65,6 @@ class SettingsDialog(QDialog):
         # Default selection
         button_box.button(QDialogButtonBox.Apply).setFocus()
 
-
-
     def get_default_widget(self, connected):
         # Allow only positive floating-point numbers
         positive_float = QDoubleValidator()
@@ -77,34 +75,6 @@ class SettingsDialog(QDialog):
         edit_width = 190
 
         # View section
-        # self.theme_button = QPushButton("Select Theme", self)
-        # self.theme_button.setFixedWidth(edit_width)
-        # self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
-        # self.themes_menu = ScrollableMenu(parent=self.theme_button)
-        # self.themes_menu.setScrollAreaSize(edit_width, 60   )
-
-        # Implement later
-        # def set_default():
-        #   self.theme_button.setText("System Default")
-        #   self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
-        #   styled_plot_widget.theme = 'system_default'
-        #   self.theme_changed.emit('system_default')
-
-        def set_dark():
-            self.theme_button.setText("Dark Theme")
-            self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
-            self.theme_changed.emit('dark')
-
-        def set_light():
-            self.theme_button.setText("Light Theme")
-            self.theme_button.setStyleSheet("font-size: 12pt; text-align: left; background-color: white; color: black")
-            self.theme_changed.emit('light')
-
-        # self.themes_menu.add_option("System Default", on_click=set_default)
-        # self.themes_menu.add_option("Dark Theme", on_click=set_dark)
-        # self.themes_menu.add_option("Light Theme", on_click=set_light)
-        # self.theme_button.setMenu(self.themes_menu)
-
         self.hide_valve_checkbox = QCheckBox()
         hide_valve = self.config_manager.get_settings('hide_valve_sensors')
         self.hide_valve_checkbox.setCheckState(Qt.Checked if hide_valve else Qt.Unchecked)
@@ -125,7 +95,6 @@ class SettingsDialog(QDialog):
                     }
                     """)
         view_layout = QGridLayout()
-        view_layout.addWidget(QLabel("Select Theme:"), 0, 0)
         view_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Preferred), 0, 1)
         # view_layout.addWidget(self.theme_button, 0, 2)
 

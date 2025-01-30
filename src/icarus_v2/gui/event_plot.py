@@ -1,9 +1,7 @@
-from PySide6.QtCore import Qt
 import numpy as np
 from icarus_v2.backend.event import Event, Channel, get_channel
 from PySide6.QtWidgets import QGridLayout, QWidget
 from icarus_v2.gui.styled_plot_widget import StyledPlotWidget
-from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
 from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
@@ -51,8 +49,7 @@ class EventPlot(QWidget):
         self.plot.set_y_label('Pressure (kbar)')
 
         for channel in self.DISPLAY_CHANNELS[event_type]:
-            style = self.LINE_STYLES[channel]
-            self.plot.add_line(channel, style[0], style[1])
+            self.plot.add_line(channel)
 
         # local statistics functions
         def get_valve_open_time(y_data, srate):
@@ -151,23 +148,3 @@ class EventPlot(QWidget):
 
     def set_log_coefficients(self, coefficients):
         self.log_coefficients = coefficients
-
-    @staticmethod
-    def get_line_style(theme, channel):
-        match channel:
-            case Channel.TARGET:
-                return THEME_COLOR_VALUES[theme]['line']['light_green'], Qt.SolidLine
-            case Channel.DEPRE_LOW | Channel.PRE_LOW:
-                return THEME_COLOR_VALUES[theme]['line']['magenta'], Qt.SolidLine
-            case Channel.DEPRE_UP | Channel.PRE_UP:
-                return THEME_COLOR_VALUES[theme]['line']['blue'], Qt.SolidLine
-            case Channel.HI_PRE_ORIG:
-                return THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine
-            case Channel.HI_PRE_SAMPLE:
-                return THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.DashLine
-            case Channel.DEPRE_VALVE:
-                return THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine
-            case Channel.PRE_VALVE:
-                return THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine
-            case _:
-                raise ValueError(f"Unknown channel: {channel}")

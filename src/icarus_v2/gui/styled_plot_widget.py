@@ -1,5 +1,6 @@
 import os
 from pyqtgraph import PlotWidget
+from icarus_v2.backend.event import Channel, HistStat, Event
 from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
 import pyqtgraph as pg
 from pyqtgraph.graphicsItems.ButtonItem import ButtonItem
@@ -14,6 +15,7 @@ from bisect import bisect_left, bisect_right
 class StyledPlotWidget(PlotWidget):
     def __init__(self, x_zoom=False):
         theme = 'dark' #TODO: know that this is here
+        self.theme = theme
         background = THEME_COLOR_VALUES[theme]['background']['base']
         self.text_color = THEME_COLOR_VALUES[theme]['foreground']['base']
         self.full_init=False
@@ -23,7 +25,6 @@ class StyledPlotWidget(PlotWidget):
         self.setMouseEnabled(x=x_zoom, y=False)  # Prevent zooming
         self.hideButtons()  # Remove autoScale button
         self.setStyleSheet("padding: 0px; border: none;")
-
         self.getPlotItem().getViewBox().setMenuEnabled(False) # Remove right click menu
 
         # Set up the export button
@@ -77,26 +78,27 @@ class StyledPlotWidget(PlotWidget):
         self.setTitle(title, color=self.text_color, size="17pt")
 
     def set_y_label(self, label):
-        self.setLabel('left', label, **{'color': self.text_color}) # , 'font-size': '9pt'}) TODO: DOES FONT SIZE MATTER
+        self.setLabel('left', label, **{'color': self.text_color, 'font-size': '8pt'})
 
     def set_x_label(self, label):
-        self.setLabel('bottom', label, **{'color': self.text_color}) # , 'font-size': '9pt'}) TODO: DOES FONT SIZE MATTER
+        self.setLabel('bottom', label, **{'color': self.text_color, 'font-size': '8pt'})
 
     # Add a new line to the plot with given style.
-    def add_line(self, identifier, color, line_style=Qt.SolidLine):
-        pen = pg.mkPen(color=color, style=line_style)
-        self.lines[identifier] = self.plot([], [], name=str(identifier), pen=pen)
-        self.line_visibility[identifier] = True
-        return self.lines[identifier]
+    def add_line(self, channel):
+        style = self.get_line_style(channel)
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines[channel] = self.plot([], [], name=str(channel), pen=pen)
+        self.line_visibility[channel] = True
+        return self.lines[channel]
 
     # Update data for a specific line.
-    def update_line_data(self, identifier, x_data, y_data, srate=None):
-        if identifier in self.lines:
-            self.lines[identifier].setData(x_data, y_data)
+    def update_line_data(self, channel, x_data, y_data, srate=None):
+        if channel in self.lines:
+            self.lines[channel].setData(x_data, y_data)
 
             # Update statistics if they exist for this line
-            if identifier in self.statistics:
-                for format_str, stat_info in self.statistics[identifier].items():
+            if channel in self.statistics:
+                for format_str, stat_info in self.statistics[channel].items():
                     if len(y_data) > 0:
                         if srate is None:
                             value = stat_info['method'](y_data)
@@ -111,12 +113,12 @@ class StyledPlotWidget(PlotWidget):
         Append points at the same x value.
 
         Args:
-            points_dict: Dictionary mapping line identifiers to y values
+            points_dict: Dictionary mapping line channels to y values
             time: x value (time) for all points
         """
-        for identifier, y_point in points_dict.items():
-            if identifier in self.lines:
-                line = self.lines[identifier]
+        for channel, y_point in points_dict.items():
+            if channel in self.lines:
+                line = self.lines[channel]
                 # Get existing data
                 x_data, y_data = line.getData()
                 if x_data is None:
@@ -131,29 +133,29 @@ class StyledPlotWidget(PlotWidget):
                 line.setData(x_data, y_data)
 
     # Show/hide a specific line.
-    def toggle_line_visibility(self, identifier, visible):
-        if identifier in self.lines:
-            if visible and not self.line_visibility[identifier]:
-                self.addItem(self.lines[identifier])
-            elif not visible and self.line_visibility[identifier]:
-                self.removeItem(self.lines[identifier])
-            self.line_visibility[identifier] = visible
+    def toggle_line_visibility(self, channel, visible):
+        if channel in self.lines:
+            if visible and not self.line_visibility[channel]:
+                self.addItem(self.lines[channel])
+            elif not visible and self.line_visibility[channel]:
+                self.removeItem(self.lines[channel])
+            self.line_visibility[channel] = visible
 
-    def add_statistic(self, identifier, method, format_str, size=14):
+    def add_statistic(self, channel, method, format_str, size=14):
         """
         Add a statistic display for a specific line.
 
         Args:
-            identifier: The line identifier this statistic is associated with
+            channel: The line channel this statistic is associated with
             method: Function that takes an array and returns the statistic value
             format_str: Format string for the value (e.g., "Avg: {:.3f}")
             size: Font size in pixels
         """
-        if identifier not in self.lines:
-            raise KeyError(f"Line with identifier '{identifier}' does not exist")
+        if channel not in self.lines:
+            raise KeyError(f"Line with channel '{channel}' does not exist")
 
         label = QLabel(format_str.format(0))
-        line_color = self.lines[identifier].opts['pen'].color().name()
+        line_color = self.get_line_style(channel)[0]
         label.setStyleSheet(f"color: {line_color}; font-size: {size}px;")
 
         # Add to layout
@@ -162,9 +164,9 @@ class StyledPlotWidget(PlotWidget):
         self.stat_layout.addWidget(label, alignment=Qt.AlignRight)
 
         # Store the statistic info
-        if identifier not in self.statistics:
-            self.statistics[identifier] = {}
-        self.statistics[identifier][format_str] = {
+        if channel not in self.statistics:
+            self.statistics[channel] = {}
+        self.statistics[channel][format_str] = {
             'method': method,
             'label': label,
         }
@@ -173,10 +175,10 @@ class StyledPlotWidget(PlotWidget):
         """
         Update all statistics based on currently visible data
         """
-        for identifier, stats in self.statistics.items():
+        for channel, stats in self.statistics.items():
             for format_str, stat_info in stats.items():
-                if identifier in self.lines:
-                    line = self.lines[identifier]
+                if channel in self.lines:
+                    line = self.lines[channel]
                     x_data, y_data = line.getData()
 
                     if x_data is None:
@@ -195,6 +197,16 @@ class StyledPlotWidget(PlotWidget):
                         stat_info['label'].setText(formatted_value)
                     else:
                         stat_info['label'].setText(format_str.format(0))
+
+    def add_vertical_line(self, channel, x):
+        if channel in self.lines:
+            self.removeItem(self.lines[channel])
+
+        color = self.get_line_style(channel)[0]
+        pen = pg.mkPen(color=color)
+
+        self.lines[channel] = pg.InfiniteLine(pos=x, angle=90, movable=False, pen=pen)
+        self.addItem(self.lines[channel])
 
     # Clear all line data.
     def reset(self):
@@ -317,3 +329,26 @@ class StyledPlotWidget(PlotWidget):
         low_diff = current_range[0] - view_limits[0]
         hi_diff = view_limits[1] - current_range[1]
         return low_diff + hi_diff < 1
+
+    def get_line_style(self, channel):
+        match channel:
+            case Channel.TARGET:
+                return THEME_COLOR_VALUES[self.theme]['line']['light_green'], Qt.SolidLine
+            case Channel.DEPRE_LOW | Channel.PRE_LOW:
+                return THEME_COLOR_VALUES[self.theme]['line']['magenta'], Qt.SolidLine
+            case Channel.DEPRE_UP | Channel.PRE_UP:
+                return THEME_COLOR_VALUES[self.theme]['line']['blue'], Qt.SolidLine
+            case Channel.HI_PRE_ORIG | HistStat.O_PRESS:
+                return THEME_COLOR_VALUES[self.theme]['line']['yellow'], Qt.SolidLine
+            case Channel.HI_PRE_SAMPLE | HistStat.S_PRESS:
+                return THEME_COLOR_VALUES[self.theme]['line']['yellow'], Qt.DashLine
+            case Channel.DEPRE_VALVE | HistStat.DO_SLOPE | HistStat.DO_SWITCH | Event.DEPRESSURIZE:
+                return THEME_COLOR_VALUES[self.theme]['line']['cyan'], Qt.SolidLine
+            case HistStat.DS_SLOPE | HistStat.DS_SWITCH:
+                return THEME_COLOR_VALUES[self.theme]['line']['cyan'], Qt.DashLine
+            case Channel.PRE_VALVE | HistStat.PO_SLOPE | HistStat.PO_SWITCH | Event.PRESSURIZE:
+                return THEME_COLOR_VALUES[self.theme]['line']['red'], Qt.SolidLine
+            case HistStat.PS_SLOPE | HistStat.PS_SWITCH:
+                return THEME_COLOR_VALUES[self.theme]['line']['red'], Qt.DashLine
+            case _:
+                raise ValueError(f"Unknown channel: {channel}")
