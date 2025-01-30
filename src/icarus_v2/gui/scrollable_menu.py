@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget, QMenu, QScrollArea, QVBoxLayout, QWidgetAction, QLabel, QPushButton
+from PySide6.QtWidgets import QWidget, QMenu, QScrollArea, QVBoxLayout, QWidgetAction, QLabel
 from PySide6.QtCore import Qt, QSize, QPointF, QRectF
-from PySide6.QtGui import QFont, QFontMetrics, QPainter, QColor, QAction
+from PySide6.QtGui import QFontMetrics, QPainter, QColor
 
 
 class ScrollableMenu(QMenu):
@@ -24,30 +24,14 @@ class ScrollableMenu(QMenu):
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
+        # Setting the size of the scroll area
+        self.scroll_area.setFixedWidth(900)
+        self.scroll_area.setFixedHeight(300)
+
         # Add the scroll area to the menu
         scroll_area_widget_action = QWidgetAction(self)
         scroll_area_widget_action.setDefaultWidget(self.scroll_area)
         self.addAction(scroll_area_widget_action)
-
-    def setScrollAreaSize(self, width, height):
-        self.scroll_area.setFixedWidth(width)
-        self.scroll_area.setFixedHeight(height)
-
-    def add_option(self, option_text, on_click):
-        option_button = QPushButton(option_text)
-        option_button.setStyleSheet(f"text-align: left; font-size: 12pt; border: none;")
-        option_button.clicked.connect(on_click)
-
-        self.layout.insertWidget(0, option_button, alignment=Qt.AlignTop)
-
-        self.messages += 1
-        if self.messages > self.max_messages:
-            item = self.layout.takeAt(0)
-            if item:
-                widget = item.widget()
-                if widget:
-                    widget.deleteLater()
-            self.messages -= 1
 
     def add_message(self, message, color):
         label = WrappedLabel(message, color, self)
@@ -80,7 +64,7 @@ class ScrollableMenu(QMenu):
             scroll_bar.setValue(new_value)
 
     '''
-    #Returns a list of any widgets in the layout that include the given string
+    Returns a list of any widgets in the layout that include the given string
     '''
     def return_matching(self, seq):
         matching = []
@@ -93,8 +77,8 @@ class ScrollableMenu(QMenu):
         return matching
 
     '''
-    #Given a list of widgets will go through and remove each one
-    #If only one widget is being removed in shoudl be passed in wrapped in []
+    Given a list of widgets will go through and remove each one
+    If only one widget is being removed in shoudl be passed in wrapped in []
     '''
     def remove_items(self,items):
         for item in items:

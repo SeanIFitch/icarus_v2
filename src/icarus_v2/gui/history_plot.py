@@ -89,7 +89,6 @@ class HistoryPlot(QWidget):
         self.switch_time_plot.add_line(HistStat.PS_SWITCH, style[0], style[1])
         # Connect the x-axis of all plots for zooming and panning
         self.switch_time_plot.setXLink(self.pressure_plot)
-
         self.switch_time_plot.add_statistic(HistStat.PO_SWITCH, lambda x: x[-1], "Last: {:.2f}")
         self.switch_time_plot.add_statistic(HistStat.PO_SWITCH, np.mean, "Avg: {:.2f}")
         self.switch_time_plot.add_statistic(HistStat.DO_SWITCH, lambda x: x[-1], "Last: {:.2f}")
@@ -262,94 +261,6 @@ class HistoryPlot(QWidget):
 
     def set_log_coefficients(self, coefficients):
         self.log_coefficients = self.define_coefficients(coefficients)
-
-    def update_theme(self):
-        self.pressure_plot.update_theme()
-        self.pressure_plot.set_title("Pressure")
-        self.pressure_plot.set_y_label('Pressure (kBar)')
-        self.pressure_plot.set_x_label('Time (s)')
-
-        self.slope_plot.update_theme()
-        self.slope_plot.set_title("Pressure Change Slope")
-        self.slope_plot.set_y_label('Slope (kBar/ms)')
-        self.slope_plot.set_x_label('Time (s)')
-
-        self.switch_time_plot.update_theme()
-        self.switch_time_plot.set_title("Switch Time")
-        self.switch_time_plot.set_y_label('Time (ms)')
-        self.switch_time_plot.set_x_label('Time (s)')
-
-        from icarus_v2.gui.styled_plot_widget import theme
-        color = self.get_line_styles(theme)["origin pressure"][0]
-        size = 14
-        self.last_pressure_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.avg_pressure_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.last_pressure_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.avg_pressure_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-
-        color = self.get_line_styles(theme)["press origin slope"][0]
-        self.last_press_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.avg_press_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.last_press_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.avg_press_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-
-        color = self.get_line_styles(theme)["press origin switch"][0]
-        self.last_press_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.avg_press_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.last_press_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.avg_press_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-
-        color = self.get_line_styles(theme)["depress origin slope"][0]
-        self.last_depress_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.avg_depress_slope_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.last_depress_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.avg_depress_slope_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-
-        color = self.get_line_styles(theme)["depress origin switch"][0]
-        self.last_depress_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.avg_depress_switch_display.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.last_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-        self.avg_depress_switch_label.setStyleSheet(f"color: {color}; font-size: {size}px;")
-
-        style = self.LINE_STYLES["depress origin switch"]
-        pen = pg.mkPen(color=style[0], style=style[1])
-        self.lines["depress origin switch"] = self.switch_time_plot.plot([], [], pen=pen)
-        style = self.LINE_STYLES["depress sample switch"]
-        pen = pg.mkPen(color=style[0], style=style[1])
-        self.lines["depress sample switch"] = self.switch_time_plot.plot([], [], pen=pen)
-        style = self.LINE_STYLES["press origin switch"]
-        pen = pg.mkPen(color=style[0], style=style[1])
-        self.lines["press origin switch"] = self.switch_time_plot.plot([], [], pen=pen)
-        style = self.LINE_STYLES["press sample switch"]
-        pen = pg.mkPen(color=style[0], style=style[1])
-        self.lines["press sample switch"] = self.switch_time_plot.plot([], [], pen=pen)
-
-        style = self.LINE_STYLES["depress origin slope"]
-        pen = pg.mkPen(color=style[0], style=style[1])
-        self.lines["depress origin slope"] = self.slope_plot.plot([], [], pen=pen)
-        style = self.LINE_STYLES["depress sample slope"]
-        pen = pg.mkPen(color=style[0], style=style[1])
-        self.lines["depress sample slope"] = self.slope_plot.plot([], [], pen=pen)
-        style = self.LINE_STYLES["press origin slope"]
-        pen = pg.mkPen(color=style[0], style=style[1])
-        self.lines["press origin slope"] = self.slope_plot.plot([], [], pen=pen)
-        style = self.LINE_STYLES["press sample slope"]
-        pen = pg.mkPen(color=style[0], style=style[1])
-        self.lines["press sample slope"] = self.slope_plot.plot([], [], pen=pen)
-
-        style = self.LINE_STYLES["origin pressure"]
-        pen = pg.mkPen(color=style[0], style=style[1])
-        self.lines["origin pressure"] = self.pressure_plot.plot([], [], pen=pen)
-        style = self.LINE_STYLES["sample pressure"]
-        pen = pg.mkPen(color=style[0], style=style[1])
-        self.lines["sample pressure"] = self.pressure_plot.plot([], [], pen=pen)
-        style = self.LINE_STYLES["origin pressure"]
-        pen = pg.mkPen(color=style[0], style=style[1])
-        self.lines["origin pressure"] = self.pressure_plot.plot([], [], pen=pen)
-        style = self.LINE_STYLES["sample pressure"]
-        pen = pg.mkPen(color=style[0], style=style[1])
-        self.lines["sample pressure"] = self.pressure_plot.plot([], [], pen=pen)
-
 
     def get_line_styles(self, theme):
         return {

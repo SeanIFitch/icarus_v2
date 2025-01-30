@@ -10,8 +10,6 @@ from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 class EventPlot(QWidget):
     # Dictionary of color to plot each channel
-    # Light Theme Color:  #FFD100
-
     LINE_STYLES = {
         Channel.TARGET: (THEME_COLOR_VALUES[theme]['line']['light_green'], Qt.SolidLine),          # light green
         Channel.DEPRE_LOW: (THEME_COLOR_VALUES[theme]['line']['magenta'], Qt.SolidLine),           # magenta
