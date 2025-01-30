@@ -95,12 +95,9 @@ class SettingsDialog(QDialog):
                     }
                     """)
         view_layout = QGridLayout()
+        view_layout.addWidget(QLabel("Hide Valve Sensors:"), 0, 0)
         view_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Preferred), 0, 1)
-        # view_layout.addWidget(self.theme_button, 0, 2)
-
-        view_layout.addWidget(QLabel("Hide Valve Sensors:"), 1, 0)
-        view_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Preferred), 1, 1)
-        view_layout.addWidget(self.hide_valve_checkbox, 1, 2)
+        view_layout.addWidget(self.hide_valve_checkbox, 0, 2)
         view_group = QGroupBox("View")
         view_group.setLayout(view_layout)
 
@@ -443,4 +440,3 @@ class SettingsDialog(QDialog):
 
     def enable_sentry(self):
         self.sentry.handle_experiment(False)
-
