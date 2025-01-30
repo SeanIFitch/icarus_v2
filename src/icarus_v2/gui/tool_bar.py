@@ -5,9 +5,6 @@ from PySide6.QtCore import Signal
 from icarus_v2.gui.scrollable_menu import ScrollableMenu
 from icarus_v2.qdarktheme.load_style import load_stylesheet
 
-from src.icarus_v2.gui.styled_plot_widget import change_theme
-from src.icarus_v2.gui.event_plot import EventPlot
-
 
 class ToolBar(QToolBar):
     set_mode_signal = Signal(str)
