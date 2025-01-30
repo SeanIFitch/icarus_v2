@@ -58,9 +58,9 @@ class MainWindow(QMainWindow):
 
         self.log_control_panel = LogControlPanel(tool_bar=self.toolbar)
         self.log_control_panel.pressurize_event_signal.connect(self.pressurize_plot.update_data)
-        self.log_control_panel.pressurize_event_signal.connect(self.history_plot.render_pressurize_time)
+        self.log_control_panel.pressurize_event_signal.connect(self.history_plot.render_event_time)
         self.log_control_panel.depressurize_event_signal.connect(self.depressurize_plot.update_data)
-        self.log_control_panel.depressurize_event_signal.connect(self.history_plot.render_depressurize_time)
+        self.log_control_panel.depressurize_event_signal.connect(self.history_plot.render_event_time)
         self.log_control_panel.period_event_signal.connect(self.period_plot.update_data)
         self.log_control_panel.event_list_signal.connect(self.history_plot.load_event_list)
         self.log_control_panel.reset_history_signal.connect(self.reset_history)
@@ -231,9 +231,9 @@ class MainWindow(QMainWindow):
         self.set_sample_sensor_connected(True)
 
         self.history_plot.reset_history()
-        self.pressurize_plot.reset_history()
-        self.depressurize_plot.reset_history()
-        self.period_plot.reset_history()
+        self.pressurize_plot.plot.reset()
+        self.depressurize_plot.plot.reset()
+        self.period_plot.plot.reset()
 
     # Runs on quitting the application
     def closeEvent(self, event):
