@@ -88,11 +88,12 @@ class ToolBar(QToolBar):
         self.messages_menu.add_message(warning, color)
 
     '''
-    #Clears any log warnings or errors from the toolbar
-    #Called whenever the log is closed
+    # Clears any log warnings or errors from the toolbar
+    # Called whenever the log is closed
     '''
     def clear_log_toolbar(self):
         logs = self.messages_menu.return_matching("LOG:")
         self.messages_menu.remove_items(logs)
-        if("LOG:" in self.warning_button.text()):
+
+        if "LOG:" in self.warning_button.text():
             self.warning_button.setText("")
