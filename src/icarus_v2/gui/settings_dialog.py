@@ -20,17 +20,14 @@ from icarus_v2.backend.event import Channel, get_channel
 import numpy as np
 from PySide6.QtCore import Qt
 from time import sleep
-from icarus_v2.gui.scrollable_menu import ScrollableMenu
-from PySide6.QtCore import Signal
-import icarus_v2.gui.styled_plot_widget as styled_plot_widget
+from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
 class SettingsDialog(QDialog):
-    theme_changed = Signal(str)  # Signal to emit when the theme changes
-    def __init__(self, config_manager, connected, pressure_signal, sentry, parent=None):
+    def __init__(self, connected, pressure_signal, sentry, parent=None):
         super().__init__(parent=parent)
 
-        self.config_manager = config_manager
+        self.config_manager = ConfigurationManager()
         self.pressure_signal = pressure_signal
         self.sentry = sentry
 
@@ -80,11 +77,11 @@ class SettingsDialog(QDialog):
         edit_width = 190
 
         # View section
-        self.theme_button = QPushButton("Select Theme", self)
-        self.theme_button.setFixedWidth(edit_width)
-        self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
-        self.themes_menu = ScrollableMenu(parent=self.theme_button)
-        self.themes_menu.setScrollAreaSize(edit_width, 60   )
+        # self.theme_button = QPushButton("Select Theme", self)
+        # self.theme_button.setFixedWidth(edit_width)
+        # self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
+        # self.themes_menu = ScrollableMenu(parent=self.theme_button)
+        # self.themes_menu.setScrollAreaSize(edit_width, 60   )
 
         # Implement later
         # def set_default():
@@ -96,19 +93,17 @@ class SettingsDialog(QDialog):
         def set_dark():
             self.theme_button.setText("Dark Theme")
             self.theme_button.setStyleSheet("font-size: 12pt; text-align: left;")
-            styled_plot_widget.theme = 'dark'
             self.theme_changed.emit('dark')
 
         def set_light():
             self.theme_button.setText("Light Theme")
             self.theme_button.setStyleSheet("font-size: 12pt; text-align: left; background-color: white; color: black")
-            styled_plot_widget.theme = 'light'
             self.theme_changed.emit('light')
 
         # self.themes_menu.add_option("System Default", on_click=set_default)
-        self.themes_menu.add_option("Dark Theme", on_click=set_dark)
-        self.themes_menu.add_option("Light Theme", on_click=set_light)
-        self.theme_button.setMenu(self.themes_menu)
+        # self.themes_menu.add_option("Dark Theme", on_click=set_dark)
+        # self.themes_menu.add_option("Light Theme", on_click=set_light)
+        # self.theme_button.setMenu(self.themes_menu)
 
         self.hide_valve_checkbox = QCheckBox()
         hide_valve = self.config_manager.get_settings('hide_valve_sensors')
@@ -132,7 +127,7 @@ class SettingsDialog(QDialog):
         view_layout = QGridLayout()
         view_layout.addWidget(QLabel("Select Theme:"), 0, 0)
         view_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Preferred), 0, 1)
-        view_layout.addWidget(self.theme_button, 0, 2)
+        # view_layout.addWidget(self.theme_button, 0, 2)
 
         view_layout.addWidget(QLabel("Hide Valve Sensors:"), 1, 0)
         view_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Preferred), 1, 1)

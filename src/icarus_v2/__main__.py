@@ -13,15 +13,16 @@ def main():
     app.setStyleSheet(load_stylesheet(theme='dark'))
     app.setApplicationName("Icarus")
 
-    config_manager = ConfigurationManager()
-
     with importlib.resources.path('icarus_v2.resources', 'wing.png') as icon_path:
         app.setWindowIcon(QIcon(str(icon_path)))
 
-    window = MainWindow(config_manager)
+    # initialize singleton ConfigurationManager
+    ConfigurationManager()
+
+    window = MainWindow()
     window.showMaximized()
 
-    data_handler = DataHandler(config_manager)
+    data_handler = DataHandler()
     window.set_device(data_handler)
     data_handler.start()
 

@@ -79,6 +79,33 @@ class ScrollableMenu(QMenu):
             new_value = scroll_bar.value() + label.sizeHint().height()
             scroll_bar.setValue(new_value)
 
+    '''
+    #Returns a list of any widgets in the layout that include the given string
+    '''
+    def return_matching(self, seq):
+        matching = []
+        for i in range(self.layout.count()):
+            widget=self.layout.itemAt(i).widget()
+            if(hasattr(widget,'text')):
+                label = widget.text() 
+                if(seq in label):
+                    matching += [self.layout.itemAt(i)]
+        return matching
+
+    '''
+    #Given a list of widgets will go through and remove each one
+    #If only one widget is being removed in shoudl be passed in wrapped in []
+    '''
+    def remove_items(self,items):
+        for item in items:
+            #This clears them from the scroll menu
+            if item:
+                widget = item.widget()
+                if widget:
+                    widget.deleteLater()
+            
+            #Remove from the layout
+            self.layout.removeItem(item)
 
 class WrappedLabel(QLabel):
     def __init__(self, text, color, parent=None):

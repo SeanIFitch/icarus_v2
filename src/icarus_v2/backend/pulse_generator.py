@@ -1,5 +1,6 @@
 from PySide6.QtCore import QThread
 from time import sleep, time
+from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
 # DIGITAL
@@ -17,14 +18,14 @@ class PulseGenerator(QThread):
     PRESSURIZE = 2
     LOG = 4
 
-    def __init__(self, config_manager) -> None:
+    def __init__(self) -> None:
         super().__init__()
 
         self.device = None
-        self.config_manager = config_manager
+        self.config_manager = ConfigurationManager()
 
         # dictionary containing pressurize_width, depressurize_width, period_width, delay_width
-        self.settings = config_manager.get_settings('timing_settings')
+        self.settings = self.config_manager.get_settings('timing_settings')
         self.config_manager.settings_updated.connect(self.update_settings)
 
         # Whether the device should be currently generating pulses

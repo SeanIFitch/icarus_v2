@@ -1,5 +1,6 @@
 from icarus_v2.backend.event import Channel, get_channel, Event
 from PySide6.QtCore import QObject
+from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
 # Detects whether the sample sensor is connected to the sample tube by receiving depressurize events
@@ -7,11 +8,11 @@ class SampleSensorDetector(QObject):
     low_threshold = 0.998
     high_threshold = 1.05
 
-    def __init__(self, config_manager, signal=None):
+    def __init__(self, signal=None):
         super().__init__()
-        self.config_manager = config_manager
+        self.config_manager = ConfigurationManager()
         self.config_manager.settings_updated.connect(self.update_settings)
-        self.coefficients = config_manager.get_settings("plotting_coefficients")
+        self.coefficients = self.config_manager.get_settings("plotting_coefficients")
         self.last_result = None
 
         self.sample_sensor_connected = signal
