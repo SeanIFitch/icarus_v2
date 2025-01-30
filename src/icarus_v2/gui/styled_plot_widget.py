@@ -1,8 +1,10 @@
+import os
+
 from pyqtgraph import PlotWidget
 from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
 import pyqtgraph as pg
 from pyqtgraph.graphicsItems.ButtonItem import ButtonItem
-from PySide6.QtCore import QEvent
+from PySide6.QtCore import QEvent, QStandardPaths
 from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QDialog, QPushButton, QVBoxLayout, QFileDialog, QLabel, QSizePolicy
 from icarus_v2.backend.csv_exporter import CSVExporter
@@ -37,8 +39,6 @@ class StyledPlotWidget(PlotWidget):
         self.line_visibility = {}
 
         # Export functionality
-        self.default_filename = "icarus_graph"
-        self.folder = None
         self.edit_dialog = None
 
         # Mouse coordinates
@@ -228,8 +228,8 @@ class StyledPlotWidget(PlotWidget):
 
         png_button = QPushButton("Export as PNG")
         csv_button = QPushButton("Export as CSV")
-        png_button.clicked.connect(self.export_png)
-        csv_button.clicked.connect(self.export_csv)
+        png_button.clicked.connect(lambda x: self.export('png'))
+        csv_button.clicked.connect(lambda x: self.export('csv'))
         png_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         csv_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
@@ -246,15 +246,25 @@ class StyledPlotWidget(PlotWidget):
         self.edit_dialog.setLayout(layout)
         self.edit_dialog.show()
 
-    def export_png(self):
+    def export(self, extension):
         self.edit_dialog.close()
 
         options = QFileDialog.Options()
+        default_dir = QStandardPaths.writableLocation(QStandardPaths.DownloadLocation)
+        filename = self.getPlotItem().titleLabel.text.lower().replace(' ', '_') + f"_plot.{extension}"
+        filename = os.path.join(default_dir, filename)
+
+        # Check if the file already exists and modify the filename accordingly
+        counter = 1
+        while os.path.exists(filename):
+            filename = filename.replace('.csv', f" ({counter}).{extension}")
+            counter += 1
+
         filename, _ = QFileDialog.getSaveFileName(
             self,
-            "Save PNG",
-            self.default_filename + ".png",
-            "PNG Files (*.png)",
+            f"Save {extension.upper()}",
+            filename,
+            f"{extension.upper()} Files (*.{extension})",
             options=options
         )
 
@@ -262,34 +272,17 @@ class StyledPlotWidget(PlotWidget):
             self.edit_dialog.close()
             return
 
-        if not filename.endswith('.png'):
-            filename += '.png'
+        if not filename.endswith(f'.{extension}'):
+            filename += f'.{extension}'
 
-        exporter = pg.exporters.ImageExporter(self.plotItem)
-        exporter.parameters()['width'] = 650
-        exporter.export(filename)
-        self.edit_dialog.close()
+        if extension == 'csv':
+            exporter = CSVExporter(self.plotItem)
+        elif extension == 'png':
+            exporter = pg.exporters.ImageExporter(self.plotItem)
+            exporter.parameters()['width'] = 650
+        else:
+            raise RuntimeError(f"Unsupported file extension '{extension}'")
 
-    def export_csv(self):
-        self.edit_dialog.close()
-
-        options = QFileDialog.Options()
-        filename, _ = QFileDialog.getSaveFileName(
-            self,
-            "Save CSV",
-            self.default_filename + ".csv",
-            "CSV Files (*.csv)",
-            options=options
-        )
-
-        if not filename:
-            self.edit_dialog.close()
-            return
-
-        if not filename.endswith('.csv'):
-            filename += '.csv'
-
-        exporter = CSVExporter(self.plotItem)
         exporter.export(filename)
         self.edit_dialog.close()
 
