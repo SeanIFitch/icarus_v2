@@ -2,9 +2,10 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass
-from icarus_v2.qdarktheme.color import Color
 from pathlib import Path
-
+from PySide6.QtCore import QStandardPaths
+from icarus_v2.qdarktheme.color import Color
+from icarus_v2.qdarktheme.svg import Svg
 
 """Default color values."""
 THEME_COLOR_VALUES = {
@@ -240,8 +241,18 @@ def color(color_info: str | dict[str, str | dict], state: str | None = None) -> 
 
 def url(color: Color, id: str, rotate: int = 0) -> str:
     """Filter for template engine. This filter create url for svg and output svg file."""
-    svg_path = Path(__file__).parent.parent / "resources" / "svg" / f"{id}_{color._to_hex()}_{rotate}.svg"
+    cache_dir = QStandardPaths.writableLocation(QStandardPaths.CacheLocation)
+    icons_dir = Path(cache_dir) / "icons"
+    svg_path = icons_dir / f"{id}_{color.to_hex()}_{rotate}.svg"
     url = f"url({svg_path.as_posix()})"
+
+    # Create the icons directory if it doesn't exist
+    icons_dir.mkdir(parents=True, exist_ok=True)
+
+    if svg_path.exists():
+        return url
+    svg = Svg(id).colored(color).rotate(rotate)
+    svg_path.write_text(str(svg))
     return url
 
 
@@ -307,17 +318,9 @@ class Template:
     def _run_filter(self, value: str | int | float, filter_text: str):
         contents = filter_text.split("(")
         if len(contents) == 1:
-            filter_name = contents[0]
-            # Ignore 'url' filter or any other missing filters
-            if filter_name not in self._filters:
-                return value  # Simply return the value as-is
-            return self._filters[filter_name](value)
+            return self._filters[contents[0]](value)
 
         filter_name, arg_text = contents[0], contents[1].rstrip(")")
-
-        # Ignore 'url' filter or any other missing filters
-        if filter_name not in self._filters:
-            return value  # Simply return the value as-is
 
         # Split arguments by commas, then key-value pairs by '='
         arguments = {}
@@ -389,7 +392,7 @@ def load_stylesheet(theme: str = "dark", corner_shape: str = "rounded",) -> str:
     # Build stylesheet
     template = Template(
         stylesheet,
-        {"color": color, "corner": corner, "env": env},
+        {"color": color, "corner": corner, "env": env, "url": url},
     )
     replacements = dict(color_values, **{"corner-shape": corner_shape})
     return template.render(replacements)

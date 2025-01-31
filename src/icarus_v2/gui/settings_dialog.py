@@ -79,21 +79,6 @@ class SettingsDialog(QDialog):
         hide_valve = self.config_manager.get_settings('hide_valve_sensors')
         self.hide_valve_checkbox.setCheckState(Qt.Checked if hide_valve else Qt.Unchecked)
         self.hide_valve_checkbox.stateChanged.connect(self.set_hide_valve)
-        self.hide_valve_checkbox.setStyleSheet("""
-                    QCheckBox::indicator {
-                        width: 23px;
-                        height: 23px;
-                    }
-                    QCheckBox::indicator:unchecked {
-                        border: 2px solid gray;
-                        border-radius: 4px;
-                    }
-                    QCheckBox::indicator:checked {
-                        border: 2px solid gray;
-                        border-radius: 4px;
-                        background-color: #3A7BD5;
-                    }
-                    """)
         view_layout = QGridLayout()
         view_layout.addWidget(QLabel("Hide Valve Sensors:"), 0, 0)
         view_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Preferred), 0, 1)

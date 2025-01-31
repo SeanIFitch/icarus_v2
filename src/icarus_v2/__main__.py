@@ -10,8 +10,8 @@ from icarus_v2.qdarktheme.load_style import load_stylesheet
 # Application entry point
 def main():
     app = QApplication([])
-    app.setStyleSheet(load_stylesheet(theme='dark'))
     app.setApplicationName("Icarus")
+    app.setStyleSheet(load_stylesheet(theme='dark'))
 
     with importlib.resources.path('icarus_v2.resources', 'wing.png') as icon_path:
         app.setWindowIcon(QIcon(str(icon_path)))
