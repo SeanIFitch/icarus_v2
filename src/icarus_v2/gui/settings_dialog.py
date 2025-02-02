@@ -79,9 +79,10 @@ class SettingsDialog(QDialog):
         self.hide_valve_checkbox.setCheckState(Qt.Checked if hide_valve else Qt.Unchecked)
         self.hide_valve_checkbox.stateChanged.connect(self.set_hide_valve)
         self.theme_combo_box = QComboBox()
-        self.theme_combo_box.addItems(["System Default", "Light", "Dark"])
+        self.theme_combo_box.addItems(["Dark", "Light"])
+        self.theme_combo_box.setFixedWidth(edit_width)
         theme = self.config_manager.get_settings('theme')
-        self.theme_combo_box.setCurrentText(theme)
+        self.theme_combo_box.setCurrentText(theme.capitalize())
         self.theme_combo_box.currentTextChanged.connect(self.set_theme)
 
         view_layout = QGridLayout()
@@ -370,7 +371,7 @@ class SettingsDialog(QDialog):
         self.config_manager.save_settings('plotting_coefficients', self.coefficients)
 
     def set_theme(self, theme):
-        self.config_manager.save_settings('theme', theme)
+        self.config_manager.save_settings('theme', theme.lower())
 
     def set_hide_valve(self, state):
         self.config_manager.save_settings('hide_valve_sensors', bool(state))

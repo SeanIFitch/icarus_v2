@@ -77,6 +77,7 @@ class HistoryPlot(QWidget):
 
         # Set layout
         self.layout = QVBoxLayout()
+        self.layout.setSpacing(0)
         self.layout.addWidget(self.pressure_plot)
         self.layout.addWidget(self.slope_plot)
         self.layout.addWidget(self.switch_time_plot)

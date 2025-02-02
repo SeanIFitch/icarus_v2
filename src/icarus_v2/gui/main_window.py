@@ -1,4 +1,4 @@
-# GUI imports
+import pyqtgraph
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import (
     QMainWindow,
@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QSizePolicy,
     QSpacerItem,
-    QStackedWidget
+    QStackedWidget, QApplication
 )
 from icarus_v2.gui.event_plot import EventPlot
 from icarus_v2.gui.history_plot import HistoryPlot
@@ -21,6 +21,8 @@ from icarus_v2.gui.tool_bar import ToolBar
 from icarus_v2.gui.error_dialog import open_error_dialog
 from icarus_v2.backend.log_reader import LogReader
 from icarus_v2.backend.event import Event
+from icarus_v2.backend.configuration_manager import ConfigurationManager
+from icarus_v2.qdarktheme.load_style import load_stylesheet, THEME_COLOR_VALUES
 
 
 # Can be either in log reading or device mode.
@@ -30,8 +32,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.mode = None
-
         self.data_handler = None
+        self.config_manager = ConfigurationManager()
+        self.update_theme()
+        self.config_manager.settings_updated.connect(self.update_theme)
 
         # Window settings
         self.setWindowTitle("Icarus NMR")
@@ -102,6 +106,7 @@ class MainWindow(QMainWindow):
 
         # Event plot layout
         event_layout = QVBoxLayout()
+        event_layout.setSpacing(0)
         event_layout.addWidget(self.pressurize_plot)
         event_layout.addWidget(self.depressurize_plot)
         event_layout.addWidget(self.period_plot)
@@ -119,6 +124,17 @@ class MainWindow(QMainWindow):
 
         self.connected = False
         self.set_mode("device")
+
+    def update_theme(self, settings_key: str | None = None) -> None:
+        # skip setting them if this is triggered by settings updates
+        if settings_key is not None and settings_key != "theme":
+            return
+
+        theme = self.config_manager.get_settings('theme')
+        app = QApplication.instance()
+
+        if app is not None:
+            app.setStyleSheet(load_stylesheet(theme))
 
     # Connects widgets to backend
     def set_device(self, data_handler):

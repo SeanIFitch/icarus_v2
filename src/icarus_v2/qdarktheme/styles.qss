@@ -1354,6 +1354,8 @@ PlotWidget {
 
     /* decrease border */
     border: none;
+
+    background: {{ background|color }};
 }
 
 /* ParameterTree ----------------------------------------------------------

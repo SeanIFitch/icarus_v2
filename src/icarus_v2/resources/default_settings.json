@@ -31,5 +31,5 @@
         "example_events": 10,
         "decrease_count_to_error": 2
     },
-    "theme": "System Default"
+    "theme": "dark"
 }

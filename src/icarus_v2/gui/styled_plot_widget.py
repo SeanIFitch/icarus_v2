@@ -1,5 +1,6 @@
 import os
 from pyqtgraph import PlotWidget
+from icarus_v2.backend.configuration_manager import ConfigurationManager
 from icarus_v2.backend.event import Channel, HistStat, Event
 from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
 import pyqtgraph as pg
@@ -14,12 +15,15 @@ from bisect import bisect_left, bisect_right
 
 class StyledPlotWidget(PlotWidget):
     def __init__(self, x_zoom=False):
-        theme = 'dark' #TODO: know that this is here
-        self.theme = theme
-        background = THEME_COLOR_VALUES[theme]['background']['base']
-        self.text_color = THEME_COLOR_VALUES[theme]['foreground']['base']
         self.full_init=False
-        PlotWidget.__init__(self, background=background)
+
+        PlotWidget.__init__(self)
+
+        self.theme = None
+        self.text_color = None
+        self.config_manager = ConfigurationManager()
+        self.update_theme()
+        self.config_manager.settings_updated.connect(self.update_theme)
 
         self.showGrid(x=True, y=True)
         self.setMouseEnabled(x=x_zoom, y=False)  # Prevent zooming
@@ -67,10 +71,14 @@ class StyledPlotWidget(PlotWidget):
 
         self.full_init=True
 
-    def update_theme(self):
-        theme = 'dark'  # TODO: know that this is here
-        background = THEME_COLOR_VALUES[theme]['background']['base']
-        self.text_color = THEME_COLOR_VALUES[theme]['foreground']['base']
+    def update_theme(self, settings_key: str | None = None) -> None:
+        # skip setting them if this is triggered by settings updates
+        if settings_key is not None and settings_key != "theme":
+            return
+
+        self.theme = self.config_manager.get_settings('theme')
+        background = THEME_COLOR_VALUES[self.theme]['background']['base']
+        self.text_color = THEME_COLOR_VALUES[self.theme]['foreground']['base']
         self.setBackground(background)
 
     def set_title(self, title):
