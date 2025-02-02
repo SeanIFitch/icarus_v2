@@ -38,10 +38,7 @@ class ConfigurationManager(QObject):
 
         # Load application settings
         if not os.path.isfile(self.filename):
-            # Load default settings from icarus_v2.resources
-            with importlib.resources.path('icarus_v2.resources', 'default_settings.json') as path:
-                with open(path, 'r') as file:
-                    self.settings = json.load(file)
+            self.settings = self.get_default_settings()
             self.save_settings()  # Save default settings to the config file
         else:
             with open(self.filename, "r") as file:
@@ -50,6 +47,11 @@ class ConfigurationManager(QObject):
 
     def get_settings(self, key):
         with self._lock:
+            # Get default value if not defined
+            if key not in self.settings:
+                default = self.get_default_settings()
+                self.settings[key] = default[key]
+
             value = deepcopy(self.settings[key])
 
             # Convert to enum rather than int
@@ -72,3 +74,11 @@ class ConfigurationManager(QObject):
         if emit and key is not None:
             # Emit in a thread-safe way
             QMetaObject.invokeMethod(self, "settings_updated", Qt.QueuedConnection, Q_ARG(str, key))
+
+    @staticmethod
+    def get_default_settings():
+        # Load default settings from icarus_v2.resources
+        with importlib.resources.path('icarus_v2.resources', 'default_settings.json') as path:
+            with open(path, 'r') as file:
+                settings = json.load(file)
+        return settings

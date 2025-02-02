@@ -24,7 +24,6 @@ class StyledPlotWidget(PlotWidget):
         self.showGrid(x=True, y=True)
         self.setMouseEnabled(x=x_zoom, y=False)  # Prevent zooming
         self.hideButtons()  # Remove autoScale button
-        self.setStyleSheet("padding: 0px; border: none;")
         self.getPlotItem().getViewBox().setMenuEnabled(False) # Remove right click menu
 
         # Set up the export button

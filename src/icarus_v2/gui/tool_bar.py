@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
 from PySide6.QtGui import QIcon, QAction
 from icarus_v2.gui.settings_dialog import SettingsDialog
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from icarus_v2.gui.scrollable_menu import ScrollableMenu
 
 
@@ -12,6 +12,7 @@ class ToolBar(QToolBar):
         super().__init__(parent=parent)
 
         self.setMovable(False)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.PreventContextMenu)
 
         # Settings button
         self.connected = False
