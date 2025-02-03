@@ -125,6 +125,11 @@ class MainWindow(QMainWindow):
         self.connected = False
         self.set_mode("device")
 
+        # disable focus
+        for widget in self.findChildren(QWidget):
+            widget.setFocusPolicy(Qt.NoFocus)
+
+
     def update_theme(self, settings_key: str | None = None) -> None:
         # skip setting theme if this is triggered by settings updates
         if settings_key is not None and settings_key != "theme":
