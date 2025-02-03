@@ -20,7 +20,6 @@ from icarus_v2.gui.error_dialog import open_error_dialog
 from icarus_v2.backend.event import Channel, get_channel
 import numpy as np
 from PySide6.QtCore import Qt
-from time import sleep
 from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
@@ -365,10 +364,10 @@ class SettingsDialog(QDialog):
             self.coefficients[Channel.HI_PRE_SAMPLE] = sample_coefficient
             self.coefficients[Channel.TARGET] = target_coefficient
 
+            self.config_manager.save_settings('plotting_coefficients', self.coefficients)
+
         # Send pressure readings exactly once
         self.pressure_signal.connect(recalibrate, type=Qt.SingleShotConnection)
-        sleep(0.4)  # Time for a pressure event * 2
-        self.config_manager.save_settings('plotting_coefficients', self.coefficients)
 
     def set_theme(self, theme):
         self.config_manager.save_settings('theme', theme.lower())
