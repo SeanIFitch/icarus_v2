@@ -17,28 +17,31 @@ class Channel(Enum):
     LOG = 10            # Digital CH4: log (Active low / logging on False)
 
     def __str__(self):
-        if self.value == 0:
-            return "Target Pressure"
-        elif self.value == 1:
-            return "Depressurization Valve Lower Sensor"
-        elif self.value == 2:
-            return "Depressurization Valve Upper Sensor"
-        elif self.value == 3:
-            return "Pressurization Valve Lower Sensor"
-        elif self.value == 4:
-            return "Pressurization Valve Upper Sensor"
-        elif self.value == 5:
-            return "Origin High Pressure Sensor"
-        elif self.value == 6:
-            return "Sample High Pressure Sensor"
-        elif self.value == 7:
-            return "Pump DIO"
-        elif self.value == 8:
-            return "Depressurization Valve DIO"
-        elif self.value == 9:
-            return "Pressurization Valve DIO"
-        elif self.value == 10:
-            return "Log DIO"
+        match self.value:
+            case 0:
+                return "Target Pressure"
+            case 1:
+                return "Depressurization Valve Lower Sensor"
+            case 2:
+                return "Depressurization Valve Upper Sensor"
+            case 3:
+                return "Pressurization Valve Lower Sensor"
+            case 4:
+                return "Pressurization Valve Upper Sensor"
+            case 5:
+                return "Origin High Pressure Sensor"
+            case 6:
+                return "Sample High Pressure Sensor"
+            case 7:
+                return "Pump DIO"
+            case 8:
+                return "Depressurization Valve DIO"
+            case 9:
+                return "Pressurization Valve DIO"
+            case 10:
+                return "Log DIO"
+            case _:
+                raise ValueError(f"Unknown value: {self.value}")
 
 
 # Enum for history statistics

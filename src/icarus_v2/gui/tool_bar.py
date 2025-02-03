@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
 from PySide6.QtGui import QIcon, QAction
 from icarus_v2.gui.settings_dialog import SettingsDialog
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from icarus_v2.gui.scrollable_menu import ScrollableMenu
 
 
@@ -12,6 +12,7 @@ class ToolBar(QToolBar):
         super().__init__(parent=parent)
 
         self.setMovable(False)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.PreventContextMenu)
 
         # Settings button
         self.connected = False
@@ -88,11 +89,12 @@ class ToolBar(QToolBar):
         self.messages_menu.add_message(warning, color)
 
     '''
-    #Clears any log warnings or errors from the toolbar
-    #Called whenever the log is closed
+    # Clears any log warnings or errors from the toolbar
+    # Called whenever the log is closed
     '''
     def clear_log_toolbar(self):
         logs = self.messages_menu.return_matching("LOG:")
         self.messages_menu.remove_items(logs)
-        if("LOG:" in self.warning_button.text()):
+
+        if "LOG:" in self.warning_button.text():
             self.warning_button.setText("")

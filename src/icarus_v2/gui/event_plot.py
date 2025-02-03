@@ -1,4 +1,3 @@
-from PySide6.QtCore import Qt
 import numpy as np
 from icarus_v2.backend.event import Event, Channel, get_channel
 from PySide6.QtWidgets import QGridLayout, QWidget
@@ -7,18 +6,6 @@ from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
 class EventPlot(QWidget):
-    # Dictionary of color to plot each channel
-    LINE_STYLES = {
-        Channel.TARGET: ('#45BF55', Qt.SolidLine),          # light green
-        Channel.DEPRE_LOW: ('#AB47BC', Qt.SolidLine),       # magenta
-        Channel.DEPRE_UP: ('#004B8D', Qt.SolidLine),        # blue
-        Channel.PRE_LOW: ('#AB47BC', Qt.SolidLine),         # magenta
-        Channel.PRE_UP: ('#004B8D', Qt.SolidLine),          # blue
-        Channel.HI_PRE_ORIG: ('#FFDC00', Qt.SolidLine),     # yellow
-        Channel.HI_PRE_SAMPLE: ('#FFDC00', Qt.DashLine),    # yellow dashed
-        Channel.DEPRE_VALVE: ('#59D8E6', Qt.SolidLine),     # cyan
-        Channel.PRE_VALVE: ('#B9121B', Qt.SolidLine),       # red
-    }
     DISPLAY_CHANNELS = {
         Event.PRESSURIZE: [
             Channel.TARGET,
@@ -62,8 +49,7 @@ class EventPlot(QWidget):
         self.plot.set_y_label('Pressure (kbar)')
 
         for channel in self.DISPLAY_CHANNELS[event_type]:
-            style = self.LINE_STYLES[channel]
-            self.plot.add_line(channel, style[0], style[1])
+            self.plot.add_line(channel)
 
         # local statistics functions
         def get_valve_open_time(y_data, srate):

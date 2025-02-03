@@ -380,14 +380,10 @@ QPushButton {
     padding: 4px 8px;
     border-radius: {{ corner-shape|corner(size=4) }}px;
 }
-QPushButton:flat,
-QPushButton:default {
+QPushButton:flat /*,
+QPushButton:default */ {
     border: none;
     padding: 5px 9px;
-}
-QPushButton:default {
-    color: {{ background|color }};
-    background: {{ button|color }};
 }
 QPushButton:hover {
     background: {{ button|color(state="button.hoverBackground") }};
@@ -397,6 +393,15 @@ QPushButton:pressed {
 }
 QPushButton:checked:enabled {
     background: {{ button|color(state="button.activeBackground") }};
+}
+QPushButton:focus {
+    background: {{ primary|color }};
+    color: {{ background|color }};
+}
+/* No change for default ----------------------------------------
+QPushButton:default {
+    color: {{ background|color }};
+    background: {{ button|color }};
 }
 QPushButton:default:hover {
     background: {{ button|color(state="defaultButton.hoverBackground") }};
@@ -409,6 +414,7 @@ QPushButton:default:disabled,
 QPushButton:default:checked:disabled {
     background: {{ foreground|color(state="defaultButton.disabledBackground") }};
 }
+---------------------------------------------------------------- */
 
 /* QPushButton noEnabled ------------------------------------------------------------
 
@@ -525,7 +531,7 @@ examples: https://doc.qt.io/qt-5/stylesheet-examples.html#customizing-qcombobox
 
 --------------------------------------------------------------------------- */
 QComboBox {
-    min-height: 1.5em;
+    min-height: 1.2em;
     padding: 0 8px 0 4px;
     background: {{ input.background|color }};
     border: 1px solid {{ border|color(state="input") }};
@@ -1283,14 +1289,18 @@ QCheckBox::indicator,
 QGroupBox::indicator,
 QAbstractItemView::indicator,
 QRadioButton::indicator {
-    height: 18px;
-    width: 18px;
+    height: 35px;
+    width: 35px;
 }
 QCheckBox::indicator,
 QGroupBox::indicator,
 QAbstractItemView::indicator {
     image: {{ foreground|color(state="icon")|url(id="check_box_outline_blank") }};
 }
+QCheckBox::indicator:focus {
+    image: {{ primary|color|url(id="check_box_outline_blank") }};
+}
+
 QCheckBox::indicator:unchecked:disabled,
 QGroupBox::indicator:unchecked:disabled,
 QAbstractItemView::indicator:unchecked:disabled {
@@ -1299,6 +1309,9 @@ QAbstractItemView::indicator:unchecked:disabled {
 QCheckBox::indicator:checked,
 QGroupBox::indicator:checked,
 QAbstractItemView::indicator:checked {
+    image: {{ foreground|color(state="icon")|url(id="check_box") }};
+}
+QCheckBox::indicator:checked:focus {
     image: {{ primary|color|url(id="check_box") }};
 }
 QCheckBox::indicator:checked:disabled,
@@ -1338,6 +1351,11 @@ PlotWidget {
     /* Fix cut labels in plots
     https://github.com/ColinDuquesnoy/QDarkStyleSheet/issues/134 */
     padding: 0;
+
+    /* decrease border */
+    border: none;
+
+    background: {{ background|color }};
 }
 
 /* ParameterTree ----------------------------------------------------------

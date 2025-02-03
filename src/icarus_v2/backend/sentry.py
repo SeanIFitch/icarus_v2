@@ -4,7 +4,8 @@ from icarus_v2.backend.event import get_channel, Channel
 from icarus_v2.backend.configuration_manager import ConfigurationManager
 from icarus_v2.backend.sentry_error import SentryError
 from icarus_v2.backend.sentry_warning import SentryWarning
-from time import localtime, strftime
+from time import localtime
+
 
 # Gets expected values for the experiment checks from the first example_events events of an experiment
 class Sentry(QThread):

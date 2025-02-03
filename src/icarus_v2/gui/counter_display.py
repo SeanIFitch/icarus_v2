@@ -36,6 +36,7 @@ class CounterDisplay(QGroupBox):
 
         # Set main layout
         layout = QGridLayout()
+        layout.setSpacing(0)
         layout.addWidget(pump_count_label, 0, 0)
         layout.addWidget(pressurize_count_label, 1, 0)
         layout.addWidget(depressurize_count_label, 2, 0)
@@ -70,8 +71,8 @@ class CounterDisplay(QGroupBox):
             self.counts["depressurize_count"] += 1
             self.depressurize_counter.setText(str(self.counts['depressurize_count']))
 
-        # Save counts to json every 100 updates
-        if sum(self.counts.values()) % 100 == 0:
+        # Save counts to json every 10 updates
+        if sum(self.counts.values()) % 10 == 0:
             # Do not emit so that this does not call self.update_settings
             self.save_settings()
 

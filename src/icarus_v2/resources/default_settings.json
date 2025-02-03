@@ -30,5 +30,6 @@
         "max_pumps_in_window": 5,
         "example_events": 10,
         "decrease_count_to_error": 2
-    }
+    },
+    "theme": "dark"
 }

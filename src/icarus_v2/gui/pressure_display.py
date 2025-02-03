@@ -28,6 +28,7 @@ class PressureDisplay(QGroupBox):
 
         # Set main layout
         layout = QGridLayout()
+        layout.setSpacing(0)
         layout.addWidget(main_label, 0, 0, 1, 0)
         layout.addWidget(target_label, 1, 0)
         layout.addWidget(origin_label, 2, 0)

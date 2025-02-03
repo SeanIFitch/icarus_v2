@@ -1,7 +1,8 @@
 import os
-
 from pyqtgraph import PlotWidget
-from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
+from icarus_v2.backend.configuration_manager import ConfigurationManager
+from icarus_v2.backend.event import Channel, HistStat, Event
+from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES, ACCENT_COLORS, url, color
 import pyqtgraph as pg
 from pyqtgraph.graphicsItems.ButtonItem import ButtonItem
 from PySide6.QtCore import QEvent, QStandardPaths
@@ -14,22 +15,25 @@ from bisect import bisect_left, bisect_right
 
 class StyledPlotWidget(PlotWidget):
     def __init__(self, x_zoom=False):
-        theme = 'dark' #TODO: know that this is here
-        background = THEME_COLOR_VALUES[theme]['background']['base']
-        self.text_color = THEME_COLOR_VALUES[theme]['foreground']['base']
         self.full_init=False
+
+        self.config_manager = ConfigurationManager()
+        self.config_manager.settings_updated.connect(self.update_theme)
+
+        background = self.get_background_color()
         PlotWidget.__init__(self, background=background)
 
-        self.showGrid(x=True, y=True)
+        self.showGrid(x=True, y=True, alpha=0.3)
         self.setMouseEnabled(x=x_zoom, y=False)  # Prevent zooming
         self.hideButtons()  # Remove autoScale button
         self.getPlotItem().getViewBox().setMenuEnabled(False) # Remove right click menu
 
         # Set up the export button
-        self.exportBtn = ButtonItem("src/icarus_v2/resources/export_icon.svg", 20,self.plotItem)
-        self.exportBtn.clicked.connect(self.export_clicked)
-        self.exportBtn.setPos(0,210)
-        self.exportBtn.hide()
+        self.export_button = ButtonItem( width=20, parentItem=self.plotItem)
+        self.export_button.clicked.connect(self.export_clicked)
+        self.export_button.setPos(0, 210)
+        self.export_button.hide()
+        self.update_export_icon()
 
         # Enable hover events. Needed so that button is only visible when hovering over graph
         self.setAttribute(Qt.WA_Hover)
@@ -66,31 +70,62 @@ class StyledPlotWidget(PlotWidget):
 
         self.full_init=True
 
+    def update_theme(self, settings_key: str | None = None, size: int = 14) -> None:
+        # skip setting theme if this is triggered by settings updates
+        if settings_key is not None and settings_key != "theme":
+            return
+
+        background = self.get_background_color()
+        text_color = self.get_text_color()
+
+        self.setBackground(background)
+
+        plot = self.getPlotItem()
+        plot.titleLabel.setText(plot.titleLabel.text, color=text_color)
+        pen = pg.mkPen(color=text_color)
+        plot.getAxis('left').setPen(pen)
+        plot.getAxis('bottom').setPen(pen)
+
+        for channel, line in self.lines.items():
+            style = self.get_line_style(channel)
+            pen = pg.mkPen(color=style[0], style=style[1])
+            line.setPen(pen)
+
+        for channel, stats in self.statistics.items():
+            for _, stat_info in stats.items():
+                line_color = self.get_line_style(channel)[0]
+                stat_info['label'].setStyleSheet(f"color: {line_color}; font-size: {size}px;")
+
+        self.update_export_icon()
+
     def set_title(self, title):
-        self.setTitle(title, color=self.text_color, size="17pt")
+        text_color = self.get_text_color()
+        self.setTitle(title, color=text_color, size="17pt")
 
     def set_y_label(self, label):
-        self.test_label=label
-        self.setLabel('left', label, **{'color': self.text_color})
+        text_color = self.get_text_color()
+        self.setLabel('left', label, **{'color': text_color, 'font-size': '8pt'})
 
     def set_x_label(self, label):
-        self.setLabel('bottom', label, **{'color': self.text_color})
+        text_color = self.get_text_color()
+        self.setLabel('bottom', label, **{'color': text_color, 'font-size': '8pt'})
 
     # Add a new line to the plot with given style.
-    def add_line(self, identifier, color, line_style=Qt.SolidLine):
-        pen = pg.mkPen(color=color, style=line_style)
-        self.lines[identifier] = self.plot([], [], name=str(identifier), pen=pen)
-        self.line_visibility[identifier] = True
-        return self.lines[identifier]
+    def add_line(self, channel):
+        style = self.get_line_style(channel)
+        pen = pg.mkPen(color=style[0], style=style[1])
+        self.lines[channel] = self.plot([], [], name=str(channel), pen=pen)
+        self.line_visibility[channel] = True
+        return self.lines[channel]
 
     # Update data for a specific line.
-    def update_line_data(self, identifier, x_data, y_data, srate=None):
-        if identifier in self.lines:
-            self.lines[identifier].setData(x_data, y_data)
+    def update_line_data(self, channel, x_data, y_data, srate=None):
+        if channel in self.lines:
+            self.lines[channel].setData(x_data, y_data)
 
             # Update statistics if they exist for this line
-            if identifier in self.statistics:
-                for format_str, stat_info in self.statistics[identifier].items():
+            if channel in self.statistics:
+                for format_str, stat_info in self.statistics[channel].items():
                     if len(y_data) > 0:
                         if srate is None:
                             value = stat_info['method'](y_data)
@@ -105,12 +140,12 @@ class StyledPlotWidget(PlotWidget):
         Append points at the same x value.
 
         Args:
-            points_dict: Dictionary mapping line identifiers to y values
-            time: x value (time) for all points
+            points_dict: Dictionary mapping line channels to y values
+            x_point: x value
         """
-        for identifier, y_point in points_dict.items():
-            if identifier in self.lines:
-                line = self.lines[identifier]
+        for channel, y_point in points_dict.items():
+            if channel in self.lines:
+                line = self.lines[channel]
                 # Get existing data
                 x_data, y_data = line.getData()
                 if x_data is None:
@@ -125,29 +160,29 @@ class StyledPlotWidget(PlotWidget):
                 line.setData(x_data, y_data)
 
     # Show/hide a specific line.
-    def toggle_line_visibility(self, identifier, visible):
-        if identifier in self.lines:
-            if visible and not self.line_visibility[identifier]:
-                self.addItem(self.lines[identifier])
-            elif not visible and self.line_visibility[identifier]:
-                self.removeItem(self.lines[identifier])
-            self.line_visibility[identifier] = visible
+    def toggle_line_visibility(self, channel, visible):
+        if channel in self.lines:
+            if visible and not self.line_visibility[channel]:
+                self.addItem(self.lines[channel])
+            elif not visible and self.line_visibility[channel]:
+                self.removeItem(self.lines[channel])
+            self.line_visibility[channel] = visible
 
-    def add_statistic(self, identifier, method, format_str, size=14):
+    def add_statistic(self, channel, method, format_str, size=14):
         """
         Add a statistic display for a specific line.
 
         Args:
-            identifier: The line identifier this statistic is associated with
+            channel: The line channel this statistic is associated with
             method: Function that takes an array and returns the statistic value
             format_str: Format string for the value (e.g., "Avg: {:.3f}")
             size: Font size in pixels
         """
-        if identifier not in self.lines:
-            raise KeyError(f"Line with identifier '{identifier}' does not exist")
+        if channel not in self.lines:
+            raise KeyError(f"Line with channel '{channel}' does not exist")
 
         label = QLabel(format_str.format(0))
-        line_color = self.lines[identifier].opts['pen'].color().name()
+        line_color = self.get_line_style(channel)[0]
         label.setStyleSheet(f"color: {line_color}; font-size: {size}px;")
 
         # Add to layout
@@ -156,9 +191,9 @@ class StyledPlotWidget(PlotWidget):
         self.stat_layout.addWidget(label, alignment=Qt.AlignRight)
 
         # Store the statistic info
-        if identifier not in self.statistics:
-            self.statistics[identifier] = {}
-        self.statistics[identifier][format_str] = {
+        if channel not in self.statistics:
+            self.statistics[channel] = {}
+        self.statistics[channel][format_str] = {
             'method': method,
             'label': label,
         }
@@ -167,10 +202,10 @@ class StyledPlotWidget(PlotWidget):
         """
         Update all statistics based on currently visible data
         """
-        for identifier, stats in self.statistics.items():
+        for channel, stats in self.statistics.items():
             for format_str, stat_info in stats.items():
-                if identifier in self.lines:
-                    line = self.lines[identifier]
+                if channel in self.lines:
+                    line = self.lines[channel]
                     x_data, y_data = line.getData()
 
                     if x_data is None:
@@ -190,10 +225,23 @@ class StyledPlotWidget(PlotWidget):
                     else:
                         stat_info['label'].setText(format_str.format(0))
 
+    def add_vertical_line(self, channel, x):
+        if channel in self.lines:
+            self.removeItem(self.lines[channel])
+
+        line_color = self.get_line_style(channel)[0]
+        pen = pg.mkPen(color=line_color)
+
+        self.lines[channel] = pg.InfiniteLine(pos=x, angle=90, movable=False, pen=pen)
+        self.addItem(self.lines[channel])
+
     # Clear all line data.
     def reset(self):
         for line in self.lines.values():
-            line.setData([], [])
+            if isinstance(line, pg.PlotDataItem):
+                line.setData([], [])
+            elif isinstance(line, pg.InfiniteLine):
+                self.removeItem(line)
 
         for stats in self.statistics.values():
             for format_str, stat_info in stats.items():
@@ -207,10 +255,10 @@ class StyledPlotWidget(PlotWidget):
             return super().event(event)
 
         if event.type() == QEvent.HoverEnter:
-            self.exportBtn.show()
+            self.export_button.show()
         elif event.type() == QEvent.HoverLeave:
             self.mouse_label.setText("")
-            self.exportBtn.hide()
+            self.export_button.hide()
         elif event.type() == QEvent.HoverMove:
             mouse_point = self.getPlotItem().getViewBox().mapSceneToView(event.position())
             view_range = self.getPlotItem().getViewBox().viewRange()
@@ -290,13 +338,13 @@ class StyledPlotWidget(PlotWidget):
         """Update the export button position based on the plot's size."""
         super().resizeEvent(event)
 
-        if hasattr(self, 'exportBtn'):
+        if hasattr(self, 'export_button'):
             plot_height = self.height()
 
             button_y = plot_height - 24  # 85% from the top
 
             # Update button position and size
-            self.exportBtn.setPos(0, button_y)
+            self.export_button.setPos(0, button_y)
 
     def get_view_state(self):
         """
@@ -311,3 +359,43 @@ class StyledPlotWidget(PlotWidget):
         low_diff = current_range[0] - view_limits[0]
         hi_diff = view_limits[1] - current_range[1]
         return low_diff + hi_diff < 1
+
+    def get_line_style(self, channel):
+        theme = self.config_manager.get_settings('theme')
+
+        match channel:
+            case Channel.TARGET:
+                return ACCENT_COLORS[theme]['light_green'], Qt.SolidLine
+            case Channel.DEPRE_LOW | Channel.PRE_LOW:
+                return ACCENT_COLORS[theme]['magenta'], Qt.SolidLine
+            case Channel.DEPRE_UP | Channel.PRE_UP:
+                return ACCENT_COLORS[theme]['blue'], Qt.SolidLine
+            case Channel.HI_PRE_ORIG | HistStat.O_PRESS:
+                return ACCENT_COLORS[theme]['yellow'], Qt.SolidLine
+            case Channel.HI_PRE_SAMPLE | HistStat.S_PRESS:
+                return ACCENT_COLORS[theme]['yellow'], Qt.DashLine
+            case Channel.DEPRE_VALVE | HistStat.DO_SLOPE | HistStat.DO_SWITCH | Event.DEPRESSURIZE:
+                return ACCENT_COLORS[theme]['cyan'], Qt.SolidLine
+            case HistStat.DS_SLOPE | HistStat.DS_SWITCH:
+                return ACCENT_COLORS[theme]['cyan'], Qt.DashLine
+            case Channel.PRE_VALVE | HistStat.PO_SLOPE | HistStat.PO_SWITCH | Event.PRESSURIZE:
+                return ACCENT_COLORS[theme]['red'], Qt.SolidLine
+            case HistStat.PS_SLOPE | HistStat.PS_SWITCH:
+                return ACCENT_COLORS[theme]['red'], Qt.DashLine
+            case _:
+                raise ValueError(f"Unknown channel: {channel}")
+
+    def get_text_color(self):
+        theme = self.config_manager.get_settings('theme')
+        return THEME_COLOR_VALUES[theme]['foreground']['base']
+
+    def get_background_color(self):
+        theme = self.config_manager.get_settings('theme')
+        return THEME_COLOR_VALUES[theme]['background']['base']
+
+    def update_export_icon(self):
+        theme = self.config_manager.get_settings('theme')
+        color_info = THEME_COLOR_VALUES[theme]["foreground"]
+        icon_color = color(color_info, state="icon")
+        icon = url(icon_color, "file_export")[4:-1]  # Removes 'url(' at the start and ')' at the end
+        self.export_button.setImageFile(icon)

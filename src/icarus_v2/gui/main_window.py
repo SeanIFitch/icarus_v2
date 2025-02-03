@@ -1,4 +1,3 @@
-# GUI imports
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import (
     QMainWindow,
@@ -9,7 +8,9 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QSizePolicy,
     QSpacerItem,
-    QStackedWidget
+    QStackedWidget,
+    QApplication,
+    QLineEdit
 )
 from icarus_v2.gui.event_plot import EventPlot
 from icarus_v2.gui.history_plot import HistoryPlot
@@ -21,6 +22,8 @@ from icarus_v2.gui.tool_bar import ToolBar
 from icarus_v2.gui.error_dialog import open_error_dialog
 from icarus_v2.backend.log_reader import LogReader
 from icarus_v2.backend.event import Event
+from icarus_v2.backend.configuration_manager import ConfigurationManager
+from icarus_v2.qdarktheme.load_style import load_stylesheet
 
 
 # Can be either in log reading or device mode.
@@ -30,8 +33,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.mode = None
-
         self.data_handler = None
+        self.config_manager = ConfigurationManager()
+        self.update_theme()
+        self.config_manager.settings_updated.connect(self.update_theme)
 
         # Window settings
         self.setWindowTitle("Icarus NMR")
@@ -76,13 +81,15 @@ class MainWindow(QMainWindow):
         self.bounding_box = QGroupBox()
         spacer = QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)
         box_layout = QVBoxLayout()
+        box_layout.setSpacing(0)
         box_layout.addItem(spacer)
         self.bounding_box.setLayout(box_layout)
         self.bounding_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.bounding_box.setMinimumWidth(287)  # Width of DeviceControlPanel
 
         # Control layout
         control_layout = QGridLayout()
+        control_layout.setSpacing(0)
+
         control_layout.addWidget(self.pressure_display, 0, 0)
 
         #Stacked Widget
@@ -91,7 +98,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.log_control_panel)
         self.stacked_widget.addWidget(self.bounding_box)
         self.stacked_widget.setCurrentWidget(self.bounding_box)
-        self.stacked_widget.setFixedWidth(329)
+        self.stacked_widget.setFixedWidth(293)  # Width of pressure display
         self.stacked_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.stacked_widget.setContentsMargins(0, 0, 0, 0)
         control_layout.addWidget(self.stacked_widget)
@@ -102,6 +109,7 @@ class MainWindow(QMainWindow):
 
         # Event plot layout
         event_layout = QVBoxLayout()
+        event_layout.setSpacing(0)
         event_layout.addWidget(self.pressurize_plot)
         event_layout.addWidget(self.depressurize_plot)
         event_layout.addWidget(self.period_plot)
@@ -119,6 +127,22 @@ class MainWindow(QMainWindow):
 
         self.connected = False
         self.set_mode("device")
+
+        # disable focus for all widgets except QTextEdit
+        for widget in self.findChildren(QWidget):
+            if not isinstance(widget, QLineEdit):
+                widget.setFocusPolicy(Qt.NoFocus)
+
+    def update_theme(self, settings_key: str | None = None) -> None:
+        # skip setting theme if this is triggered by settings updates
+        if settings_key is not None and settings_key != "theme":
+            return
+
+        theme = self.config_manager.get_settings('theme')
+        app = QApplication.instance()
+
+        if app is not None:
+            app.setStyleSheet(load_stylesheet(theme))
 
     # Connects widgets to backend
     def set_device(self, data_handler):
@@ -165,6 +189,10 @@ class MainWindow(QMainWindow):
             # Clear plots
             self.reset_history()
 
+            # If no device connected, automatically open log fileDialog
+            if not self.connected:
+                self.log_control_panel.choose_log()
+
         elif mode == "device":
             if self.connected:
                 self.stacked_widget.setCurrentWidget(self.device_control_panel)
@@ -183,6 +211,7 @@ class MainWindow(QMainWindow):
 
             # Clear plots
             self.reset_history()
+            self.log_control_panel.reset()
 
             # restore history
             if self.connected:
@@ -241,3 +270,6 @@ class MainWindow(QMainWindow):
 
         if self.data_handler is not None:
             self.data_handler.quit()
+
+        if self.toolbar.settings_dialog is not None:
+            self.toolbar.settings_dialog.close()

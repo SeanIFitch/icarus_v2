@@ -2,9 +2,10 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass
-from icarus_v2.qdarktheme.color import Color
 from pathlib import Path
-
+from PySide6.QtCore import QStandardPaths
+from icarus_v2.qdarktheme.color import Color
+from icarus_v2.qdarktheme.svg import Svg
 
 """Default color values."""
 THEME_COLOR_VALUES = {
@@ -93,7 +94,7 @@ THEME_COLOR_VALUES = {
         "toolbar.hoverBackground": "#ffffff22",
         "tree.inactiveIndentGuidesStroke": "#ffffff35",
         "tree.indentGuidesStroke": "#ffffff60",
-        "treeSectionHeader.background": "#3f4042",
+        "treeSectionHeader.background": "#3f4042"
     },
     "light": {
         "background": {
@@ -106,7 +107,7 @@ THEME_COLOR_VALUES = {
             "title": {"darken": 0.04},
         },
         "border": {
-            "base": "#dadce0",
+            "base": "#8E9094",
             "input": {},
         },
         "button": {
@@ -117,7 +118,7 @@ THEME_COLOR_VALUES = {
             "defaultButton.hoverBackground": {"darken": 0.06},
         },
         "foreground": {
-            "base": "#4d5157",
+            "base": "#1A1E24",
             "defaultButton.disabledBackground": {"transparent": 0.25},
             "disabled": {"transparent": 0.4},
             "disabledSelectionBackground": {"transparent": 0.25},
@@ -181,28 +182,42 @@ THEME_COLOR_VALUES = {
         "tree.inactiveIndentGuidesStroke": "#00000030",
         "tree.indentGuidesStroke": "#00000050",
         "treeSectionHeader.background": "#dadce0",
-    },
+    }
 }
 ACCENT_COLORS = {
     "dark": {
-        "blue": "#8ab4f7",
+        "light_green": '#45BF55',
+        "magenta": '#AB47BC',
+        "blue": '#004B8D',
+        "yellow": '#FFDC00',
+        "cyan": '#59D8E6',
+        "red": '#B9121B',
+
+        # "blue": "#004B8D",
         "graphite": "#898a8f",
         "green": "#4caf50",
         "orange": "#ff9800",
         "pink": "#c7457f",
         "purple": "#af52bf",
-        "red": "#f6685e",
-        "yellow": "#ffeb3b",
+        # "red": "#f6685e",
+        # "yellow": "#ffeb3b",
     },
     "light": {
-        "blue": "#1a73e8",
+        "light_green": '#4caf50',
+        "magenta": '#AB47BC',
+        "blue": '#004B8D',
+        "yellow": '#ff9800',
+        "cyan": '#004B8D',
+        "red": '#f44336',
+
+        # "blue": "#1a73e8",
         "graphite": "#898a8f",
         "green": "#4caf50",
         "orange": "#ff9800",
         "pink": "#c7457f",
         "purple": "#9c27b0",
-        "red": "#f44336",
-        "yellow": "#f4c65f",
+        # "red": "#f44336",
+        # "yellow": "#f4c65f",
     },
 }
 
@@ -224,8 +239,18 @@ def color(color_info: str | dict[str, str | dict], state: str | None = None) -> 
 
 def url(color: Color, id: str, rotate: int = 0) -> str:
     """Filter for template engine. This filter create url for svg and output svg file."""
-    svg_path = Path(__file__).parent.parent / "resources" / "svg" / f"{id}_{color._to_hex()}_{rotate}.svg"
+    cache_dir = QStandardPaths.writableLocation(QStandardPaths.CacheLocation)
+    icons_dir = Path(cache_dir) / "icons"
+    svg_path = icons_dir / f"{id}_{color.to_hex()}_{rotate}.svg"
     url = f"url({svg_path.as_posix()})"
+
+    # Create the icons directory if it doesn't exist
+    icons_dir.mkdir(parents=True, exist_ok=True)
+
+    if svg_path.exists():
+        return url
+    svg = Svg(id).colored(color).rotate(rotate)
+    svg_path.write_text(str(svg))
     return url
 
 
@@ -291,17 +316,9 @@ class Template:
     def _run_filter(self, value: str | int | float, filter_text: str):
         contents = filter_text.split("(")
         if len(contents) == 1:
-            filter_name = contents[0]
-            # Ignore 'url' filter or any other missing filters
-            if filter_name not in self._filters:
-                return value  # Simply return the value as-is
-            return self._filters[filter_name](value)
+            return self._filters[contents[0]](value)
 
         filter_name, arg_text = contents[0], contents[1].rstrip(")")
-
-        # Ignore 'url' filter or any other missing filters
-        if filter_name not in self._filters:
-            return value  # Simply return the value as-is
 
         # Split arguments by commas, then key-value pairs by '='
         arguments = {}
@@ -373,7 +390,7 @@ def load_stylesheet(theme: str = "dark", corner_shape: str = "rounded",) -> str:
     # Build stylesheet
     template = Template(
         stylesheet,
-        {"color": color, "corner": corner, "env": env},
+        {"color": color, "corner": corner, "env": env, "url": url},
     )
     replacements = dict(color_values, **{"corner-shape": corner_shape})
     return template.render(replacements)

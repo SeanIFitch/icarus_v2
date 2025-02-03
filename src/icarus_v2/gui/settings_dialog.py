@@ -12,14 +12,14 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QWidget,
     QStackedWidget,
-    QToolBar
+    QToolBar,
+    QComboBox
 )
 from PySide6.QtGui import QDoubleValidator, QIntValidator, QAction
 from icarus_v2.gui.error_dialog import open_error_dialog
 from icarus_v2.backend.event import Channel, get_channel
 import numpy as np
 from PySide6.QtCore import Qt
-from time import sleep
 from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
@@ -62,9 +62,6 @@ class SettingsDialog(QDialog):
         main_layout.addWidget(self.stack)
         main_layout.addWidget(button_box)
 
-        # Default selection
-        button_box.button(QDialogButtonBox.Apply).setFocus()
-
     def get_default_widget(self, connected):
         # Allow only positive floating-point numbers
         positive_float = QDoubleValidator()
@@ -79,16 +76,20 @@ class SettingsDialog(QDialog):
         hide_valve = self.config_manager.get_settings('hide_valve_sensors')
         self.hide_valve_checkbox.setCheckState(Qt.Checked if hide_valve else Qt.Unchecked)
         self.hide_valve_checkbox.stateChanged.connect(self.set_hide_valve)
-        self.hide_valve_checkbox.setStyleSheet("""
-                    QCheckBox::indicator {
-                        width: 23px;
-                        height: 23px;
-                    }
-                    """)
+        self.theme_combo_box = QComboBox()
+        self.theme_combo_box.addItems(["Dark", "Light"])
+        self.theme_combo_box.setFixedWidth(edit_width)
+        theme = self.config_manager.get_settings('theme')
+        self.theme_combo_box.setCurrentText(theme.capitalize())
+        self.theme_combo_box.currentTextChanged.connect(self.set_theme)
+
         view_layout = QGridLayout()
-        view_layout.addWidget(QLabel("Hide Valve Sensors:"), 0, 0)
+        view_layout.addWidget(QLabel("Theme:"), 0, 0)
         view_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Preferred), 0, 1)
-        view_layout.addWidget(self.hide_valve_checkbox, 0, 2)
+        view_layout.addWidget(self.theme_combo_box, 0, 2)
+        view_layout.addWidget(QLabel("Hide Valve Sensors:"), 1, 0)
+        view_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Preferred), 1, 1)
+        view_layout.addWidget(self.hide_valve_checkbox, 1, 2, alignment=Qt.AlignRight)
         view_group = QGroupBox("View")
         view_group.setLayout(view_layout)
 
@@ -224,7 +225,7 @@ class SettingsDialog(QDialog):
         self.enable_sentry_button.clicked.connect(self.enable_sentry)
 
         error_layout = QGridLayout()
-        error_layout.addWidget(QLabel("Pressure Difference to Error Count:"), 0, 0)
+        error_layout.addWidget(QLabel("Pressure Decrease to Error Count:"), 0, 0)
         error_layout.addWidget(QLabel("Max Pump Count in Window:"), 1, 0)
         error_layout.addWidget(QLabel("Pump Window (s):"), 2, 0)
         error_layout.addWidget(self.diff_count_error, 0, 1)
@@ -362,10 +363,13 @@ class SettingsDialog(QDialog):
             self.coefficients[Channel.HI_PRE_SAMPLE] = sample_coefficient
             self.coefficients[Channel.TARGET] = target_coefficient
 
+            self.config_manager.save_settings('plotting_coefficients', self.coefficients)
+
         # Send pressure readings exactly once
         self.pressure_signal.connect(recalibrate, type=Qt.SingleShotConnection)
-        sleep(0.4)  # Time for a pressure event * 2
-        self.config_manager.save_settings('plotting_coefficients', self.coefficients)
+
+    def set_theme(self, theme):
+        self.config_manager.save_settings('theme', theme.lower())
 
     def set_hide_valve(self, state):
         self.config_manager.save_settings('hide_valve_sensors', bool(state))

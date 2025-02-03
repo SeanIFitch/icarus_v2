@@ -83,7 +83,7 @@ class Color:
             a = a / 255
         return Color(RGBA(r, g, b, a))
 
-    def _to_hex(self) -> str:
+    def to_hex(self) -> str:
         """Convert Color object to hex(#RRGGBBAA).
 
         Args:
@@ -123,7 +123,7 @@ class Color:
         """
         r, g, b, a = self.rgba
         if a == 1:
-            return f'fill="#{self._to_hex()}"'
+            return f'fill="#{self.to_hex()}"'
         return f'fill="rgb({r},{g},{b})" fill-opacity="{a}"'
 
     def lighten(self, factor: float) -> Color:

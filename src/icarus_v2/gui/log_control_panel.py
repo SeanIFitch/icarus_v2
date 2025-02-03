@@ -49,6 +49,7 @@ class LogControlPanel(QGroupBox):
         title = QLabel("Viewing Log")
         title.setStyleSheet("font-size: 28pt;")
         self.filename_label = QLabel(" ")
+        self.filename_label.setFixedHeight(23)
 
         # Time controls
         self.time_edit = QLineEdit(self)
@@ -105,8 +106,10 @@ class LogControlPanel(QGroupBox):
         layout.addWidget(self.new_log_button)
         layout.addWidget(self.edit_button)
 
-        self.set_logging(False)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # Width of device control panel
+
+        self.set_logging(False)
+        self.reset()
 
     def open_current(self):
         if not self.currently_logging:
@@ -115,7 +118,7 @@ class LogControlPanel(QGroupBox):
         self.open_log(filename)
 
     def choose_log(self):
-        log_path = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation), 'logs')
+        log_path = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'logs')
 
         if not os.path.exists(log_path):
             os.makedirs(log_path)
@@ -138,6 +141,7 @@ class LogControlPanel(QGroupBox):
         self.next_button.setEnabled(True)
         self.last_button.setEnabled(True)
         self.edit_button.setEnabled(True)
+        self.time_edit.setEnabled(True)
 
         self.press_index = -1
         self.depress_index = -1
@@ -222,9 +226,7 @@ class LogControlPanel(QGroupBox):
                     self.dialog = open_error_dialog(e)
                     return
 
-            self.filename_label.setText(" ")
-            self.next_button.setEnabled(False)
-            self.last_button.setEnabled(False)
+            self.reset()
             self.reset_history_signal.emit()
         self.edit_dialog.close()
 
@@ -329,16 +331,16 @@ class LogControlPanel(QGroupBox):
         time = max_time - self.log_reader.events[0].event_time
         self.time_edit.setText(str(ceil(time)))
 
-    # Also reset the log file when panel is hidden
-    def hide(self):
-        super().hide()
+    def reset(self):
         self.filename_label.setText("")
         self.time_edit.setText("")
         self.log_coefficients_signal.emit(None)
+        self.filename = None
 
         self.next_button.setEnabled(False)
         self.last_button.setEnabled(False)
         self.edit_button.setEnabled(False)
+        self.time_edit.setEnabled(False)
 
     def set_logging(self, connected):
         self.currently_logging = connected

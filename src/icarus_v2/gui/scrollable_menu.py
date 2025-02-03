@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QMenu, QScrollArea, QVBoxLayout, QWidgetAction, QLabel
 from PySide6.QtCore import Qt, QSize, QPointF, QRectF
-from PySide6.QtGui import QFont, QFontMetrics, QPainter, QColor
+from PySide6.QtGui import QFontMetrics, QPainter, QColor
 
 
 class ScrollableMenu(QMenu):
@@ -64,7 +64,7 @@ class ScrollableMenu(QMenu):
             scroll_bar.setValue(new_value)
 
     '''
-    #Returns a list of any widgets in the layout that include the given string
+    Returns a list of any widgets in the layout that include the given string
     '''
     def return_matching(self, seq):
         matching = []
@@ -77,8 +77,8 @@ class ScrollableMenu(QMenu):
         return matching
 
     '''
-    #Given a list of widgets will go through and remove each one
-    #If only one widget is being removed in shoudl be passed in wrapped in []
+    Given a list of widgets will go through and remove each one
+    If only one widget is being removed in shoudl be passed in wrapped in []
     '''
     def remove_items(self,items):
         for item in items:

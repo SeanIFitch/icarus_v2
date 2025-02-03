@@ -33,7 +33,7 @@ class DataqInterface:
     def find_device(self):
         """
         Finds the usb device.
-        
+
         :return: True if connection is successful, False otherwise.
         """
         try:

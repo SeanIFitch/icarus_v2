@@ -20,7 +20,7 @@ class Logger:
         self.close()
 
         self.current_path = temporary
-        base_dir = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation), 'logs')
+        base_dir = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'logs')
         if temporary:
             log_path = os.path.join(base_dir, 'temp')
         else:
