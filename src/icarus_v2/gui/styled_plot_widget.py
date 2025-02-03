@@ -99,16 +99,16 @@ class StyledPlotWidget(PlotWidget):
         self.update_export_icon()
 
     def set_title(self, title):
-        color = self.get_text_color()
-        self.setTitle(title, color=color, size="17pt")
+        text_color = self.get_text_color()
+        self.setTitle(title, color=text_color, size="17pt")
 
     def set_y_label(self, label):
-        color = self.get_text_color()
-        self.setLabel('left', label, **{'color': color, 'font-size': '8pt'})
+        text_color = self.get_text_color()
+        self.setLabel('left', label, **{'color': text_color, 'font-size': '8pt'})
 
     def set_x_label(self, label):
-        color = self.get_text_color()
-        self.setLabel('bottom', label, **{'color': color, 'font-size': '8pt'})
+        text_color = self.get_text_color()
+        self.setLabel('bottom', label, **{'color': text_color, 'font-size': '8pt'})
 
     # Add a new line to the plot with given style.
     def add_line(self, channel):
@@ -141,7 +141,7 @@ class StyledPlotWidget(PlotWidget):
 
         Args:
             points_dict: Dictionary mapping line channels to y values
-            time: x value (time) for all points
+            x_point: x value
         """
         for channel, y_point in points_dict.items():
             if channel in self.lines:
@@ -182,8 +182,8 @@ class StyledPlotWidget(PlotWidget):
             raise KeyError(f"Line with channel '{channel}' does not exist")
 
         label = QLabel(format_str.format(0))
-        color = self.get_line_style(channel)[0]
-        label.setStyleSheet(f"color: {color}; font-size: {size}px;")
+        line_color = self.get_line_style(channel)[0]
+        label.setStyleSheet(f"color: {line_color}; font-size: {size}px;")
 
         # Add to layout
         label.setFixedSize(200, 18)
@@ -229,8 +229,8 @@ class StyledPlotWidget(PlotWidget):
         if channel in self.lines:
             self.removeItem(self.lines[channel])
 
-        color = self.get_line_style(channel)[0]
-        pen = pg.mkPen(color=color)
+        line_color = self.get_line_style(channel)[0]
+        pen = pg.mkPen(color=line_color)
 
         self.lines[channel] = pg.InfiniteLine(pos=x, angle=90, movable=False, pen=pen)
         self.addItem(self.lines[channel])
