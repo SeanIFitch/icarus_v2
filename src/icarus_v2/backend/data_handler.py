@@ -232,7 +232,6 @@ class DataHandler(QThread):
         self.pump_handler.quit()
         self.log_handler.quit()
         self.pulse_generator.quit()
-        self.loader.quit()
 
         self.pressurize_handler.wait()
         self.depressurize_handler.wait()
@@ -241,7 +240,6 @@ class DataHandler(QThread):
         self.pump_handler.wait()
         self.log_handler.wait()
         self.pulse_generator.wait()
-        self.loader.wait()
 
         if self.connected:
             self.pulse_generator.set_pressurize_low()
@@ -249,6 +247,9 @@ class DataHandler(QThread):
             sleep(1)
             self.pulse_generator.set_pressurize_high()
             self.pulse_generator.set_depressurize_high()
+
+        self.loader.quit()
+        self.loader.wait()
 
         super().quit()
         self.wait()
