@@ -387,13 +387,11 @@ class StyledPlotWidget(PlotWidget):
 
     def get_text_color(self):
         theme = self.config_manager.get_settings('theme')
-        color = THEME_COLOR_VALUES[theme]['foreground']['base']
-        return color
+        return THEME_COLOR_VALUES[theme]['foreground']['base']
 
     def get_background_color(self):
         theme = self.config_manager.get_settings('theme')
-        color = THEME_COLOR_VALUES[theme]['background']['base']
-        return color
+        return THEME_COLOR_VALUES[theme]['background']['base']
 
     def update_export_icon(self):
         theme = self.config_manager.get_settings('theme')
