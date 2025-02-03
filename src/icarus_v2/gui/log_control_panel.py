@@ -49,6 +49,7 @@ class LogControlPanel(QGroupBox):
         title = QLabel("Viewing Log")
         title.setStyleSheet("font-size: 28pt;")
         self.filename_label = QLabel(" ")
+        self.filename_label.setFixedHeight(23)
 
         # Time controls
         self.time_edit = QLineEdit(self)
@@ -105,8 +106,10 @@ class LogControlPanel(QGroupBox):
         layout.addWidget(self.new_log_button)
         layout.addWidget(self.edit_button)
 
-        self.set_logging(False)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # Width of device control panel
+
+        self.set_logging(False)
+        self.reset()
 
     def open_current(self):
         if not self.currently_logging:
@@ -144,6 +147,7 @@ class LogControlPanel(QGroupBox):
         self.period_index = -1
 
         self.filename = self.log_reader.filename
+        self.edit_button.setEnabled(True)
         self.filename_label.setText(os.path.basename(self.filename))
         # Adjust font size to fit in the view
         for i in range(17, 8, -1):
@@ -329,12 +333,11 @@ class LogControlPanel(QGroupBox):
         time = max_time - self.log_reader.events[0].event_time
         self.time_edit.setText(str(ceil(time)))
 
-    # Also reset the log file when panel is hidden
-    def hide(self):
-        super().hide()
+    def reset(self):
         self.filename_label.setText("")
         self.time_edit.setText("")
         self.log_coefficients_signal.emit(None)
+        self.filename = None
 
         self.next_button.setEnabled(False)
         self.last_button.setEnabled(False)

@@ -36,6 +36,7 @@ class CounterDisplay(QGroupBox):
 
         # Set main layout
         layout = QGridLayout()
+        layout.setSpacing(0)
         layout.addWidget(pump_count_label, 0, 0)
         layout.addWidget(pressurize_count_label, 1, 0)
         layout.addWidget(depressurize_count_label, 2, 0)

@@ -80,13 +80,15 @@ class MainWindow(QMainWindow):
         self.bounding_box = QGroupBox()
         spacer = QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Expanding)
         box_layout = QVBoxLayout()
+        box_layout.setSpacing(0)
         box_layout.addItem(spacer)
         self.bounding_box.setLayout(box_layout)
         self.bounding_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.bounding_box.setMinimumWidth(287)  # Width of DeviceControlPanel
 
         # Control layout
         control_layout = QGridLayout()
+        control_layout.setSpacing(0)
+
         control_layout.addWidget(self.pressure_display, 0, 0)
 
         #Stacked Widget
@@ -95,7 +97,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.log_control_panel)
         self.stacked_widget.addWidget(self.bounding_box)
         self.stacked_widget.setCurrentWidget(self.bounding_box)
-        self.stacked_widget.setFixedWidth(329)
+        self.stacked_widget.setFixedWidth(293)  # Width of pressure display
         self.stacked_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.stacked_widget.setContentsMargins(0, 0, 0, 0)
         control_layout.addWidget(self.stacked_widget)
@@ -128,6 +130,7 @@ class MainWindow(QMainWindow):
         # disable focus
         for widget in self.findChildren(QWidget):
             widget.setFocusPolicy(Qt.NoFocus)
+
 
 
     def update_theme(self, settings_key: str | None = None) -> None:
@@ -204,6 +207,7 @@ class MainWindow(QMainWindow):
 
             # Clear plots
             self.reset_history()
+            self.log_control_panel.reset()
 
             # restore history
             if self.connected:
