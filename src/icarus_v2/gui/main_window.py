@@ -189,6 +189,10 @@ class MainWindow(QMainWindow):
             # Clear plots
             self.reset_history()
 
+            # If no device connected, automatically open log fileDialog
+            if not self.connected:
+                self.log_control_panel.choose_log()
+
         elif mode == "device":
             if self.connected:
                 self.stacked_widget.setCurrentWidget(self.device_control_panel)

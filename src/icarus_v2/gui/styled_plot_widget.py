@@ -2,7 +2,7 @@ import os
 from pyqtgraph import PlotWidget
 from icarus_v2.backend.configuration_manager import ConfigurationManager
 from icarus_v2.backend.event import Channel, HistStat, Event
-from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES, url, color
+from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES, ACCENT_COLORS, url, color
 import pyqtgraph as pg
 from pyqtgraph.graphicsItems.ButtonItem import ButtonItem
 from PySide6.QtCore import QEvent, QStandardPaths
@@ -362,23 +362,23 @@ class StyledPlotWidget(PlotWidget):
 
         match channel:
             case Channel.TARGET:
-                return THEME_COLOR_VALUES[theme]['line']['light_green'], Qt.SolidLine
+                return ACCENT_COLORS[theme]['light_green'], Qt.SolidLine
             case Channel.DEPRE_LOW | Channel.PRE_LOW:
-                return THEME_COLOR_VALUES[theme]['line']['magenta'], Qt.SolidLine
+                return ACCENT_COLORS[theme]['magenta'], Qt.SolidLine
             case Channel.DEPRE_UP | Channel.PRE_UP:
-                return THEME_COLOR_VALUES[theme]['line']['blue'], Qt.SolidLine
+                return ACCENT_COLORS[theme]['blue'], Qt.SolidLine
             case Channel.HI_PRE_ORIG | HistStat.O_PRESS:
-                return THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine
+                return ACCENT_COLORS[theme]['yellow'], Qt.SolidLine
             case Channel.HI_PRE_SAMPLE | HistStat.S_PRESS:
-                return THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.DashLine
+                return ACCENT_COLORS[theme]['yellow'], Qt.DashLine
             case Channel.DEPRE_VALVE | HistStat.DO_SLOPE | HistStat.DO_SWITCH | Event.DEPRESSURIZE:
-                return THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine
+                return ACCENT_COLORS[theme]['cyan'], Qt.SolidLine
             case HistStat.DS_SLOPE | HistStat.DS_SWITCH:
-                return THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.DashLine
+                return ACCENT_COLORS[theme]['cyan'], Qt.DashLine
             case Channel.PRE_VALVE | HistStat.PO_SLOPE | HistStat.PO_SWITCH | Event.PRESSURIZE:
-                return THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine
+                return ACCENT_COLORS[theme]['red'], Qt.SolidLine
             case HistStat.PS_SLOPE | HistStat.PS_SWITCH:
-                return THEME_COLOR_VALUES[theme]['line']['red'], Qt.DashLine
+                return ACCENT_COLORS[theme]['red'], Qt.DashLine
             case _:
                 raise ValueError(f"Unknown channel: {channel}")
 

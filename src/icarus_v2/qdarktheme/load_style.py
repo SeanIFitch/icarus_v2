@@ -94,15 +94,7 @@ THEME_COLOR_VALUES = {
         "toolbar.hoverBackground": "#ffffff22",
         "tree.inactiveIndentGuidesStroke": "#ffffff35",
         "tree.indentGuidesStroke": "#ffffff60",
-        "treeSectionHeader.background": "#3f4042",
-        "line": {
-            "light_green": '#45BF55',
-            "magenta": '#AB47BC',
-            "blue": '#004B8D',
-            "yellow": '#FFDC00',
-            "cyan": '#59D8E6',
-            "red": '#B9121B',
-        },
+        "treeSectionHeader.background": "#3f4042"
     },
     "light": {
         "background": {
@@ -190,36 +182,42 @@ THEME_COLOR_VALUES = {
         "tree.inactiveIndentGuidesStroke": "#00000030",
         "tree.indentGuidesStroke": "#00000050",
         "treeSectionHeader.background": "#dadce0",
-        "line": {
-            "light_green": '#45BF55',
-            "magenta": '#AB47BC',
-            "blue": '#004B8D',
-            "yellow": '#ff8307',
-            "cyan": '#0B8FA1',
-            "red": '#B9121B',
-        },
-    },
+    }
 }
 ACCENT_COLORS = {
     "dark": {
-        "blue": "#8ab4f7",
+        "light_green": '#45BF55',
+        "magenta": '#AB47BC',
+        "blue": '#004B8D',
+        "yellow": '#FFDC00',
+        "cyan": '#59D8E6',
+        "red": '#B9121B',
+
+        # "blue": "#004B8D",
         "graphite": "#898a8f",
         "green": "#4caf50",
         "orange": "#ff9800",
         "pink": "#c7457f",
         "purple": "#af52bf",
-        "red": "#f6685e",
-        "yellow": "#ffeb3b",
+        # "red": "#f6685e",
+        # "yellow": "#ffeb3b",
     },
     "light": {
-        "blue": "#1a73e8",
+        "light_green": '#4caf50',
+        "magenta": '#AB47BC',
+        "blue": '#004B8D',
+        "yellow": '#ff9800',
+        "cyan": '#004B8D',
+        "red": '#f44336',
+
+        # "blue": "#1a73e8",
         "graphite": "#898a8f",
         "green": "#4caf50",
         "orange": "#ff9800",
         "pink": "#c7457f",
         "purple": "#9c27b0",
-        "red": "#f44336",
-        "yellow": "#f4c65f",
+        # "red": "#f44336",
+        # "yellow": "#f4c65f",
     },
 }
 
