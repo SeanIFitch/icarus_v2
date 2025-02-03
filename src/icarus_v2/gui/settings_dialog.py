@@ -50,7 +50,6 @@ class SettingsDialog(QDialog):
         buttons = QDialogButtonBox.Apply
         button_box = QDialogButtonBox(buttons)
         button_box.button(QDialogButtonBox.Apply).clicked.connect(self.apply)
-        self.button_box = button_box
 
         # Dialog configuration
         self.setWindowTitle("Settings")
