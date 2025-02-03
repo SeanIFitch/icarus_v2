@@ -2,7 +2,7 @@ import os
 from pyqtgraph import PlotWidget
 from icarus_v2.backend.configuration_manager import ConfigurationManager
 from icarus_v2.backend.event import Channel, HistStat, Event
-from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES
+from icarus_v2.qdarktheme.load_style import THEME_COLOR_VALUES, url, color
 import pyqtgraph as pg
 from pyqtgraph.graphicsItems.ButtonItem import ButtonItem
 from PySide6.QtCore import QEvent, QStandardPaths
@@ -17,24 +17,23 @@ class StyledPlotWidget(PlotWidget):
     def __init__(self, x_zoom=False):
         self.full_init=False
 
-        PlotWidget.__init__(self)
-
-        self.theme = None
-        self.text_color = None
         self.config_manager = ConfigurationManager()
-        self.update_theme()
         self.config_manager.settings_updated.connect(self.update_theme)
 
-        self.showGrid(x=True, y=True)
+        background = self.get_background_color()
+        PlotWidget.__init__(self, background=background)
+
+        self.showGrid(x=True, y=True, alpha=0.3)
         self.setMouseEnabled(x=x_zoom, y=False)  # Prevent zooming
         self.hideButtons()  # Remove autoScale button
         self.getPlotItem().getViewBox().setMenuEnabled(False) # Remove right click menu
 
         # Set up the export button
-        self.exportBtn = ButtonItem("src/icarus_v2/resources/export_icon.svg", 20,self.plotItem)
-        self.exportBtn.clicked.connect(self.export_clicked)
-        self.exportBtn.setPos(0,210)
-        self.exportBtn.hide()
+        self.export_button = ButtonItem( width=20, parentItem=self.plotItem)
+        self.export_button.clicked.connect(self.export_clicked)
+        self.export_button.setPos(0, 210)
+        self.export_button.hide()
+        self.update_export_icon()
 
         # Enable hover events. Needed so that button is only visible when hovering over graph
         self.setAttribute(Qt.WA_Hover)
@@ -71,24 +70,45 @@ class StyledPlotWidget(PlotWidget):
 
         self.full_init=True
 
-    def update_theme(self, settings_key: str | None = None) -> None:
-        # skip setting them if this is triggered by settings updates
+    def update_theme(self, settings_key: str | None = None, size: int = 14) -> None:
+        # skip setting theme if this is triggered by settings updates
         if settings_key is not None and settings_key != "theme":
             return
 
-        self.theme = self.config_manager.get_settings('theme')
-        background = THEME_COLOR_VALUES[self.theme]['background']['base']
-        self.text_color = THEME_COLOR_VALUES[self.theme]['foreground']['base']
+        background = self.get_background_color()
+        text_color = self.get_text_color()
+
         self.setBackground(background)
 
+        plot = self.getPlotItem()
+        plot.titleLabel.setText(plot.titleLabel.text, color=text_color)
+        pen = pg.mkPen(color=text_color)
+        plot.getAxis('left').setPen(pen)
+        plot.getAxis('bottom').setPen(pen)
+
+        for channel, line in self.lines.items():
+            style = self.get_line_style(channel)
+            pen = pg.mkPen(color=style[0], style=style[1])
+            line.setPen(pen)
+
+        for channel, stats in self.statistics.items():
+            for _, stat_info in stats.items():
+                color = self.get_line_style(channel)[0]
+                stat_info['label'].setStyleSheet(f"color: {color}; font-size: {size}px;")
+
+        self.update_export_icon()
+
     def set_title(self, title):
-        self.setTitle(title, color=self.text_color, size="17pt")
+        color = self.get_text_color()
+        self.setTitle(title, color=color, size="17pt")
 
     def set_y_label(self, label):
-        self.setLabel('left', label, **{'color': self.text_color, 'font-size': '8pt'})
+        color = self.get_text_color()
+        self.setLabel('left', label, **{'color': color, 'font-size': '8pt'})
 
     def set_x_label(self, label):
-        self.setLabel('bottom', label, **{'color': self.text_color, 'font-size': '8pt'})
+        color = self.get_text_color()
+        self.setLabel('bottom', label, **{'color': color, 'font-size': '8pt'})
 
     # Add a new line to the plot with given style.
     def add_line(self, channel):
@@ -162,8 +182,8 @@ class StyledPlotWidget(PlotWidget):
             raise KeyError(f"Line with channel '{channel}' does not exist")
 
         label = QLabel(format_str.format(0))
-        line_color = self.get_line_style(channel)[0]
-        label.setStyleSheet(f"color: {line_color}; font-size: {size}px;")
+        color = self.get_line_style(channel)[0]
+        label.setStyleSheet(f"color: {color}; font-size: {size}px;")
 
         # Add to layout
         label.setFixedSize(200, 18)
@@ -232,10 +252,10 @@ class StyledPlotWidget(PlotWidget):
             return super().event(event)
 
         if event.type() == QEvent.HoverEnter:
-            self.exportBtn.show()
+            self.export_button.show()
         elif event.type() == QEvent.HoverLeave:
             self.mouse_label.setText("")
-            self.exportBtn.hide()
+            self.export_button.hide()
         elif event.type() == QEvent.HoverMove:
             mouse_point = self.getPlotItem().getViewBox().mapSceneToView(event.position())
             view_range = self.getPlotItem().getViewBox().viewRange()
@@ -315,13 +335,13 @@ class StyledPlotWidget(PlotWidget):
         """Update the export button position based on the plot's size."""
         super().resizeEvent(event)
 
-        if hasattr(self, 'exportBtn'):
+        if hasattr(self, 'export_button'):
             plot_height = self.height()
 
             button_y = plot_height - 24  # 85% from the top
 
             # Update button position and size
-            self.exportBtn.setPos(0, button_y)
+            self.export_button.setPos(0, button_y)
 
     def get_view_state(self):
         """
@@ -338,24 +358,43 @@ class StyledPlotWidget(PlotWidget):
         return low_diff + hi_diff < 1
 
     def get_line_style(self, channel):
+        theme = self.config_manager.get_settings('theme')
+
         match channel:
             case Channel.TARGET:
-                return THEME_COLOR_VALUES[self.theme]['line']['light_green'], Qt.SolidLine
+                return THEME_COLOR_VALUES[theme]['line']['light_green'], Qt.SolidLine
             case Channel.DEPRE_LOW | Channel.PRE_LOW:
-                return THEME_COLOR_VALUES[self.theme]['line']['magenta'], Qt.SolidLine
+                return THEME_COLOR_VALUES[theme]['line']['magenta'], Qt.SolidLine
             case Channel.DEPRE_UP | Channel.PRE_UP:
-                return THEME_COLOR_VALUES[self.theme]['line']['blue'], Qt.SolidLine
+                return THEME_COLOR_VALUES[theme]['line']['blue'], Qt.SolidLine
             case Channel.HI_PRE_ORIG | HistStat.O_PRESS:
-                return THEME_COLOR_VALUES[self.theme]['line']['yellow'], Qt.SolidLine
+                return THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.SolidLine
             case Channel.HI_PRE_SAMPLE | HistStat.S_PRESS:
-                return THEME_COLOR_VALUES[self.theme]['line']['yellow'], Qt.DashLine
+                return THEME_COLOR_VALUES[theme]['line']['yellow'], Qt.DashLine
             case Channel.DEPRE_VALVE | HistStat.DO_SLOPE | HistStat.DO_SWITCH | Event.DEPRESSURIZE:
-                return THEME_COLOR_VALUES[self.theme]['line']['cyan'], Qt.SolidLine
+                return THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.SolidLine
             case HistStat.DS_SLOPE | HistStat.DS_SWITCH:
-                return THEME_COLOR_VALUES[self.theme]['line']['cyan'], Qt.DashLine
+                return THEME_COLOR_VALUES[theme]['line']['cyan'], Qt.DashLine
             case Channel.PRE_VALVE | HistStat.PO_SLOPE | HistStat.PO_SWITCH | Event.PRESSURIZE:
-                return THEME_COLOR_VALUES[self.theme]['line']['red'], Qt.SolidLine
+                return THEME_COLOR_VALUES[theme]['line']['red'], Qt.SolidLine
             case HistStat.PS_SLOPE | HistStat.PS_SWITCH:
-                return THEME_COLOR_VALUES[self.theme]['line']['red'], Qt.DashLine
+                return THEME_COLOR_VALUES[theme]['line']['red'], Qt.DashLine
             case _:
                 raise ValueError(f"Unknown channel: {channel}")
+
+    def get_text_color(self):
+        theme = self.config_manager.get_settings('theme')
+        color = THEME_COLOR_VALUES[theme]['foreground']['base']
+        return color
+
+    def get_background_color(self):
+        theme = self.config_manager.get_settings('theme')
+        color = THEME_COLOR_VALUES[theme]['background']['base']
+        return color
+
+    def update_export_icon(self):
+        theme = self.config_manager.get_settings('theme')
+        color_info = THEME_COLOR_VALUES[theme]["foreground"]
+        icon_color = color(color_info, state="icon")
+        icon = url(icon_color, "file_export")[4:-1]  # Removes 'url(' at the start and ')' at the end
+        self.export_button.setImageFile(icon)

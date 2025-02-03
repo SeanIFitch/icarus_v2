@@ -126,7 +126,7 @@ class MainWindow(QMainWindow):
         self.set_mode("device")
 
     def update_theme(self, settings_key: str | None = None) -> None:
-        # skip setting them if this is triggered by settings updates
+        # skip setting theme if this is triggered by settings updates
         if settings_key is not None and settings_key != "theme":
             return
 

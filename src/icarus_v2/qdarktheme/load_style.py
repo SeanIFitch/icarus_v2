@@ -115,7 +115,7 @@ THEME_COLOR_VALUES = {
             "title": {"darken": 0.04},
         },
         "border": {
-            "base": "#dadce0",
+            "base": "#8E9094",
             "input": {},
         },
         "button": {
@@ -126,7 +126,7 @@ THEME_COLOR_VALUES = {
             "defaultButton.hoverBackground": {"darken": 0.06},
         },
         "foreground": {
-            "base": "#4d5157",
+            "base": "#1A1E24",
             "defaultButton.disabledBackground": {"transparent": 0.25},
             "disabled": {"transparent": 0.4},
             "disabledSelectionBackground": {"transparent": 0.25},
