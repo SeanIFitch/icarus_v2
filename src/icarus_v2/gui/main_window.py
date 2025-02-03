@@ -270,3 +270,6 @@ class MainWindow(QMainWindow):
 
         if self.data_handler is not None:
             self.data_handler.quit()
+
+        if self.toolbar.settings_dialog is not None:
+            self.toolbar.settings_dialog.close()
