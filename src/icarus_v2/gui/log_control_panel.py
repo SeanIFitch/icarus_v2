@@ -141,13 +141,13 @@ class LogControlPanel(QGroupBox):
         self.next_button.setEnabled(True)
         self.last_button.setEnabled(True)
         self.edit_button.setEnabled(True)
+        self.time_edit.setEnabled(True)
 
         self.press_index = -1
         self.depress_index = -1
         self.period_index = -1
 
         self.filename = self.log_reader.filename
-        self.edit_button.setEnabled(True)
         self.filename_label.setText(os.path.basename(self.filename))
         # Adjust font size to fit in the view
         for i in range(17, 8, -1):
@@ -226,9 +226,7 @@ class LogControlPanel(QGroupBox):
                     self.dialog = open_error_dialog(e)
                     return
 
-            self.filename_label.setText(" ")
-            self.next_button.setEnabled(False)
-            self.last_button.setEnabled(False)
+            self.reset()
             self.reset_history_signal.emit()
         self.edit_dialog.close()
 
@@ -342,6 +340,7 @@ class LogControlPanel(QGroupBox):
         self.next_button.setEnabled(False)
         self.last_button.setEnabled(False)
         self.edit_button.setEnabled(False)
+        self.time_edit.setEnabled(False)
 
     def set_logging(self, connected):
         self.currently_logging = connected

@@ -57,6 +57,11 @@ class SampleSensorDetector(QObject):
         if sample.max() > 3.0:
             return False
 
+        # prevent division by 0
+        origin_mean = origin.mean()
+        if origin_mean == 0.0:
+            return False
+
         # percent difference between the two signals
         diff = (origin.mean() - sample.mean()) / origin.mean()
 

@@ -93,8 +93,8 @@ class StyledPlotWidget(PlotWidget):
 
         for channel, stats in self.statistics.items():
             for _, stat_info in stats.items():
-                color = self.get_line_style(channel)[0]
-                stat_info['label'].setStyleSheet(f"color: {color}; font-size: {size}px;")
+                line_color = self.get_line_style(channel)[0]
+                stat_info['label'].setStyleSheet(f"color: {line_color}; font-size: {size}px;")
 
         self.update_export_icon()
 
@@ -238,7 +238,10 @@ class StyledPlotWidget(PlotWidget):
     # Clear all line data.
     def reset(self):
         for line in self.lines.values():
-            line.setData([], [])
+            if isinstance(line, pg.PlotDataItem):
+                line.setData([], [])
+            elif isinstance(line, pg.InfiniteLine):
+                self.removeItem(line)
 
         for stats in self.statistics.values():
             for format_str, stat_info in stats.items():

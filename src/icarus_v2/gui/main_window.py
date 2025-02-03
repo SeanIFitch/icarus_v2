@@ -1,4 +1,3 @@
-import pyqtgraph
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import (
     QMainWindow,
@@ -9,7 +8,9 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QSizePolicy,
     QSpacerItem,
-    QStackedWidget, QApplication
+    QStackedWidget,
+    QApplication,
+    QLineEdit
 )
 from icarus_v2.gui.event_plot import EventPlot
 from icarus_v2.gui.history_plot import HistoryPlot
@@ -22,7 +23,7 @@ from icarus_v2.gui.error_dialog import open_error_dialog
 from icarus_v2.backend.log_reader import LogReader
 from icarus_v2.backend.event import Event
 from icarus_v2.backend.configuration_manager import ConfigurationManager
-from icarus_v2.qdarktheme.load_style import load_stylesheet, THEME_COLOR_VALUES
+from icarus_v2.qdarktheme.load_style import load_stylesheet
 
 
 # Can be either in log reading or device mode.
@@ -127,11 +128,10 @@ class MainWindow(QMainWindow):
         self.connected = False
         self.set_mode("device")
 
-        # disable focus
+        # disable focus for all widgets except QTextEdit
         for widget in self.findChildren(QWidget):
-            widget.setFocusPolicy(Qt.NoFocus)
-
-
+            if not isinstance(widget, QLineEdit):
+                widget.setFocusPolicy(Qt.NoFocus)
 
     def update_theme(self, settings_key: str | None = None) -> None:
         # skip setting theme if this is triggered by settings updates

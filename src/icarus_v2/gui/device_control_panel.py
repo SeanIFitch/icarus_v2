@@ -20,7 +20,7 @@ class DeviceControlPanel(QGroupBox):
 
         # Initialize buttons
         with importlib.resources.path('icarus_v2.resources', 'shutdown.svg') as shutdown_path:
-            self.shutdown_button = ImageButton(str(shutdown_path), "Shutdown")
+            self.shutdown_button = ImageButton(str(shutdown_path), "Shutdown", cooldown_ms=100)
         self.shutdown_button.clicked.connect(self.on_shutdown)
 
         self.mode_button = QPushButton("Manual")
