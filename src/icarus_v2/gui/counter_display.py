@@ -71,8 +71,8 @@ class CounterDisplay(QGroupBox):
             self.counts["depressurize_count"] += 1
             self.depressurize_counter.setText(str(self.counts['depressurize_count']))
 
-        # Save counts to json every 100 updates
-        if sum(self.counts.values()) % 100 == 0:
+        # Save counts to json every 10 updates
+        if sum(self.counts.values()) % 10 == 0:
             # Do not emit so that this does not call self.update_settings
             self.save_settings()
 
