@@ -229,6 +229,9 @@ class StyledPlotWidget(PlotWidget):
         if channel in self.lines:
             self.removeItem(self.lines[channel])
 
+        if x is None:
+            return
+
         line_color = self.get_line_style(channel)[0]
         pen = pg.mkPen(color=line_color)
 

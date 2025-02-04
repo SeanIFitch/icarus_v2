@@ -6,7 +6,7 @@ from icarus_v2.gui.styled_plot_widget import StyledPlotWidget
 from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
-MAX_PRESSURE_INTERVAL = 60
+MAX_PRESSURE_INTERVAL = 5
 
 
 class HistoryPlot(QWidget):
@@ -196,7 +196,7 @@ class HistoryPlot(QWidget):
             self.coefficients = self.define_coefficients(plotting_coefficients)
 
     def render_event_time(self, event):
-        time = event.event_time - self.initial_time
+        time = None if event is None else event.event_time - self.initial_time
         self.pressure_plot.add_vertical_line(event.event_type, time)
         self.slope_plot.add_vertical_line(event.event_type, time)
         self.switch_time_plot.add_vertical_line(event.event_type, time)

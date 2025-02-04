@@ -6,6 +6,9 @@ from PySide6.QtCore import QStandardPaths
 from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
+MAX_PRESSURE_INTERVAL = 5
+
+
 # Logs files to logs/temp or logs/experiment depending on bit 4.
 # Files are deleted if no events are logged.
 class Logger:
@@ -14,6 +17,7 @@ class Logger:
         self.filename = None
         self.current_path = None
         self.event_count = None
+        self.last_pressure_update = None
         self.is_raw = is_raw
 
     def new_log_file(self, temporary=True):
@@ -34,10 +38,18 @@ class Logger:
         self.filename = os.path.join(log_path, name)
         self.file = lzma.open(self.filename, "ab")  # Opening file in append binary mode with LZMA compression
         self.event_count = 0
+        self.last_pressure_update = None
 
     def log_event(self, event):
         if self.is_raw:
             raise RuntimeError("Error: Adding a processed event to a raw log.")
+
+        if event.event_type == event.PRESSURE:
+            if self.last_pressure_update is None or event.event_time - self.last_pressure_update < MAX_PRESSURE_INTERVAL:
+                return
+
+        if event.event_type == event.PRESSURE or event.event_type == event.DEPRESSURIZE:
+            self.last_pressure_update = event.event_time
 
         event_dict = {
             'event_type': event.event_type,

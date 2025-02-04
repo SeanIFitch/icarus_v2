@@ -116,6 +116,7 @@ class DataHandler(QThread):
             self.pressurize_event_signal.connect(self.logger.log_event)
             self.depressurize_event_signal.connect(self.logger.log_event)
             self.period_event_signal.connect(self.logger.log_event)
+            self.pressure_event_signal.connect(self.logger.log_event)
             self.log_signal.connect(self.logger.new_log_file)
 
             # self.display_error.connect(self.logger.log_error)
