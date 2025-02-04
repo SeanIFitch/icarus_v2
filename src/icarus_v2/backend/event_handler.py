@@ -3,56 +3,6 @@ import traceback
 from icarus_v2.backend.event import Event
 
 class EventHandler(QThread):
-    def __init__(self, loader, signal, sample_rate, update_rate) -> None:
-        super().__init__()
-        self.reader = loader.new_reader()
-        self.signal = signal
-        self.sample_rate = sample_rate
-        self.update_rate = update_rate
-        self.running = False
-
-
-    # Loops to transmit data if an event occurs
-    def run(self):
-        self.running = True
-        while self.running:
-            data_to_get = int(self.sample_rate / self.update_rate)
-            try:
-                data, buffer_index = self.reader.read(size=data_to_get, timeout=1)
-            except TimeoutError:
-                self.running = False
-                break
-            try:
-                event, chunk_index = self.detect_event(data)
-            except RuntimeWarning:
-                # Case where 2 events occur in same chunk
-                traceback.print_exc()
-                event, chunk_index = False, -1
-
-            # buffer_index is the index that the chunk started in in the buffer
-            # chunk index is the index that the event started in in that chunk
-            event_index = buffer_index + chunk_index
-
-            # If an event occurs, transmit data to plot
-            if event:
-                event_data, event_start = self.handle_event(event_index)
-                if event_data is not None:
-                    new_event = Event(self.event_type, event_data, event_start)
-                    self.signal.emit(new_event)
-
-
-    # Placeholder. 
-    # Data: one chunk from the reader
-    # Returns whether an event occurs and the index of the event
-    def detect_event(self, data):
-        return False, -1
-
-
-    # Placeholder.
-    # event_index: absolute index of event in buffer
-    # Returns appropriate data and index of the event in the new data
-    def handle_event(self, event_index):
-        return None, -1
 
 
     # Return a range of data around the event occuring at event_index
