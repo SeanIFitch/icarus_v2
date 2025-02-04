@@ -66,8 +66,6 @@ class ToolBar(QToolBar):
             self.change_mode_action.setText("Open Logs")
             self.set_mode_signal.emit("device")
 
-            self.clear_log_toolbar()
-
     def set_pressure_signal(self, pressure_signal):
         self.pressure_signal = pressure_signal
         if self.settings_dialog is not None:

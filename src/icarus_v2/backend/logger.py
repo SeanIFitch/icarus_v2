@@ -48,7 +48,9 @@ class Logger:
         }   
         self.log_raw(event_dict)
 
-    def log_error(self, event): 
+    def log_error(self, event):
+        return
+
         #Should take in an instance of either sentry_error or sentry_warning
         if self.is_raw:
             raise RuntimeError("Error: Adding a processed error to a raw log.")
