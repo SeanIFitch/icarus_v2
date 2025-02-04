@@ -190,7 +190,7 @@ class Event:
 
     # Returns pressure before event starts
     def get_initial_sample(self):
-        if self.event_type != self.DEPRESSURIZE:
+        if self.event_type != self.DEPRESSURIZE and self.event_type != self.PRESSURE:
             raise RuntimeError("Cannot call get_initial_sample() on event type " + self.event_type)
 
         sample_pressure = np.average(get_channel(self, Channel.HI_PRE_SAMPLE)[:self.event_index])
@@ -198,7 +198,7 @@ class Event:
 
     # Returns pressure before event starts
     def get_initial_origin(self):
-        if self.event_type != self.DEPRESSURIZE:
+        if self.event_type != self.DEPRESSURIZE and self.event_type != self.PRESSURE:
             raise RuntimeError("Cannot call get_initial_origin() on event type " + self.event_type)
 
         origin_pressure = np.average(get_channel(self, Channel.HI_PRE_ORIG)[:self.event_index])

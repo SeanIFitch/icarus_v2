@@ -183,6 +183,7 @@ class MainWindow(QMainWindow):
                 self.data_handler.period_event_signal.disconnect(self.period_plot.update_data)
                 self.data_handler.pressurize_event_signal.disconnect(self.history_plot.add_event)
                 self.data_handler.depressurize_event_signal.disconnect(self.history_plot.add_event)
+                self.data_handler.pressure_event_signal.disconnect(self.history_plot.add_event)
                 self.data_handler.log_signal.disconnect(self.reset_history)
                 self.data_handler.sample_sensor_connected.disconnect(self.set_sample_sensor_connected)
 
@@ -206,6 +207,7 @@ class MainWindow(QMainWindow):
                 self.data_handler.period_event_signal.connect(self.period_plot.update_data)
                 self.data_handler.pressurize_event_signal.connect(self.history_plot.add_event)
                 self.data_handler.depressurize_event_signal.connect(self.history_plot.add_event)
+                self.data_handler.pressure_event_signal.connect(self.history_plot.add_event)
                 self.data_handler.log_signal.connect(self.reset_history)
                 self.data_handler.sample_sensor_connected.connect(self.set_sample_sensor_connected)
 
