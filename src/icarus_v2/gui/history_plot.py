@@ -6,6 +6,9 @@ from icarus_v2.gui.styled_plot_widget import StyledPlotWidget
 from icarus_v2.backend.configuration_manager import ConfigurationManager
 
 
+MAX_PRESSURE_INTERVAL = 60
+
+
 class HistoryPlot(QWidget):
     def __init__(self):
         super().__init__()
@@ -17,6 +20,7 @@ class HistoryPlot(QWidget):
         self.config_manager.settings_updated.connect(self.update_settings)
         self.initial_time = None
         self.can_plot_pressurize = None
+        self.last_pressure_time = None
         self.limits = None
 
         # Pressure plot
@@ -89,6 +93,7 @@ class HistoryPlot(QWidget):
     def reset_history(self):
         self.initial_time = None
         self.can_plot_pressurize = True
+        self.last_pressure_time = None
 
         self.pressure_plot.reset()
         self.slope_plot.reset()
@@ -108,6 +113,10 @@ class HistoryPlot(QWidget):
         self.pressure_plot.setXRange(self.limits[0], self.limits[1])
 
     def add_event(self, event):
+        if event.event_type == Event.PRESSURE:
+            if self.last_pressure_time is None or event.event_time - self.last_pressure_time <= MAX_PRESSURE_INTERVAL:
+                return
+
         # Define start time of plots
         if self.initial_time is None:
             self.initial_time = event.event_time
@@ -140,12 +149,15 @@ class HistoryPlot(QWidget):
                 HistStat.PS_SWITCH: event.get_event_info(HistStat.PS_SWITCH) * coefficients[HistStat.PS_SWITCH]
             }, time)
 
-        elif event.event_type == Event.DEPRESSURIZE:
+        if event.event_type == Event.DEPRESSURIZE or event.event_type == Event.PRESSURE:
             self.pressure_plot.append_points({
                 HistStat.O_PRESS: event.get_event_info(HistStat.O_PRESS) * coefficients[HistStat.O_PRESS],
                 HistStat.S_PRESS: event.get_event_info(HistStat.S_PRESS) * coefficients[HistStat.S_PRESS]
             }, time)
 
+            self.last_pressure_time = event.event_time
+
+        if event.event_type == Event.DEPRESSURIZE:
             self.slope_plot.append_points({
                 HistStat.DO_SLOPE: event.get_event_info(HistStat.DO_SLOPE) * coefficients[HistStat.DO_SLOPE],
                 HistStat.DS_SLOPE: event.get_event_info(HistStat.DS_SLOPE) * coefficients[HistStat.DS_SLOPE]

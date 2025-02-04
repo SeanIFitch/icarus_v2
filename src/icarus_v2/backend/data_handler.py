@@ -242,8 +242,14 @@ class DataHandler(QThread):
         self.pulse_generator.wait()
 
         if self.connected:
-            self.pulse_generator.set_pressurize_low()
-            self.pulse_generator.set_depressurize_low()
+            try:
+                self.pulse_generator.set_pressurize_low()
+            except:
+                pass
+            try:
+                self.pulse_generator.set_depressurize_low()
+            except:
+                pass
             sleep(1)
             self.pulse_generator.set_pressurize_high()
             self.pulse_generator.set_depressurize_high()
