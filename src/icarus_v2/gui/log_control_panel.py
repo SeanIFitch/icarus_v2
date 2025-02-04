@@ -270,10 +270,12 @@ class LogControlPanel(QGroupBox):
         event = self.log_reader.events[index]
 
         if event.event_type == Event.PRESSURE:
-            self.press_index += 1
-            self.depress_index += 1
-            self.period_index += 1
-            self.emit_next_event()
+            index = max(self.press_index, self.depress_index, self.period_index) + 1
+            while index < len(self.log_reader.events) and self.log_reader.events[index].event_type == Event.PRESSURE:
+                self.press_index += 1
+                self.depress_index += 1
+                self.period_index += 1
+            self.emit_last_event()
 
         elif event.event_type == Event.PRESSURIZE:
             self.press_index = index
@@ -310,9 +312,11 @@ class LogControlPanel(QGroupBox):
         event = self.log_reader.events[index]
 
         if event.event_type == Event.PRESSURE:
-            self.press_index -= 1
-            self.depress_index -= 1
-            self.period_index -= 1
+            index = min(self.press_index, self.depress_index, self.period_index) - 1
+            while index >= 0 and self.log_reader.events[index].event_type == Event.PRESSURE:
+                self.press_index -= 1
+                self.depress_index -= 1
+                self.period_index -= 1
             self.emit_last_event()
 
         elif event.event_type == Event.PRESSURIZE:
